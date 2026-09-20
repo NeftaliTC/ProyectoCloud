@@ -1,0 +1,316 @@
+﻿/* CONTENEDOR PRINCIPAL */
+.killa-review-container {
+    background-color: #faf8f8;
+    min-height: 100vh;
+    padding: 40px 20px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    justify-content: center;
+}
+
+.review-wrapper {
+    width: 100%;
+    max-width: 680px; /* Tamaño ideal para que se vea estilizado */
+}
+
+/* Botón Volver al pedido */
+.btn-killa-back {
+    text-decoration: none;
+    background-color: transparent !important;
+    border: none !important;
+    padding: 0;
+    color: #e35781;
+    cursor: pointer;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 20px;
+    font-size: 0.95rem;
+    transition: color 0.2s ease;
+}
+
+    .btn-killa-back:hover {
+        color: #c41c6f;
+        background-color: transparent !important;
+    }
+
+/* Títulos */
+.main-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #111;
+    margin-bottom: 4px;
+}
+
+.subtitle {
+    color: #777;
+    font-size: 0.95rem;
+    margin-bottom: 25px;
+}
+
+/* TARJETA BLANCA DEL FORMULARIO */
+.review-card-body {
+    background: #ffffff;
+    border-radius: 16px;
+    border: 1px solid #f3ebeb;
+    padding: 35px;
+    box-shadow: 0 4px 15px rgba(244, 230, 230, 0.25);
+}
+
+/* Vista previa del producto seleccionado */
+.product-preview-box {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding-bottom: 22px;
+    border-bottom: 1px solid #fcedef;
+    margin-bottom: 25px;
+}
+
+.product-img {
+    width: 55px;
+    height: 55px;
+    object-fit: contain;
+    border-radius: 8px;
+}
+
+.product-brand {
+    color: #a09093;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: block;
+    margin-bottom: 2px;
+}
+
+.product-name {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #222;
+    margin: 0;
+}
+
+/* CAMPOS DEL FORMULARIO (INPUTS) */
+.form-section {
+    margin-bottom: 22px;
+}
+
+.form-label {
+    display: block;
+    font-weight: 600;
+    color: #444;
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+}
+
+/* Selector de Estrellas */
+.killa-stars {
+    display: flex;
+    gap: 8px;
+}
+
+    .killa-stars i {
+        font-size: 2rem;
+        color: #fcaec2; /* Color rosa pastel de las estrellas */
+        cursor: pointer;
+        transition: transform 0.1s ease;
+    }
+
+        .killa-stars i:hover {
+            transform: scale(1.15);
+        }
+
+/* Inputs y Textareas estilizados con fondo claro */
+.killa-input, .killa-textarea {
+    width: 100%;
+    background-color: #fbf5f5; /* Fondo sutilmente rosado/claro */
+    border: 1px solid #f3e6e8;
+    border-radius: 10px;
+    padding: 12px 16px;
+    color: #333;
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+    .killa-input:focus, .killa-textarea:focus {
+        border-color: #f2a9ba;
+        background-color: #ffffff;
+    }
+
+    .killa-input::placeholder, .killa-textarea::placeholder {
+        color: #bfaeb1;
+    }
+
+.killa-textarea {
+    height: 130px;
+    resize: none; /* Evita que el usuario lo deforme */
+}
+
+/* Mensaje de error abajo */
+.killa-error-message {
+    color: #d93838;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 20px;
+    font-weight: 500;
+    background-color: transparent;
+    padding: 10px 14px;
+    border-radius: 8px;
+}
+
+/* BOTONES DE ACCIÓN (FORMULARIO) */
+.killa-actions-row {
+    display: flex;
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.btn-killa-cancel {
+    text-decoration: none;
+    text-align: center;
+    background: #ffffff;
+    border: 1px solid #f2a9ba;
+    color: #333;
+    font-weight: 600;
+    padding: 13px;
+    border-radius: 30px;
+    flex: 1;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+    .btn-killa-cancel:hover {
+        background-color: #fff5f7;
+    }
+
+.btn-killa-submit {
+    background-color: #f2a9ba; /* Rosa sólido de Killa Beauty */
+    color: #ffffff;
+    border: none;
+    font-weight: 600;
+    padding: 13px;
+    border-radius: 30px;
+    flex: 1;
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: background-color 0.2s ease;
+}
+
+    .btn-killa-submit:hover {
+        background-color: #e593a5;
+    }
+
+/* MODAL FLOTANTE (PANTALLA DE ÉXITO) */
+.killa-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5); /* Oscurece la pantalla de atrás */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 3000; /* Asegura que esté por encima de todo */
+    animation: fadeIn 0.2s ease-out;
+}
+
+.killa-modal-card {
+    background: #ffffff;
+    width: 90%;
+    max-width: 440px;
+    border-radius: 20px;
+    padding: 40px 30px;
+    text-align: center;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+    animation: scaleUp 0.25s ease-out;
+}
+
+.modal-icon-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+/* Círculo verde del Check */
+.success-checkmark {
+    width: 50px;
+    height: 50px;
+    background-color: #e6f7ed; /* Fondo verde suave */
+    color: #24b263; /* Icono verde */
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+}
+
+.killa-modal-card h2 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #111;
+    margin-bottom: 10px;
+    line-height: 1.4;
+}
+
+.killa-modal-card p {
+    color: #666;
+    font-size: 0.95rem;
+    margin-bottom: 25px;
+    line-height: 1.5;
+}
+
+/* Botón Cerrar del Modal */
+.btn-killa-modal-close {
+    text-decoration: none;
+    display: inline-block;
+    background-color: #f2a9ba;
+    color: #ffffff;
+    font-weight: 600;
+    padding: 11px 0;
+    border-radius: 12px;
+    width: 140px;
+    text-align: center;
+    cursor: pointer;
+    box-shadow: 0 3px 8px rgba(242, 169, 186, 0.4);
+    transition: background-color 0.2s ease;
+}
+
+    .btn-killa-modal-close:hover {
+        background-color: #e593a5;
+    }
+
+/* Estado de carga */
+.killa-loading {
+    text-align: center;
+    color: #999;
+    padding: 30px 0;
+    font-style: italic;
+}
+
+/* ANIMACIONES SUTILES */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes scaleUp {
+    from {
+        transform: scale(0.9);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}

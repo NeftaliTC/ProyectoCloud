@@ -1,0 +1,119 @@
+﻿@page "/orders"
+@attribute [Authorize(Roles = "CLIENTE,TRABAJADOR,ADMINISTRADOR")]
+@rendermode InteractiveServer
+@using BlazorAppKillaBeauty.ClienteREST.ServicesAct
+@using BlazorAppKillaBeauty.Services
+@using BlazorAppKillaBeauty.ClienteREST.Models
+@inject CartService CartService
+@inject PedidoService PedidoService
+@inject AuthService AuthService
+@inject ProductoService ProductoService
+
+<Navbar CantidadCarrito="@CartService.CantidadTotal"
+        TodosLosProductos="@(new List<Producto>())" />
+
+<div class="orders-page-container">
+    <section class="orders-header">
+        <h1>Mis pedidos</h1>
+        <p>@pedidos.Count pedido(s) realizado(s)</p>
+    </section>
+
+    @if (cargando)
+    {
+        <div class="loading-state">
+            <p>Cargando tus pedidos...</p>
+        </div>
+    }
+    else if (pedidos.Count == 0)
+    {
+        <div class="empty-state-card">
+            <i class="bi bi-box"></i>
+            <p>Aún no tienes pedidos realizados.</p>
+            <a href="/" class="btn-shop-solid">Ir a comprar</a>
+        </div>
+    }
+    else
+    {
+        <section class="orders-list">
+            @foreach (var p in pedidos)
+            {
+                <div class="order-card">
+                    <div class="card-header">
+                        <span class="date">@FormatearFecha(p.Fecha)</span>
+                        <span class="status-badge @GetStatusClass(p.Estado)">@GetStatusTexto(p.Estado)</span>
+                    </div>
+                    
+                    <h3>Pedido KIL-@p.Id.ToString("D8")</h3>
+                    
+                    <div class="product-preview">
+                        @* Mostramos máximo 3 imágenes *@
+                        @foreach (var prod in p.Productos.Take(3))
+                        {
+                            var urlImagen = prod.Imagenes?.FirstOrDefault() ?? "/Images/Logo.png";
+                            <img src="@urlImagen" alt="@prod.NombreProducto" class="thumb" />
+                        }
+                        @* Si hay más de 3, mostramos el contador +N *@
+                        @if (p.Productos.Count > 3)
+                        {
+                            <div class="more-items">+@(p.Productos.Count - 3)</div>
+                        }
+                    </div>
+
+                    <div class="order-footer">
+                        <div class="order-info-group">
+                            <span class="item-count">@p.Productos.Count artículo(s)</span>
+                            <span class="total-price">S/ @p.Total.ToString("F2")</span>
+                        </div>
+    
+                        <a href="/orders/order-detail/@p.Id" class="btn-outline-order-detail">Ver detalle ></a>
+                    </div>
+                </div>
+            }
+        </section>
+    }
+</div>
+
+@code {
+    private List<PedidoService.PedidoAdminDto> pedidos = new();
+
+    private bool cargando = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (AuthService.EstaLogueado && AuthService.UsuarioId.HasValue)
+        {
+            pedidos = await PedidoService.ObtenerPorClienteAsync(AuthService.UsuarioId.Value);
+        }
+        cargando = false;
+    }
+
+    private string GetStatusClass(string estado) => estado.ToUpperInvariant() switch
+    {
+        "PENDIENTE" => "status-gray",
+        "PAGADO" => "status-gray",
+        "EN_PREPARACION" => "status-yellow",
+        "ENVIADO" => "status-purple",
+        "ENTREGADO" => "status-green",
+        "CANCELADO" => "status-red",
+        _ => "status-gray"
+    };
+
+    private string GetStatusTexto(string estado) => estado.ToUpperInvariant() switch
+    {
+        "PENDIENTE" => "Confirmado",
+        "PAGADO" => "Confirmado",
+        "EN_PREPARACION" => "En preparación",
+        "ENVIADO" => "En camino",
+        "ENTREGADO" => "Entregado",
+        "CANCELADO" => "Cancelado",
+        _ => estado
+    };
+
+    private string FormatearFecha(string fecha)
+    {
+        if (DateTime.TryParse(fecha, out var dt))
+            return dt.ToString("dd 'de' MMMM 'del' yyyy",
+                new System.Globalization.CultureInfo("es-PE"));
+        return fecha;
+    }
+}

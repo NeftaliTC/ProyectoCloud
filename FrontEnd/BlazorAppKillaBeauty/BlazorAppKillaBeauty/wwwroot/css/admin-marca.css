@@ -1,0 +1,768 @@
+﻿/* ══════════════════════════════════════════════════════════════
+   LAYOUT PRINCIPAL (Layout a dos columnas para el menú izquierdo)
+   ══════════════════════════════════════════════════════════════ */
+.admin-marcas-content {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.marcas-layout {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+    margin-top: 20px;
+}
+
+.marcas-sidebar {
+    width: 240px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.marcas-main {
+    flex-grow: 1;
+    min-width: 0;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   TARJETAS LATERALES (Alertas y Estados)
+   ══════════════════════════════════════════════════════════════ */
+.marcas-sidebar-title {
+    color: var(--rose-soft, #f06292);
+    font-size: 0.95rem;
+    font-weight: 800;
+    margin-bottom: 4px;
+    text-align: center;
+}
+
+.marca-alert-card {
+    border-radius: 20px;
+    padding: 1.5rem 1rem;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.marca-alert-title {
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #4f4148;
+}
+
+.marca-alert-value {
+    font-size: 1.8rem;
+    font-weight: 500;
+    color: #1a1a1a;
+    line-height: 1.2;
+}
+
+.marca-alert-subtitle {
+    font-size: 0.8rem;
+    color: #555;
+}
+
+/* Colores específicos del Figma para las tarjetas */
+.card-peach {
+    background: #ebd5c9;
+    border: 1px solid #dcbfae;
+}
+
+.card-blue {
+    background: #e8eef5;
+    border: 1px solid #c4d1df;
+}
+
+.card-gray {
+    background: #f2f2f2;
+    border: 1px solid #d9d9d9;
+}
+
+.card-pink {
+    background: #f5dbe2;
+    border: 1px solid #e2b7c3;
+}
+
+
+/* ══════════════════════════════════════════════════════════════
+   HEADER Y BREADCRUMB (Heredado de Pedidos)
+   ══════════════════════════════════════════════════════════════ */
+.admin-breadcrumb {
+    color: var(--gray-text, #777);
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+}
+
+    .admin-breadcrumb i {
+        font-size: 0.72rem;
+    }
+
+.admin-header-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 20px;
+}
+
+    .admin-header-flex h1 {
+        margin-bottom: 0;
+        font-weight: 700;
+        color: #1a1a1a;
+    }
+
+.btn-agregar-marca {
+    background: var(--rose, #f5a3b7);
+    color: #fff;
+    font-weight: 800;
+    border: none;
+    border-radius: 50px;
+    padding: 0.65rem 1.5rem;
+    box-shadow: 0 4px 12px rgba(245,163,183,0.3);
+    transition: all 0.2s;
+}
+
+    .btn-agregar-marca:hover {
+        background: var(--rose-dark, #c2185b);
+        transform: translateY(-2px);
+        color: #fff;
+    }
+
+
+/* ══════════════════════════════════════════════════════════════
+   FILTROS (Adaptado de Pedidos para 4 columnas)
+   ══════════════════════════════════════════════════════════════ */
+.admin-marcas-filters {
+    background: var(--white, #fff);
+    border: 1px solid var(--gray-border, #d1cbd4);
+    border-radius: 20px; /* Borde más redondeado según Figma */
+    box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+    padding: 18px 24px;
+    margin-bottom: 22px;
+}
+
+.admin-marcas-filter-row {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 1fr auto;
+    gap: 16px;
+    align-items: end;
+}
+
+.admin-marcas-search {
+    min-height: 44px;
+    background: #fdf7f9;
+    border: 1px solid var(--gray-border, #d1cbd4);
+    border-radius: 50px; /* Estilo píldora */
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 16px;
+}
+
+    .admin-marcas-search i {
+        color: #999;
+    }
+
+    .admin-marcas-search input {
+        width: 100%;
+        border: none;
+        background: transparent;
+        outline: none;
+        color: #2f252a;
+        font-size: 0.9rem;
+    }
+
+.admin-select-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+    .admin-select-group span {
+        font-size: 0.9rem;
+        font-weight: 800;
+        color: #333;
+    }
+
+    .admin-select-group select {
+        min-height: 44px;
+        border: 1px solid var(--rose-soft, #f0dde6);
+        border-radius: 50px;
+        background: #fdf7f9;
+        color: #555;
+        padding: 0 16px;
+        outline: none;
+        flex-grow: 1;
+        cursor: pointer;
+    }
+
+/* Botones de "Ordenar por" */
+.admin-sort-group {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+}
+
+.admin-sort-label {
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.admin-sort-badge {
+    background: #f0f0f0;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 2px 8px;
+    font-size: 0.75rem;
+    color: #666;
+    font-weight: normal;
+}
+
+.admin-sort-buttons {
+    display: flex;
+    border: 1px solid #d1cbd4;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.admin-sort-btn {
+    padding: 8px 16px;
+    border: none;
+    background: #f9f9f9;
+    color: #666;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+    .admin-sort-btn.active {
+        background: #fdf7f9;
+        color: #c2185b;
+    }
+
+    .admin-sort-btn:first-child {
+        border-right: 1px solid #d1cbd4;
+    }
+
+
+/* ══════════════════════════════════════════════════════════════
+   TABLA (Heredado de Pedidos)
+   ══════════════════════════════════════════════════════════════ */
+.admin-table-card {
+    background: var(--white, #fff);
+    border: 1px solid var(--gray-border, #d1cbd4);
+    border-radius: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+    overflow: hidden;
+    margin-bottom: 18px;
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+    .admin-table th {
+        background: #fdf7f9;
+        color: #777;
+        font-size: 0.85rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        padding: 14px 16px;
+        text-align: left;
+        border-bottom: 1px solid #f0dde6;
+    }
+
+    .admin-table td {
+        padding: 14px 16px;
+        color: #4f4148;
+        font-size: 0.9rem;
+        border-bottom: 1px solid #f5e6ec;
+        vertical-align: middle;
+    }
+
+    .admin-table tr:hover td {
+        background: #fcf9fa;
+    }
+
+.admin-status.success {
+    color: #2e7d32;
+    font-weight: 700;
+}
+
+.admin-status.danger {
+    color: #c62828;
+    font-weight: 700;
+}
+
+
+/* Botones de acción (Editar / Eliminar) idénticos al Figma */
+.btn-accion-outline {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 6px 12px;
+    color: #777;
+    margin-left: 4px;
+    transition: all 0.2s;
+}
+
+    .btn-accion-outline.delete {
+        border-color: #ffcdd2;
+        color: #c62828;
+    }
+
+    .btn-accion-outline:hover {
+        background: #f5f5f5;
+        transform: scale(1.05);
+    }
+
+
+/* ══════════════════════════════════════════════════════════════
+   PAGINACIÓN (Heredado de Pedidos)
+   ══════════════════════════════════════════════════════════════ */
+.admin-pagination {
+    background: var(--white, #fff);
+    border: 1px solid var(--gray-border, #d1cbd4);
+    border-radius: 20px;
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+    .admin-pagination > span {
+        color: #777;
+        font-size: 0.85rem;
+    }
+
+.admin-pagination-buttons {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+    .admin-pagination-buttons button {
+        width: 32px;
+        height: 32px;
+        border: none;
+        border-radius: 50%;
+        background: transparent;
+        color: #555;
+        font-weight: 800;
+        transition: all 0.2s;
+    }
+
+        .admin-pagination-buttons button.active {
+            background: var(--rose, #f5a3b7);
+            color: #fff;
+        }
+
+        .admin-pagination-buttons button:hover:not(:disabled) {
+            background: #fdf7f9;
+            color: #c2185b;
+        }
+
+
+/* ══════════════════════════════════════════════════════════════
+   MODALES (Agregar / Editar / Eliminar)
+   ══════════════════════════════════════════════════════════════ */
+.modal-overlay {
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.modal-content-kb {
+    background: #fff;
+    border-radius: 25px;
+    padding: 2rem 2.5rem;
+    border: none;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+}
+
+.modal-title-kb {
+    font-weight: 800;
+    font-size: 1.6rem;
+    text-align: center;
+    color: #1a1a1a;
+    margin-bottom: 1.5rem;
+}
+
+.form-label-kb {
+    font-weight: 800;
+    font-size: 0.9rem;
+    color: #333;
+    margin-bottom: 6px;
+}
+
+.form-control-pill {
+    border-radius: 50px;
+    border: 1px solid var(--gray-border, #d1cbd4);
+    background: #fdf7f9;
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+    width: 100%;
+}
+
+    .form-control-pill:focus {
+        border-color: var(--rose, #f5a3b7);
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(245,163,183,0.2);
+    }
+
+    .form-control-pill:disabled {
+        background: #e9ecef;
+        border-color: #ddd;
+    }
+
+/* Área de carga de Logo (Gris con ícono central) */
+.logo-upload-area {
+    background: #e6e2e8; /* Color de tu Figma */
+    border-radius: 18px;
+    height: 140px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #555;
+    cursor: pointer;
+    transition: background 0.2s;
+    border: 2px dashed transparent;
+    overflow: hidden;
+}
+
+    .logo-upload-area:hover {
+        background: #dcd8df;
+    }
+
+    .logo-upload-area i {
+        font-size: 2.5rem;
+        color: #6a5773;
+        margin-bottom: 8px;
+    }
+
+    .logo-upload-area span {
+        font-weight: 700;
+        font-size: 0.95rem;
+        color: #4a3b52;
+    }
+
+.modal-actions-kb {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 24px;
+}
+
+.btn-modal-cancel {
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 50px;
+    padding: 0.6rem 2rem;
+    font-weight: 700;
+    color: #666;
+    transition: all 0.2s;
+}
+
+    .btn-modal-cancel:hover {
+        background: #f5f5f5;
+    }
+
+.btn-modal-confirm {
+    background: var(--rose, #f5a3b7);
+    border: none;
+    border-radius: 50px;
+    padding: 0.6rem 2rem;
+    font-weight: 700;
+    color: #fff;
+    box-shadow: 0 4px 10px rgba(245,163,183,0.3);
+}
+
+    .btn-modal-confirm:hover {
+        background: var(--rose-dark, #c2185b);
+    }
+
+/* Textos específicos para el modal de eliminar */
+.delete-modal-info {
+    text-align: center;
+    font-size: 0.95rem;
+    color: #555;
+    margin-bottom: 20px;
+}
+
+.delete-modal-warning {
+    text-align: center;
+    font-size: 0.95rem;
+    color: #444;
+    font-weight: 500;
+    line-height: 1.5;
+}
+
+
+
+
+
+/* ── 1. BOTÓN PRINCIPAL (Agregar Marca) ── */
+.btn-add-marca {
+    min-height: 42px;
+    border-radius: 12px;
+    background: #f5a3b7;
+    color: white;
+    border: none;
+    padding: 0 24px;
+    font-weight: 800;
+    font-size: 0.95rem;
+    box-shadow: 0 4px 12px rgba(245, 163, 183, 0.3);
+    transition: all 0.2s;
+}
+
+    .btn-add-marca:hover {
+        background: #c2185b;
+        transform: translateY(-2px);
+    }
+
+/* ── 2. FILTROS Y BOTONES DE ORDENAR ── */
+.marcas-filter-grid {
+    grid-template-columns: 1fr 1fr auto !important;
+}
+
+.marcas-sort-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+}
+
+.sort-label {
+    color: #777;
+    font-size: 0.84rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.badge-count {
+    background: #fdf7f9;
+    border: 1px solid #f0dde6;
+    padding: 2px 8px;
+    border-radius: 6px;
+    color: #555;
+    font-weight: 600;
+}
+
+.marcas-sort-buttons {
+    display: flex;
+    border: 1px solid #d1cbd4;
+    border-radius: 12px;
+    overflow: hidden;
+    height: 42px;
+}
+
+    .marcas-sort-buttons button {
+        background: #fff;
+        border: none;
+        padding: 0 16px;
+        font-size: 0.85rem;
+        font-weight: 800;
+        color: #4f4148;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+        .marcas-sort-buttons button:first-child {
+            border-right: 1px solid #d1cbd4;
+        }
+
+        .marcas-sort-buttons button.active {
+            background: #fdf7f9;
+            color: #c2185b;
+        }
+
+/* ── 3. ICONOS Y ESTADOS DE LA TABLA ── */
+.admin-status.success {
+    background: #e8f5e9;
+    color: #2e7d32;
+    font-weight: 800;
+    padding: 0.4em 1em;
+    border-radius: 50px;
+}
+
+.admin-status.danger {
+    background: #ffebee;
+    color: #c62828;
+    border: 1px solid #ffcdd2;
+    font-weight: 800;
+    padding: 0.4em 1em;
+    border-radius: 50px;
+}
+
+.btn-action-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 11px;
+    border: 1px solid #d1cbd4;
+    background: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 8px;
+    transition: all 0.2s;
+}
+
+    .btn-action-icon.edit {
+        color: #f5a3b7;
+    }
+
+    .btn-action-icon.delete {
+        border-color: #ffcdd2;
+        color: #c62828;
+    }
+
+    .btn-action-icon:hover {
+        transform: scale(1.05);
+        background: #f5f5f5;
+    }
+
+/* ── 4. MODALES (Agregar/Editar/Eliminar) ── */
+.modal-overlay {
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.modal-content-kb {
+    background: #fff;
+    border-radius: 25px;
+    padding: 2rem 2.5rem;
+    border: none;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+}
+
+.modal-title-kb {
+    font-weight: 800;
+    font-size: 1.6rem;
+    text-align: center;
+    color: #1a1a1a;
+    margin-bottom: 1.5rem;
+}
+
+.form-label-kb {
+    font-weight: 800;
+    font-size: 0.9rem;
+    color: #333;
+    margin-bottom: 6px;
+    display: block;
+}
+
+.form-control-pill {
+    border-radius: 50px;
+    border: 1px solid #d1cbd4;
+    background: #fdf7f9;
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+    width: 100%;
+    outline: none;
+}
+
+    .form-control-pill:focus {
+        border-color: #f5a3b7;
+        box-shadow: 0 0 0 3px rgba(245,163,183,0.2);
+    }
+
+    .form-control-pill:disabled {
+        background: #e9ecef;
+        border-color: #ddd;
+        color: #777;
+    }
+
+.logo-upload-area {
+    background: #e6e2e8;
+    border-radius: 18px;
+    height: 140px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #555;
+    cursor: pointer;
+    transition: background 0.2s;
+    border: 2px dashed transparent;
+}
+
+    .logo-upload-area:hover {
+        background: #dcd8df;
+    }
+
+    .logo-upload-area i {
+        font-size: 2.5rem;
+        color: #6a5773;
+        margin-bottom: 8px;
+    }
+
+    .logo-upload-area span {
+        font-weight: 700;
+        font-size: 0.95rem;
+        color: #4a3b52;
+    }
+
+.modal-actions-kb {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 24px;
+}
+
+.btn-modal-cancel {
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 50px;
+    padding: 0.6rem 2rem;
+    font-weight: 700;
+    color: #666;
+    transition: all 0.2s;
+}
+
+    .btn-modal-cancel:hover {
+        background: #f5f5f5;
+    }
+
+.btn-modal-confirm {
+    background: #f5a3b7;
+    border: none;
+    border-radius: 50px;
+    padding: 0.6rem 2rem;
+    font-weight: 700;
+    color: #fff;
+    box-shadow: 0 4px 10px rgba(245,163,183,0.3);
+    transition: all 0.2s;
+}
+
+    .btn-modal-confirm:hover {
+        background: #c2185b;
+    }
+
+.delete-modal-info {
+    text-align: center;
+    font-size: 0.95rem;
+    color: #555;
+    margin-bottom: 20px;
+}
+
+.delete-modal-warning {
+    text-align: center;
+    font-size: 0.95rem;
+    color: #444;
+    font-weight: 500;
+    line-height: 1.5;
+}

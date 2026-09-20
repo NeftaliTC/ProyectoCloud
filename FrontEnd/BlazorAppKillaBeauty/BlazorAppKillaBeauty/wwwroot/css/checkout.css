@@ -1,0 +1,559 @@
+.checkout-page {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 28px 18px 50px;
+    display: grid;
+    grid-template-columns: 1fr 420px;
+    gap: 42px;
+    align-items: start;
+}
+
+.checkout-left h1 {
+    font-size: 30px;
+    font-weight: 700;
+    margin-bottom: 24px;
+}
+
+.checkout-card {
+    background: white;
+    border: 1px solid var(--rose-light);
+    border-radius: 26px;
+    padding: 28px 32px;
+    margin-bottom: 24px;
+}
+
+    .checkout-card h2,
+    .card-title-row h2 {
+        font-size: 24px;
+        font-weight: 700;
+        margin: 0 0 22px 0;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
+        .checkout-card h2 i,
+        .card-title-row h2 i {
+            color: var(--rose-soft);
+            font-size: 28px;
+        }
+
+/* Campo de formulario propio — sin conflicto con Bootstrap */
+.checkout-field {
+    width: 100%;
+    margin-bottom: 18px;
+}
+
+    .checkout-field label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 8px;
+        font-size: 15px;
+    }
+
+    .checkout-field input {
+        display: block;
+        width: 100%;
+        height: 56px;
+        box-sizing: border-box;
+        border: 1px solid var(--rose-light);
+        border-radius: 18px;
+        background: var(--cream);
+        padding: 0 22px;
+        font-size: 17px;
+        outline: none;
+        margin: 0;
+    }
+
+.card-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 26px;
+}
+
+.btn-new-address {
+    border: 1px solid var(--rose-light);
+    background: white;
+    color: #222;
+    border-radius: 22px;
+    padding: 9px 20px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* ENTREGA */
+.delivery-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+}
+
+.delivery-option {
+    border: 1px solid var(--rose-light);
+    background: white;
+    border-radius: 20px;
+    padding: 26px;
+    cursor: pointer;
+    text-align: center;
+}
+
+    .delivery-option.selected {
+        border: 2px solid var(--rose-soft);
+        background: #fff8fb;
+    }
+
+    .delivery-option i {
+        color: var(--rose-soft);
+        font-size: 36px;
+        margin-bottom: 10px;
+        display: block;
+    }
+
+    .delivery-option strong {
+        display: block;
+        font-size: 18px;
+    }
+
+    .delivery-option span {
+        color: var(--gray-soft);
+        font-size: 15px;
+    }
+
+/* DIRECCIÓN */
+.address-option {
+    border: 1px solid var(--rose-light);
+    border-radius: 20px;
+    padding: 20px;
+    margin-bottom: 16px;
+    cursor: pointer;
+    background: white;
+}
+
+    .address-option.selected {
+        border: 2px solid var(--rose-soft);
+        background: #fff8fb;
+    }
+
+    .address-option h3 {
+        font-size: 18px;
+        font-weight: 700;
+        margin-bottom: 12px;
+    }
+
+    .address-option p {
+        font-size: 15px;
+        line-height: 1.45;
+        color: #555;
+        margin: 0;
+    }
+
+.default-badge {
+    color: var(--rose-soft);
+    font-size: 13px;
+    font-weight: 700;
+    margin-left: 6px;
+}
+
+/* CUPÓN */
+.coupon-row {
+    display: flex;
+    gap: 12px;
+}
+
+    .coupon-row input {
+        flex: 1;
+        height: 56px;
+        border: 1px solid var(--rose-light);
+        border-radius: 18px;
+        background: var(--cream);
+        padding: 0 22px;
+        font-size: 17px;
+        outline: none;
+    }
+
+.coupon-button {
+    width: 145px;
+    border: none;
+    border-radius: 18px;
+    background: var(--rose-soft);
+    color: white;
+    font-size: 17px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+    .coupon-button:disabled {
+        background: #f7cbd8;
+        cursor: not-allowed;
+        opacity: 0.75;
+    }
+
+.coupon-discount {
+    color: #009b35;
+    margin: 14px 0 10px;
+}
+
+.coupon-success {
+    border: 1px solid #b7efc5;
+    background: #f0fff4;
+    color: #009b35;
+    border-radius: 16px;
+    padding: 16px 20px;
+}
+
+.coupon-error {
+    color: #ff3b30;
+    font-size: 14px;
+    margin-top: 12px;
+}
+
+/* COMPROBANTE */
+.voucher-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    margin-bottom: 22px;
+}
+
+.voucher-option {
+    border: 1px solid var(--rose-light);
+    border-radius: 20px;
+    background: white;
+    padding: 22px;
+    cursor: pointer;
+    text-align: center;
+}
+
+    .voucher-option.selected {
+        border: 2px solid var(--rose-soft);
+        background: #fff8fb;
+    }
+
+    .voucher-option i {
+        color: var(--rose-soft);
+        font-size: 28px;
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .voucher-option strong {
+        display: block;
+        font-size: 18px;
+    }
+
+    .voucher-option span {
+        color: var(--gray-soft);
+        font-size: 14px;
+    }
+
+/* MÉTODO DE PAGO */
+.payment-options {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.payment-option-btn {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+    border: 1px solid var(--rose-light);
+    border-radius: 18px;
+    padding: 18px 22px;
+    background: white;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: left;
+    color: #222;
+    transition: border-color 0.15s, background 0.15s;
+}
+
+    .payment-option-btn.selected {
+        border: 2px solid var(--rose-soft);
+        background: #fff8fb;
+    }
+
+    .payment-option-btn i {
+        color: var(--rose-soft);
+        font-size: 20px;
+    }
+
+.payment-radio {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 2px solid #ccc;
+    display: inline-block;
+    flex-shrink: 0;
+    position: relative;
+    transition: border-color 0.15s;
+}
+
+    .payment-radio.active {
+        border-color: var(--rose-soft);
+        background: white;
+    }
+
+        .payment-radio.active::after {
+            content: '';
+            position: absolute;
+            inset: 3px;
+            border-radius: 50%;
+            background: var(--rose-soft);
+        }
+
+.payment-extra {
+    margin-top: 16px;
+    border: 1px solid var(--rose-light);
+    border-radius: 18px;
+    padding: 22px;
+    background: #F5F0ED;
+}
+
+.payment-provider {
+    color: #222;
+    font-weight: 700;
+    font-size: 17px;
+    margin: 0 0 18px 0;
+}
+
+.payment-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+.payment-note {
+    color: var(--gray-soft);
+    font-size: 14px;
+    margin: 8px 0 0;
+}
+
+.qr-box {
+    display: flex;
+    justify-content: center;
+    margin: 14px 0;
+}
+
+    .qr-box img {
+        width: 180px;
+        height: 180px;
+        object-fit: contain;
+    }
+
+/* ERRORES GENERALES */
+.checkout-error {
+    color: #ff3b30;
+    font-size: 14px;
+    margin-top: 12px;
+}
+
+.voucher-error {
+    color: #ff3b30;
+    font-size: 14px;
+    margin-top: 10px;
+}
+
+/* RESUMEN */
+.checkout-summary {
+    position: sticky;
+    top: 24px;
+    background: white;
+    border: 1px solid var(--rose-light);
+    border-radius: 26px;
+    padding: 30px;
+    height: fit-content;
+}
+
+    .checkout-summary h2 {
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 28px;
+    }
+
+.summary-product,
+.summary-row,
+.summary-total {
+    display: flex;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 16px;
+}
+
+    .summary-product span,
+    .summary-row span {
+        color: var(--gray-soft);
+        font-size: 16px;
+    }
+
+    .summary-product strong,
+    .summary-row strong {
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+.discount span,
+.discount strong {
+    color: #009b35;
+}
+
+.checkout-summary hr {
+    border: none;
+    border-top: 1px solid #e8c6d0;
+    margin: 18px 0;
+}
+
+.summary-total span {
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.summary-total strong {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--rose-soft);
+}
+
+.confirm-button {
+    width: 100%;
+    height: 56px;
+    border: none;
+    border-radius: 999px;
+    background: var(--rose-soft);
+    color: white;
+    font-size: 18px;
+    font-weight: 700;
+    margin-top: 22px;
+    cursor: pointer;
+}
+
+    .confirm-button:disabled {
+        background: #f7cbd8;
+        cursor: not-allowed;
+    }
+
+/* MODAL DIRECCIÓN */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, .45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+}
+
+.address-modal {
+    width: 100%;
+    max-width: 620px;
+    background: white;
+    border-radius: 24px;
+    padding: 34px 38px;
+}
+
+    .address-modal h2 {
+        font-size: 26px;
+        margin-bottom: 26px;
+    }
+
+.modal-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+}
+
+.address-modal .form-group {
+    margin-bottom: 18px;
+}
+
+.address-modal label {
+    display: block;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.address-modal input,
+.address-modal select {
+    width: 100%;
+    height: 52px;
+    border: 1px solid var(--rose-light);
+    border-radius: 16px;
+    background: var(--cream);
+    padding: 0 18px;
+    font-size: 15px;
+    outline: none;
+    box-sizing: border-box;
+}
+
+    .address-modal input:disabled {
+        color: #555;
+        background: #f7f7f7;
+    }
+
+.address-error {
+    color: red;
+    font-size: 14px;
+    margin-bottom: 14px;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 14px;
+    margin-top: 22px;
+}
+
+.btn-cancel,
+.btn-save {
+    height: 52px;
+    border-radius: 18px;
+    padding: 0 32px;
+    font-weight: 700;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.btn-cancel {
+    border: 1px solid var(--rose-light);
+    background: white;
+}
+
+.btn-save {
+    border: none;
+    background: var(--rose-soft);
+    color: white;
+}
+
+.validating-modal {
+    background: white;
+    padding: 35px;
+    border-radius: 22px;
+    width: 360px;
+    text-align: center;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+}
+
+    .validating-modal h2 {
+        margin-top: 15px;
+        color: #e8607a;
+    }
+
+    .validating-modal p {
+        color: #666;
+        margin-top: 10px;
+    }
+
+.coupon-button.coupon-remove {
+    background-color: transparent;
+    color: var(--color-danger, #dc3545); 
+    border: 1px solid currentColor;
+}
+
+    .coupon-button.coupon-remove:hover {
+        background-color: rgba(220, 53, 69, 0.08);
+    }

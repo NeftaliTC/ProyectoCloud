@@ -1,0 +1,421 @@
+@page "/admin/pedidos"
+@attribute [Authorize(Roles = "ADMINISTRADOR,TRABAJADOR")]
+@rendermode InteractiveServer
+
+@using static BlazorAppKillaBeauty.Services.PedidoService;
+
+@inject PedidoService PedidoService
+
+<PageTitle>Pedidos Admin - Killa Beauty</PageTitle>
+
+<main class="admin-page">
+    <AdminNavbar />
+
+    <section class="admin-content admin-orders-content">
+
+        <div class="admin-breadcrumb">
+            <span>Inicio</span>
+            <i class="bi bi-chevron-right"></i>
+            <span>Pedidos</span>
+        </div>
+
+        <header class="admin-header admin-orders-header">
+            <div>
+                <h1>Pedidos</h1>
+                <p>Consulta y filtra las compras registradas en la tienda.</p>
+            </div>
+        </header>
+
+        <section class="admin-orders-filters">
+            <div class="admin-orders-search">
+                <i class="bi bi-search"></i>
+                <input type="text"
+                       placeholder="Buscar por pedido, cliente o correo"
+                       @bind="busqueda"
+                       @bind:event="oninput" />
+            </div>
+
+            <div class="admin-orders-filter-row">
+                <div class="admin-date-group">
+                    <span>Fecha inicial</span>
+                    <div class="admin-date-picker">
+                        <input type="date"
+                               class="form-control"
+                               max="@FechaInicioMaxima"
+                               @bind="fechaInicio" />
+                    </div>
+                </div>
+
+                <div class="admin-date-group">
+                    <span>Fecha final</span>
+                    <div class="admin-date-picker">
+                        <input type="date"
+                               class="form-control"
+                               min="@FechaFinMinima"
+                               @bind="fechaFin" />
+                    </div>
+                </div>
+
+                <div class="admin-status-filter">
+                    <span>Estado de envio</span>
+                    <select @bind="estadoSeleccionado">
+                        <option value="Cualquier estado">Cualquier estado</option>
+                        <option value="Pendiente">Pendiente</option>
+                        <option value="Pagado">Pagado</option>
+                        <option value="En preparacion">En preparaci&oacute;n</option>
+                        <option value="Enviado">Enviado</option>
+                        <option value="Entregado">Entregado</option>
+                        <option value="Cancelado">Cancelado</option>
+                    </select>
+                </div>
+
+                <button type="button"
+                        class="admin-clear-filters"
+                        @onclick="LimpiarFiltros">
+                    <i class="bi bi-x-circle"></i>
+                    Limpiar filtros
+                </button>
+            </div>
+        </section>
+
+        <section class="admin-table-card admin-orders-table-card">
+            @if (cargandoPedidos)
+            {
+                <div class="admin-empty-orders">
+                    <i class="bi bi-arrow-repeat"></i>
+                    <span>Cargando pedidos...</span>
+                </div>
+            }
+            else if (!string.IsNullOrWhiteSpace(mensajeError))
+            {
+                <div class="admin-empty-orders">
+                    <i class="bi bi-exclamation-circle"></i>
+                    <span>@mensajeError</span>
+                </div>
+            }
+            else
+            {
+                <PaginatedTable TItem="PedidoAdminDto"
+                                Page="paginaPedidos"
+                                OnChanged="OnPageChanged"
+                                ColSpan="7"
+                                InitialPageSize="5"
+                                PageSizeOptions="opcionesPaginaPedidos"
+                                ContainerClass="table-responsive"
+                                TableClass="admin-table admin-orders-table"
+                                HeaderClass=""
+                                EmptyMessage="No se encontraron pedidos con esos filtros.">
+                    <TableHeader>
+                        <tr>
+                            <th>Pedido</th>
+                            <th>Cliente</th>
+                            <th>Correo</th>
+                            <th>Fecha</th>
+                            <th>Total</th>
+                            <th>Estado de envio</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </TableHeader>
+                    <RowTemplate Context="pedido">
+                        <tr>
+                            <td>@pedido.Codigo</td>
+                            <td>@pedido.Cliente</td>
+                            <td>@pedido.Correo</td>
+                            <td>@pedido.FechaPedido.ToString("dd/MM/yyyy")</td>
+                            <td>S/ @pedido.Total.ToString("F2")</td>
+                            <td>
+                                <span class="admin-status @pedido.ClaseEstado">
+                                    @MostrarEstado(pedido)
+                                </span>
+                            </td>
+                            <td>
+                                <div class="admin-order-actions">
+                                    <a href="/admin/pedidos/detalle/@pedido.Id"
+                                       class="admin-detail-button">
+                                        <i class="bi bi-eye"></i>
+                                        Ver
+                                    </a>
+
+                                    <button type="button"
+                                            class="admin-cancel-order-button"
+                                            @onclick="() => AbrirModalCancelacion(pedido)">
+                                        <i class="bi bi-x-circle"></i>
+                                        Cancelar
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </RowTemplate>
+                </PaginatedTable>
+            }
+        </section>
+
+    </section>
+</main>
+
+@if (mostrarModalCancelacion && pedidoCancelacion is not null)
+{
+    <div class="admin-order-warning-overlay" @onclick="CerrarModalCancelacion">
+        <section class="admin-order-warning-card" @onclick:stopPropagation="true">
+            <div class="admin-order-warning-icon">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+            </div>
+
+            @if (modoCancelacion == ModoCancelacion.Bloqueado)
+            {
+                <h2>No se puede cancelar el pedido</h2>
+                <p>
+                    El pedido <strong>@pedidoCancelacion.Codigo</strong> no se puede cancelar porque ya esta
+                    <strong>@MostrarEstado(pedidoCancelacion).ToLowerInvariant()</strong>.
+                    @if (RequiereReembolso(pedidoCancelacion))
+                    {
+                        <span>Ademas, hara falta gestionar el refund o reembolso del pago.</span>
+                    }
+                </p>
+
+                <div class="admin-order-warning-actions single">
+                    <button type="button" class="admin-order-warning-confirm" @onclick="CerrarModalCancelacion">
+                        Entendido
+                    </button>
+                </div>
+            }
+            else if (modoCancelacion == ModoCancelacion.YaCancelado)
+            {
+                <h2>Pedido ya cancelado</h2>
+                <p>
+                    El pedido <strong>@pedidoCancelacion.Codigo</strong> ya se encuentra marcado como cancelado.
+                </p>
+
+                <div class="admin-order-warning-actions single">
+                    <button type="button" class="admin-order-warning-confirm" @onclick="CerrarModalCancelacion">
+                        Entendido
+                    </button>
+                </div>
+            }
+            else
+            {
+                <h2>&iquest;Cancelar pedido?</h2>
+                <p>
+                    El pedido <strong>@pedidoCancelacion.Codigo</strong> cambiara su estado a
+                    <strong>Cancelado</strong>. &iquest;Deseas continuar?
+                    @if (RequiereReembolso(pedidoCancelacion))
+                    {
+                        <span>Este pedido ya fue pagado, por lo que hara falta gestionar el refund o reembolso.</span>
+                    }
+                </p>
+
+                <div class="admin-order-warning-actions">
+                    <button type="button" class="admin-order-warning-cancel" @onclick="CerrarModalCancelacion">
+                        No
+                    </button>
+                    <button type="button" class="admin-order-warning-confirm" @onclick="ConfirmarCancelacionPedido">
+                        Si
+                    </button>
+                </div>
+            }
+        </section>
+    </div>
+}
+
+@code {
+    private string _busqueda = "";
+    private string busqueda
+    {
+        get => _busqueda;
+        set { _busqueda = value; ResetearPaginacion(); }
+    }
+
+    private string _estadoSeleccionado = "Cualquier estado";
+    private string estadoSeleccionado
+    {
+        get => _estadoSeleccionado;
+        set { _estadoSeleccionado = value; ResetearPaginacion(); }
+    }
+
+    private DateTime? _fechaInicio;
+    private DateTime? fechaInicio
+    {
+        get => _fechaInicio;
+        set { _fechaInicio = value; ResetearPaginacion(); }
+    }
+
+    private DateTime? _fechaFin;
+    private DateTime? fechaFin
+    {
+        get => _fechaFin;
+        set { _fechaFin = value; ResetearPaginacion(); }
+    }
+
+    private PedidoAdminDto? pedidoCancelacion;
+    private ModoCancelacion modoCancelacion = ModoCancelacion.Confirmar;
+    private bool mostrarModalCancelacion = false;
+    private bool cargandoPedidos = true;
+    private string? mensajeError;
+
+    private readonly int[] opcionesPaginaPedidos = new[] { 5, 10, 25, 50, 100 };
+    private PageQuery queryActual = new(1, 5);
+    private TablePage<PedidoAdminDto> paginaPedidos = new();
+
+    private string? FechaInicioMaxima => fechaFin?.ToString("yyyy-MM-dd");
+    private string? FechaFinMinima => fechaInicio?.ToString("yyyy-MM-dd");
+
+    private List<PedidoAdminDto> pedidos = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarPedidos();
+    }
+
+    private async Task CargarPedidos()
+    {
+        cargandoPedidos = true;
+        mensajeError = null;
+
+        try
+        {
+            pedidos = await PedidoService.ObtenerTodosAsync();
+            ActualizarPaginaPedidos();
+        }
+        catch (Exception ex)
+        {
+            mensajeError = $"No se pudieron cargar los pedidos. {ex.Message}";
+            ActualizarPaginaPedidos();
+        }
+        finally
+        {
+            cargandoPedidos = false;
+        }
+    }
+
+    private List<PedidoAdminDto> PedidosFiltrados =>
+        pedidos
+            .Where(CoincideBusqueda)
+            .Where(CoincideEstado)
+            .Where(CoincideFechaInicio)
+            .Where(CoincideFechaFin)
+            .OrderByDescending(p => p.FechaPedido)
+            .ToList();
+
+    private bool CoincideBusqueda(PedidoAdminDto pedido)
+    {
+        if (string.IsNullOrWhiteSpace(busqueda))
+        {
+            return true;
+        }
+
+        return pedido.Codigo.Contains(busqueda, StringComparison.OrdinalIgnoreCase) ||
+               pedido.Id.ToString().Contains(busqueda, StringComparison.OrdinalIgnoreCase) ||
+               pedido.Cliente.Contains(busqueda, StringComparison.OrdinalIgnoreCase) ||
+               pedido.Correo.Contains(busqueda, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private bool CoincideEstado(PedidoAdminDto pedido)
+    {
+        return estadoSeleccionado == "Cualquier estado" ||
+               pedido.EstadoTexto == estadoSeleccionado;
+    }
+
+    private bool CoincideFechaInicio(PedidoAdminDto pedido)
+    {
+        return fechaInicio is null || pedido.FechaPedido.Date >= fechaInicio.Value.Date;
+    }
+
+    private bool CoincideFechaFin(PedidoAdminDto pedido)
+    {
+        return fechaFin is null || pedido.FechaPedido.Date <= fechaFin.Value.Date;
+    }
+
+    private void LimpiarFiltros()
+    {
+        busqueda = "";
+        estadoSeleccionado = "Cualquier estado";
+        fechaInicio = null;
+        fechaFin = null;
+        ResetearPaginacion();
+    }
+
+    private void OnPageChanged(PageQuery query)
+    {
+        queryActual = query;
+        ActualizarPaginaPedidos();
+    }
+
+    private void ResetearPaginacion()
+    {
+        queryActual = new PageQuery(1, queryActual.PageSize);
+        ActualizarPaginaPedidos();
+    }
+
+    private void ActualizarPaginaPedidos()
+    {
+        var filtrados = PedidosFiltrados;
+        paginaPedidos = new TablePage<PedidoAdminDto>
+        {
+            Items = filtrados
+                .Skip((queryActual.Page - 1) * queryActual.PageSize)
+                .Take(queryActual.PageSize)
+                .ToList(),
+            TotalRecords = filtrados.Count
+        };
+    }
+
+    private void AbrirModalCancelacion(PedidoAdminDto pedido)
+    {
+        pedidoCancelacion = pedido;
+        modoCancelacion = pedido.Estado.ToUpperInvariant() switch
+        {
+            "ENVIADO" or "ENTREGADO" => ModoCancelacion.Bloqueado,
+            "CANCELADO" => ModoCancelacion.YaCancelado,
+            _ => ModoCancelacion.Confirmar
+        };
+        mostrarModalCancelacion = true;
+    }
+
+    private void CerrarModalCancelacion()
+    {
+        mostrarModalCancelacion = false;
+        pedidoCancelacion = null;
+    }
+
+    private async Task ConfirmarCancelacionPedido()
+    {
+        if (pedidoCancelacion is null)
+        {
+            return;
+        }
+
+        try
+        {
+            var actualizado = await PedidoService.CancelarAsync(pedidoCancelacion.Id);
+            var index = pedidos.FindIndex(p => p.Id == actualizado.Id);
+            if (index >= 0)
+            {
+                pedidos[index] = actualizado;
+            }
+            ActualizarPaginaPedidos();
+            CerrarModalCancelacion();
+        }
+        catch (Exception ex)
+        {
+            mensajeError = $"No se pudo cancelar el pedido. {ex.Message}";
+            CerrarModalCancelacion();
+        }
+    }
+
+    private static bool RequiereReembolso(PedidoAdminDto pedido)
+    {
+        return pedido.Estado.ToUpperInvariant() is "PAGADO" or "EN_PREPARACION" or "ENVIADO" or "ENTREGADO";
+    }
+
+    private static string MostrarEstado(PedidoAdminDto pedido)
+    {
+        return pedido.EstadoTexto == "En preparacion" ? "En preparaci\u00f3n" : pedido.EstadoTexto;
+    }
+
+    private enum ModoCancelacion
+    {
+        Confirmar,
+        Bloqueado,
+        YaCancelado
+    }
+}

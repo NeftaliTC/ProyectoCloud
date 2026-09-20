@@ -1,0 +1,179 @@
+﻿@page "/review/{OrderId}/{ProductName}"
+@attribute [Authorize(Roles = "CLIENTE,TRABAJADOR,ADMINISTRADOR")]
+@rendermode InteractiveServer
+@using BlazorAppKillaBeauty.Services
+@using BlazorAppKillaBeauty.ClienteREST.Models
+@using BlazorAppKillaBeauty.ClienteREST.ServicesAct
+@inject NavigationManager Navigation
+@inject PedidoService PedidoService
+@inject ProductoService ProductoService
+@inject CartService CartService
+@inject AuthService AuthService
+
+<Navbar CantidadCarrito="@CartService.CantidadTotal"
+        TodosLosProductos="@(new List<Producto>())" />
+
+<div class="killa-review-container">
+    <div class="review-wrapper">
+        <button type="button" class="btn-killa-back" @onclick="VolverAlPedido">
+            <i class="bi bi-arrow-left"></i> Volver al pedido
+        </button>
+
+        <h1 class="main-title">Escribe una reseña</h1>
+        <p class="subtitle">Comparte tu experiencia con otros compradores</p>
+
+        <div class="review-card-body">
+            @if (producto != null)
+            {
+                <div class="product-preview-box">
+                    @if (producto.Imagenes != null && producto.Imagenes.Any())
+                    {
+                        <img src="@producto.Imagenes.FirstOrDefault()"
+                             alt="@producto.NombreProducto"
+                             class="product-thumbnail" />
+                    }
+                    else
+                    {
+                        <div class="product-thumbnail-placeholder">
+                            <i class="bi bi-image"></i>
+                        </div>
+                    }
+                    <div class="product-details">
+                        <span class="product-brand">@producto.Marca</span>
+                        <h3 class="product-name">@producto.NombreProducto</h3>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <label class="form-label">Calificación</label>
+                    <div class="killa-stars">
+                        @for (int i = 1; i <= 5; i++)
+                        {
+                            int rating = i;
+                            <i class="bi @(currentRating >= i ? "bi-star-fill" : "bi-star")"
+                               @onclick="() => currentRating = rating" style="cursor:pointer;"></i>
+                        }
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <label class="form-label">Título de tu reseña</label>
+                    <input @bind="titulo" class="killa-input" placeholder="Resumen breve de tu experiencia" />
+                </div>
+
+                <div class="form-section">
+                    <label class="form-label">Tu opinión</label>
+                    <textarea @bind="comentario" class="killa-textarea" placeholder="Cuéntanos qué te pareció el producto..."></textarea>
+                </div>
+
+                @if (showError)
+                {
+                    <div class="killa-error-message">
+                        <i class="bi bi-exclamation-triangle"></i> Debe completar todos los campos.
+                    </div>
+                }
+
+                <div class="killa-actions-row">
+                    <button type="button" class="btn-killa-cancel" @onclick="VolverAlPedido">Cancelar</button>
+                    <button type="button" class="btn-killa-submit" @onclick="EnviarReseña">Enviar reseña</button>
+                </div>
+            }
+            else
+            {
+                <div class="killa-loading">Cargando información del producto...</div>
+            }
+        </div>
+    </div>
+</div>
+
+@if (showSuccessModal)
+{
+    <div class="killa-modal-overlay">
+        <div class="killa-modal-card">
+            <div class="modal-icon-container">
+                <div class="success-checkmark">
+                    <i class="bi bi-check-lg"></i>
+                </div>
+            </div>
+            <h2>Tu reseña se ha enviado correctamente</h2>
+            <p>¡Gracias por compartir tu experiencia!</p>
+            
+            <button class="btn-killa-modal-close" @onclick="CerrarModal">
+                Cerrar
+            </button>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public string? OrderId { get; set; }
+    [Parameter] public string? ProductName { get; set; }
+    
+    private PedidoService.DetallePedidoAdminDto? producto;
+    
+    private int currentRating = 0;
+    private string titulo = "";
+    private string comentario = "";
+    private bool showError = false;
+    private bool showSuccessModal = false;
+    private string errorMensaje = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (int.TryParse(OrderId, out int id))
+        {
+            var pedido = await PedidoService.ObtenerPorIdAsyncAdminDto(id);
+            if (pedido != null && pedido.Productos != null)
+            {
+                // Buscamos el producto
+                producto = pedido.Productos.FirstOrDefault(p => NormalizarTexto(p.NombreProducto) == ProductName);
+            }
+        }
+    }
+
+    private string NormalizarTexto(string texto) => texto.Trim().Replace(" ", "-").Replace("/", "-");
+
+    private async Task EnviarReseña()
+    {
+        if (currentRating == 0 || string.IsNullOrWhiteSpace(titulo) || string.IsNullOrWhiteSpace(comentario))
+        {
+            showError = true;
+            return;
+        }
+
+        var nuevaResena = new ResenaProducto
+        {
+            Calificacion = currentRating,
+            Titulo = titulo,
+            Comentario = comentario,
+            Cliente = new ClienteResenaDto
+            {
+                Id = AuthService.UsuarioId ?? 0
+            }
+        };
+
+        try
+        {
+            bool guardado = await ProductoService.RegistrarResenaAsync(producto!.ProductoId, nuevaResena);
+            
+            if (guardado)
+            {
+                showError = false;
+                showSuccessModal = true;
+            }
+            else
+            {
+                errorMensaje = "El servidor rechazó los datos.";
+                showError = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMensaje = "Error crítico: " + ex.Message;
+            showError = true;
+        }
+    }
+
+    private void VolverAlPedido() => Navigation.NavigateTo($"/orders/order-detail/{OrderId}");
+    private void CerrarModal() => VolverAlPedido();
+}

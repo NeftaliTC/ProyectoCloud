@@ -1,0 +1,149 @@
+﻿.search-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+    display: flex;
+    z-index: 1000;
+    overflow: hidden;
+    min-width: 500px;
+}
+
+.search-dropdown-col {
+    flex: 1;
+    padding: 8px 0;
+}
+
+.search-dropdown-meta {
+    width: 200px;
+    background: #f9f9f9;
+    padding: 12px;
+    border-left: 1px solid #eee;
+}
+
+.search-dropdown-grupo {
+    margin-bottom: 16px;
+}
+
+.search-dropdown-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #999;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 6px;
+}
+
+.search-sugerencia-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 8px 16px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+}
+
+    .search-sugerencia-item:hover {
+        background: #fdf0f3;
+    }
+
+.search-sugerencia-img {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 6px;
+    flex-shrink: 0;
+}
+
+.search-sugerencia-nombre {
+    font-size: 13px;
+    color: #222;
+    display: block;
+}
+
+.search-sugerencia-marca {
+    font-size: 11px;
+    color: #999;
+}
+
+.search-sugerencia-precio {
+    font-size: 13px;
+    font-weight: 600;
+    color: #e05a7a;
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+.search-meta-item {
+    display: block;
+    width: 100%;
+    padding: 6px 8px;
+    background: none;
+    border: none;
+    text-align: left;
+    font-size: 13px;
+    color: #555;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+    .search-meta-item:hover {
+        background: #eee;
+    }
+
+.search-meta-marca {
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.search-meta-marca-highlight {
+    background: #2d3e50;
+    color: white;
+}
+
+    .search-meta-marca-highlight:hover {
+        background: #1a2a3a;
+    }
+
+.search-clear {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #999;
+    font-size: 16px;
+}
+
+.search-no-results {
+    padding: 24px 16px;
+    text-align: center;
+    color: #999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+}
+
+    .search-no-results i {
+        font-size: 24px;
+        color: #ddd;
+    }
+
+    .search-no-results span {
+        font-size: 14px;
+        color: #555;
+    }
+
+    .search-no-results small {
+        font-size: 12px;
+    }

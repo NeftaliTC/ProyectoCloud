@@ -1,0 +1,575 @@
+﻿@page "/usuario-producto"
+@page "/usuario-producto/{Id:int}"
+@rendermode InteractiveServer
+
+@using BlazorAppKillaBeauty.Services
+@using BlazorAppKillaBeauty.ClienteREST.Models
+@using Microsoft.AspNetCore.Components
+@using BlazorAppKillaBeauty.ClienteREST.ServicesAct
+
+@inject ProductoService ProductoService
+@inject CartService CartService
+@inject NavigationManager Navigation
+@inject AuthService AuthService
+@inject EscalaPrecioService EscalaPrecioService
+
+<Navbar CantidadCarrito="@CartService.CantidadTotal"
+        TodosLosProductos="@(new List<Producto>())" />
+
+@if (cargandoProducto)
+{
+    <section class="usuario-producto-page">
+        <div class="producto-no-encontrado">
+            <h2>Cargando producto...</h2>
+        </div>
+    </section>
+}
+else if (!string.IsNullOrWhiteSpace(errorProducto))
+{
+    <section class="usuario-producto-page">
+        <div class="producto-no-encontrado">
+            <h2>No se pudo cargar el producto</h2>
+            <p>@errorProducto</p>
+            <button @onclick="@(() => Navigation.NavigateTo("/catalogo"))">
+                Volver al catálogo
+            </button>
+        </div>
+    </section>
+}
+else if (producto == null)
+{
+    <section class="usuario-producto-page">
+        <div class="producto-no-encontrado">
+            <h2>Producto no encontrado</h2>
+            <button @onclick="@(() => Navigation.NavigateTo("/catalogo"))">
+                Volver al catálogo
+            </button>
+        </div>
+    </section>
+}
+else
+{
+    <section class="usuario-producto-page">
+
+        <div class="producto-breadcrumb">
+            <NavLink href="/" class="producto-breadcrumb-link">Home</NavLink>
+            <span>&gt;</span>
+
+            <NavLink href="/catalogo" class="producto-breadcrumb-link">Catálogo</NavLink>
+            <span>&gt;</span>
+
+            <span>@producto.Categoria</span>
+            <span>&gt;</span>
+
+            <span>@producto.Subcategoria</span>
+            <span>&gt;</span>
+
+            <span class="producto-breadcrumb-current">@producto.Nombre</span>
+        </div>
+
+        <div class="producto-detalle-layout">
+
+            <aside class="producto-miniaturas">
+                @foreach (var imagen in ImagenesProducto)
+                {
+                    <button class="producto-miniatura @(imagenSeleccionada == imagen ? "activa" : "")"
+                            @onclick="@(() => CambiarImagen(imagen))">
+                        <img src="@imagen" alt="@producto.Nombre" />
+                    </button>
+                }
+
+                <button class="miniatura-flecha">
+                    <i class="bi bi-chevron-down"></i>
+                </button>
+            </aside>
+
+            <section class="producto-imagen-principal-card">
+                <button class="producto-flecha izquierda @(EstaEnPrimeraImagen ? "deshabilitada" : "")"
+                        disabled="@EstaEnPrimeraImagen"
+                        @onclick="ImagenAnterior">
+                    <i class="bi bi-chevron-left"></i>
+                </button>
+
+                <img src="@imagenSeleccionada" alt="@producto.Nombre" class="producto-imagen-principal" />
+
+                <button class="producto-flecha derecha @(EstaEnUltimaImagen ? "deshabilitada" : "")"
+                        disabled="@EstaEnUltimaImagen"
+                        @onclick="ImagenSiguiente">
+                    <i class="bi bi-chevron-right"></i>
+                </button>
+            </section>
+
+            <section class="producto-info-card">
+
+                <h1>@producto.Nombre</h1>
+
+                <p class="producto-descripcion-completo">
+                    @producto.Marca
+                </p>
+
+                <div class="producto-precio-linea">
+                    <span class="producto-precio-actual">
+                        S/ @PrecioTotal.ToString("0.00")
+                    </span>
+
+                    @if (TieneDescuento)
+                    {
+                        <span class="producto-precio-anterior">
+                            S/ @PrecioTotalSinDescuento.ToString("0.00")
+                        </span>
+
+                        <span class="producto-descuento">
+                            -@PorcentajeDescuento.ToString("0.0")%
+                        </span>
+                    }
+                </div>
+
+                <p class="producto-ayuda-precios">
+                    Variación de precios dependiendo de cantidad de compra
+                </p>
+
+                <div class="producto-escalas">
+                    @foreach (var escala in EscalasOrdenadas)
+                    {
+                        <button class="producto-escala @(EscalaActual?.Id == escala.Id ? "activa" : "")"
+                                @onclick="@(() => cantidad = escala.CantidadMinima)">
+                            <span>@TextoRangoEscala(escala)</span>
+                            <strong>S/ @escala.PrecioUnitario.ToString("0.00")</strong>
+                            <small>por unidad</small>
+                        </button>
+                    }
+                </div>
+
+                <div class="producto-compra-row">
+
+                    <div class="producto-cantidad">
+                        <button @onclick="DisminuirCantidad">
+                            <i class="bi bi-dash"></i>
+                        </button>
+
+                        <span>@cantidad</span>
+
+                        <button @onclick="AumentarCantidad">
+                            <i class="bi bi-plus"></i>
+                        </button>
+                    </div>
+
+                    <button class="producto-btn-carrito" @onclick="AgregarAlCarrito">
+                        AÑADIR AL CARRITO
+                    </button>
+
+                </div>
+
+                <div class="producto-meta">
+                    <p><strong>Categoría:</strong> @producto.Categoria</p>
+                    <p><strong>SubCategoría:</strong> @producto.Subcategoria</p>
+
+                </div>
+
+            </section>
+
+        </div>
+
+        <section class="producto-resenas-section">
+
+            <div class="producto-tabs">
+                <button class="tab-activa">
+                    Reseñas (@Resenas.Count)
+                </button>
+            </div>
+
+            @if (!TieneResenas)
+            {
+                <div class="producto-sin-resenas">
+                    <h3>Este producto todavía no tiene reseñas</h3>
+                    <p>Cuando los clientes compren y comenten, aparecerán aquí.</p>
+                </div>
+            }
+            else
+            {
+                <div class="producto-resumen-resenas">
+
+                    <div class="producto-promedio">
+                        <strong>@PromedioResenas.ToString("0.0")</strong>
+
+                        <div class="producto-estrellas">
+                            @for (int i = 1; i <= 5; i++)
+                            {
+                                <i class="bi @(i <= Math.Round(PromedioResenas) ? "bi-star-fill" : "bi-star")"></i>
+                            }
+                        </div>
+
+                        <p>@Resenas.Count reseñas verificadas</p>
+                    </div>
+
+                    <div class="producto-barras">
+                        @for (int estrella = 5; estrella >= 1; estrella--)
+                        {
+                            var cantidadEstrella = Resenas.Count(r => r.Calificacion == estrella);
+                            var porcentaje = Resenas.Count == 0 ? 0 : cantidadEstrella * 100 / Resenas.Count;
+
+                            <div class="barra-row">
+                                <span>@estrella ★</span>
+                                <div class="barra-fondo">
+                                    <div class="barra-relleno" style="width:@porcentaje%"></div>
+                                </div>
+                                <span>@cantidadEstrella</span>
+                            </div>
+                        }
+                    </div>
+
+                </div>
+
+                <div class="producto-filtros-resenas">
+                    <h3>Filtrar:</h3>
+
+                    <select @bind="filtroCalificacion">
+                        <option value="0">Todas las calificaciones</option>
+                        <option value="5">5 estrellas</option>
+                        <option value="4">4 estrellas</option>
+                        <option value="3">3 estrellas</option>
+                        <option value="2">2 estrellas</option>
+                        <option value="1">1 estrella</option>
+                    </select>
+
+                    <select @bind="ordenResena">
+                        <option value="recientes">Más recientes primero</option>
+                        <option value="antiguas">Más antiguas primero</option>
+                    </select>
+                </div>
+
+                <div class="producto-lista-resenas">
+                    @foreach (var resena in ResenasFiltradas)
+                    {
+                        <article class="producto-resena-card">
+                            <div class="resena-avatar">@resena.Iniciales</div>
+
+                            <div class="resena-contenido">
+                                <div class="resena-header">
+                                    <div>
+                                        <span class="resena-nombre">@resena.Cliente</span>
+                                        <p class="resena-fecha">@resena.Fecha</p>
+                                    </div>
+                                    <div class="resena-estrellas">
+                                        @for (int i = 1; i <= 5; i++)
+                                        {
+                                            <i class="bi @(i <= resena.Calificacion ? "bi-star-fill" : "bi-star")"></i>
+                                        }
+                                    </div>
+                                </div>
+
+                                <h5 class="resena-titulo">@resena.Titulo</h5>
+                                <p class="resena-comentario">@resena.Comentario</p>
+                            </div>
+                        </article>
+                    }
+                </div>
+            }
+
+        </section>
+
+    </section>
+}
+
+@code {
+    [Parameter]
+    public int? Id { get; set; }
+
+    private Producto? producto;
+    private ProductoApi? productoApi;
+    private string imagenSeleccionada = "";
+    private int cantidad = 1;
+    private bool cargandoProducto = true;
+    private string? errorProducto;
+    private List<EscalaPrecio> escalasPrecio = new();
+    private List<ResenaVista> resenas = new();
+
+    private int filtroCalificacion = 0;
+    private string ordenResena = "recientes";
+
+    private string ObtenerIniciales(string nombre)
+    {
+        if (string.IsNullOrWhiteSpace(nombre)) return "??";
+        
+        var partes = nombre.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        
+        if (partes.Length >= 2)
+            return (partes[0][0].ToString() + partes[1][0].ToString()).ToUpper();
+            
+        return partes[0].Substring(0, Math.Min(2, partes[0].Length)).ToUpper();
+    }
+
+    private string TryParseFecha(string? fechaStr)
+    {
+        if (string.IsNullOrWhiteSpace(fechaStr)) return "Fecha no disponible";
+
+        // Limpia el sufijo [UTC] que manda Back
+        var limpia = fechaStr.Replace("[UTC]", "").Trim();
+
+        if (DateTime.TryParse(limpia,
+                System.Globalization.CultureInfo.InvariantCulture,
+                System.Globalization.DateTimeStyles.RoundtripKind,
+                out DateTime dt))
+        {
+            return dt.ToString("d 'de' MMMM 'del' yyyy",
+                new System.Globalization.CultureInfo("es-ES"));
+        }
+
+        return "Fecha no disponible";
+    }
+
+    private DateTime ParseFechaDateTime(string? fechaStr)
+    {
+        if (string.IsNullOrWhiteSpace(fechaStr)) return DateTime.MinValue;
+        var limpia = fechaStr.Replace("[UTC]", "").Trim();
+        return DateTime.TryParse(limpia,
+            System.Globalization.CultureInfo.InvariantCulture,
+            System.Globalization.DateTimeStyles.RoundtripKind,
+            out DateTime dt) ? dt : DateTime.MinValue;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var productos = await ProductoService.ObtenerCatalogoAsync();
+            producto = Id.HasValue
+                ? productos.FirstOrDefault(p => p.Id == Id.Value)
+                : productos.FirstOrDefault();
+
+            if (producto == null)
+            {
+                return;
+            }
+
+            productoApi = await ProductoService.ObtenerPorIdAsync(producto.Id);
+            escalasPrecio = await EscalaPrecioService.ListarPorProductoAsync(producto.Id);
+            resenas = (await ProductoService.ObtenerResenasAsync(producto.Id))
+                .Select((r, index) => new ResenaVista
+                {
+                    Cliente = (r.Cliente != null && !string.IsNullOrWhiteSpace(r.Cliente.Nombre))
+                              ? $"{r.Cliente.Nombre} {r.Cliente.ApellidoPaterno}"
+                              : $"Usuario {r.IdUsuario}",
+                    Iniciales = (r.Cliente != null && !string.IsNullOrWhiteSpace(r.Cliente.Nombre))
+                                ? ObtenerIniciales($"{r.Cliente.Nombre} {r.Cliente.ApellidoPaterno}")
+                                : "U" + r.IdUsuario,
+                    Calificacion = r.Calificacion,
+                    Fecha = TryParseFecha(r.FechaPublicacion),
+                    FechaDateTime = ParseFechaDateTime(r.FechaPublicacion),
+                    Titulo = string.IsNullOrWhiteSpace(r.Titulo) ? "Reseña del producto" : r.Titulo,
+                    Comentario = r.Comentario
+                })
+                .ToList();
+
+            imagenSeleccionada = ImagenesProducto.FirstOrDefault() ?? producto.ImagenPrincipal;
+        }
+        catch (Exception ex)
+        {
+            errorProducto = ex.Message;
+        }
+        finally
+        {
+            cargandoProducto = false;
+        }
+    }
+
+    private List<string> ImagenesProducto
+    {
+        get
+        {
+            if (productoApi?.Imagenes != null && productoApi.Imagenes.Any())
+            {
+                return productoApi.Imagenes
+                    .Where(i => !string.IsNullOrWhiteSpace(i.Url))
+                    .OrderBy(i => i.Orden)
+                    .Select(i => i.Url)
+                    .ToList();
+            }
+
+            if (producto != null && !string.IsNullOrWhiteSpace(producto.ImagenPrincipal))
+            {
+                return new List<string> { producto.ImagenPrincipal };
+            }
+
+            return new List<string> { "/Images/Logo.png" };
+        }
+    }
+
+    private List<EscalaPrecio> EscalasOrdenadas => escalasPrecio.OrderBy(e => e.CantidadMinima).ToList();
+
+    private EscalaPrecio? EscalaActual
+    {
+        get
+        {
+            return EscalasOrdenadas
+                .Where(e => cantidad >= e.CantidadMinima)
+                .OrderByDescending(e => e.CantidadMinima)
+                .FirstOrDefault();
+        }
+    }
+
+    private decimal PrecioUnitarioActual =>
+        EscalaActual?.PrecioUnitario ?? producto?.PrecioBase ?? 0;
+
+    private decimal PrecioBase =>
+        EscalasOrdenadas.FirstOrDefault()?.PrecioUnitario
+        ?? producto?.PrecioBase
+        ?? 0;
+
+    private decimal PrecioTotal => PrecioUnitarioActual * cantidad;
+
+    private decimal PrecioTotalSinDescuento => PrecioBase * cantidad;
+
+    private bool TieneDescuento => PrecioTotalSinDescuento > PrecioTotal;
+
+    private decimal PorcentajeDescuento =>
+        PrecioTotalSinDescuento == 0
+            ? 0
+            : ((PrecioTotalSinDescuento - PrecioTotal) / PrecioTotalSinDescuento) * 100;
+
+    private string TextoRangoEscala(EscalaPrecio escala)
+    {
+        var escalas = EscalasOrdenadas;
+        var index = escalas.IndexOf(escala);
+
+        if (index == escalas.Count - 1)
+        {
+            return $"{escala.CantidadMinima}+ Unidades";
+        }
+
+        var siguiente = escalas[index + 1];
+
+        return $"{escala.CantidadMinima} - {siguiente.CantidadMinima - 1} Unidades";
+    }
+
+    private bool TieneResenas => Resenas.Any();
+
+    private double PromedioResenas =>
+        TieneResenas
+            ? Resenas.Average(r => r.Calificacion)
+            : 0;
+
+    private List<ResenaVista> Resenas => resenas;
+
+    private IEnumerable<ResenaVista> ResenasFiltradas
+    {
+        get
+        {
+            var query = Resenas.AsEnumerable();
+
+            if (filtroCalificacion > 0)
+            {
+                query = query.Where(r => r.Calificacion == filtroCalificacion);
+            }
+
+            query = ordenResena == "antiguas"
+            ? query.OrderBy(r => r.FechaDateTime)
+            : query.OrderByDescending(r => r.FechaDateTime);
+
+            return query;
+        }
+    }
+
+    private void CambiarImagen(string imagen)
+    {
+        imagenSeleccionada = imagen;
+    }
+
+    private int IndiceImagenActual
+    {
+        get
+        {
+            var imagenes = ImagenesProducto;
+
+            if (!imagenes.Any())
+            {
+                return 0;
+            }
+
+            var index = imagenes.IndexOf(imagenSeleccionada);
+
+            return index < 0 ? 0 : index;
+        }
+    }
+
+    private bool EstaEnPrimeraImagen =>
+        IndiceImagenActual == 0;
+
+    private bool EstaEnUltimaImagen =>
+        ImagenesProducto.Any() &&
+        IndiceImagenActual == ImagenesProducto.Count - 1;
+
+    private void ImagenAnterior()
+    {
+        var imagenes = ImagenesProducto;
+
+        if (!imagenes.Any() || EstaEnPrimeraImagen)
+        {
+            return;
+        }
+
+        imagenSeleccionada = imagenes[IndiceImagenActual - 1];
+    }
+
+    private void ImagenSiguiente()
+    {
+        var imagenes = ImagenesProducto;
+
+        if (!imagenes.Any() || EstaEnUltimaImagen)
+        {
+            return;
+        }
+
+        imagenSeleccionada = imagenes[IndiceImagenActual + 1];
+    }
+
+    private void AumentarCantidad()
+    {
+        cantidad++;
+    }
+
+    private void DisminuirCantidad()
+    {
+        if (cantidad > 1)
+        {
+            cantidad--;
+        }
+    }
+
+    private async Task AgregarAlCarrito()
+    {
+        if (producto == null)
+            return;
+
+        if (!AuthService.UsuarioId.HasValue)
+        {
+            Navigation.NavigateTo("/login");
+            return;
+        }
+
+        await CartService.AgregarProductoAsync(
+            producto,
+            AuthService.UsuarioId.Value,
+            cantidad
+        );
+    }
+
+    private string ConvertirParaUrl(string texto)
+    {
+        return texto
+            .Trim()
+            .Replace(" ", "-")
+            .Replace("/", "-");
+    }
+
+    private class ResenaVista
+    {
+        public string Cliente { get; set; } = "";
+        public string Iniciales { get; set; } = "";
+        public int Calificacion { get; set; }
+        public string Fecha { get; set; } = "";
+        public DateTime FechaDateTime { get; set; }
+        public string Titulo { get; set; } = "";
+        public string Comentario { get; set; } = "";
+    }
+}

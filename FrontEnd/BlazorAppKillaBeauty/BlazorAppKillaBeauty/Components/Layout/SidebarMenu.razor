@@ -1,0 +1,31 @@
+﻿@rendermode InteractiveServer
+@inject AuthService AuthService
+@inject NavigationManager Navigation
+
+<div class="sidebar-menu-links">
+    <NavLink class="menu-link-item" href="account/profile" Match="NavLinkMatch.All">
+        <i class="bi bi-person-fill"></i> Mi perfil
+    </NavLink>
+    <NavLink class="menu-link-item" href="account/addresses">
+        <i class="bi bi-geo-alt"></i> Direcciones
+    </NavLink>
+    <NavLink class="menu-link-item" href="account/coupons">
+        <i class="bi bi-ticket-perforated"></i> Cupones
+    </NavLink>
+    <NavLink class="menu-link-item" href="account/change-password">
+        <i class="bi bi-lock"></i> Cambio de contraseña
+    </NavLink>
+    <hr class="sidebar-divider" />
+    
+    <button type="button" class="menu-link-item logout-btn" @onclick="CerrarSesion">
+        <i class="bi bi-box-arrow-left"></i> Cerrar Sesión
+    </button>
+</div>
+
+@code {
+    private void CerrarSesion()
+    {
+        AuthService.Logout();
+        Navigation.NavigateTo("/auth/logout", true);
+    }
+}

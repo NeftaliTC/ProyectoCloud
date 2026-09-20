@@ -1,0 +1,231 @@
+﻿@inject NavigationManager Navigation
+@inject ProductoService ProductoService
+@using BlazorAppKillaBeauty.ClienteREST.Models
+@using BlazorAppKillaBeauty.Services
+
+<div class="search-container" style="position:relative">
+
+    <i class="bi bi-search search-icon"></i>
+
+    <input type="text"
+           class="search-box"
+           placeholder="Buscar productos, marcas..."
+           @bind="textoBusqueda"
+           @bind:event="oninput"
+           @onkeydown="OnKeyDown"
+           @onfocus="MostrarDropdown"
+           @onblur="OcultarDropdown"
+           autocomplete="off" />
+
+    @if (!string.IsNullOrWhiteSpace(textoBusqueda))
+    {
+        <button class="search-clear" @onmousedown:preventDefault @onclick="LimpiarBusqueda">
+            <i class="bi bi-x"></i>
+        </button>
+    }
+
+    @if (mostrarDropdown && !string.IsNullOrWhiteSpace(textoBusqueda))
+    {
+        @if (Sugerencias.Any())
+        {
+            <div class="search-dropdown">
+
+                <div class="search-dropdown-col search-dropdown-productos">
+                    @foreach (var p in Sugerencias.Take(5))
+                    {
+                        <button class="search-sugerencia-item"
+                                @onmousedown:preventDefault
+                                @onclick="() => IrAProducto(p)">
+                            <img src="@p.ImagenPrincipal" alt="@p.Nombre" class="search-sugerencia-img" />
+                            <div>
+                                <span class="search-sugerencia-nombre">@ResaltarTexto(p.Nombre)</span>
+                                <span class="search-sugerencia-marca">@p.Marca</span>
+                            </div>
+                            <span class="search-sugerencia-precio">S/ @p.PrecioBase.ToString("0.00")</span>
+                        </button>
+                    }
+                </div>
+
+                @if (CategoriasSugeridas.Any() || MarcasSugeridas.Any())
+                {
+                    <div class="search-dropdown-meta">
+                        @if (CategoriasSugeridas.Any())
+                        {
+                            <div class="search-dropdown-grupo">
+                                <span class="search-dropdown-label">Categorías</span>
+                                @foreach (var cat in CategoriasSugeridas.Take(3))
+                                {
+                                    <button class="search-meta-item"
+                                            @onmousedown:preventDefault
+                                            @onclick="() => IrACategoria(cat)">
+                                        @cat
+                                    </button>
+                                }
+                            </div>
+                        }
+
+                        @if (MarcasSugeridas.Any())
+                        {
+                            <div class="search-dropdown-grupo">
+                                <span class="search-dropdown-label">Marcas</span>
+                                @foreach (var marca in MarcasSugeridas.Take(3))
+                                {
+                                    <button class="search-meta-item search-meta-marca @(marca == MarcasSugeridas.First() ? "search-meta-marca-highlight" : "")"
+                                            @onmousedown:preventDefault
+                                            @onclick="() => IrABusqueda(marca)">
+                                        @marca.ToUpper()
+                                    </button>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="search-dropdown">
+                <div class="search-no-results">
+                    <i class="bi bi-search"></i>
+                    <span>No encontramos "<strong>@textoBusqueda</strong>"</span>
+                    <small>Intenta con otras palabras</small>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+@code {
+    [Parameter] public List<Producto> TodosLosProductos { get; set; } = new();
+
+    private List<Producto> productosInternos = new();
+
+    private List<Producto> ProductosEfectivos =>
+        TodosLosProductos.Any() ? TodosLosProductos : productosInternos;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!ProductosEfectivos.Any() && !productosInternos.Any())
+        {
+            try { productosInternos = await ProductoService.ObtenerCatalogoAsync(); }
+            catch { }
+        }
+    }
+
+    private string textoBusqueda = "";
+    private bool mostrarDropdown = false;
+
+    private string TextoCombinado(Producto p) =>
+        $"{p.Nombre} {p.Marca} {p.Categoria} {p.Subcategoria}".ToLower();
+
+    private IEnumerable<Producto> Sugerencias =>
+        string.IsNullOrWhiteSpace(textoBusqueda)
+            ? Enumerable.Empty<Producto>()
+            : ProductosEfectivos.Where(p =>
+                textoBusqueda.Trim().ToLower().Split(' ',
+                    StringSplitOptions.RemoveEmptyEntries)
+                    .All(t => EsSimilar(TextoCombinado(p), t)));
+
+    private IEnumerable<string> CategoriasSugeridas =>
+        Sugerencias.Select(p => p.Categoria)
+                   .Where(c => !string.IsNullOrWhiteSpace(c))
+                   .Distinct(StringComparer.OrdinalIgnoreCase);
+
+    private IEnumerable<string> MarcasSugeridas =>
+        Sugerencias.Select(p => p.Marca)
+                   .Where(m => !string.IsNullOrWhiteSpace(m))
+                   .Distinct(StringComparer.OrdinalIgnoreCase);
+
+    private void OnKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter") Buscar();
+    }
+
+    private void Buscar()
+    {
+        if (!string.IsNullOrWhiteSpace(textoBusqueda))
+        {
+            mostrarDropdown = false;
+            Navigation.NavigateTo($"/catalogo?q={Uri.EscapeDataString(textoBusqueda.Trim())}");
+        }
+    }
+
+    private void IrAProducto(Producto p)
+    {
+        mostrarDropdown = false;
+        textoBusqueda = "";
+        Navigation.NavigateTo($"/usuario-producto/{p.Id}");
+    }
+
+    private void IrACategoria(string categoria)
+    {
+        mostrarDropdown = false;
+        textoBusqueda = "";
+        Navigation.NavigateTo($"/catalogo/{categoria.Replace(" ", "-")}");
+    }
+
+    private void IrABusqueda(string termino)
+    {
+        mostrarDropdown = false;
+        Navigation.NavigateTo($"/catalogo?q={Uri.EscapeDataString(termino)}");
+    }
+
+    private void LimpiarBusqueda()
+    {
+        textoBusqueda = "";
+        mostrarDropdown = false;
+    }
+
+    private void MostrarDropdown() => mostrarDropdown = true;
+    private void OcultarDropdown() => mostrarDropdown = false;
+
+    private MarkupString ResaltarTexto(string texto)
+    {
+        if (string.IsNullOrWhiteSpace(textoBusqueda)) return new MarkupString(texto);
+        var terminos = textoBusqueda.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        var resultado = texto;
+        foreach (var t in terminos)
+        {
+            resultado = System.Text.RegularExpressions.Regex.Replace(
+                resultado, t,
+                m => $"<strong>{m.Value}</strong>",
+                System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+        }
+        return new MarkupString(resultado);
+    }
+
+    private bool EsSimilar(string texto, string termino)
+    {
+        texto = texto.ToLower();
+        termino = termino.ToLower();
+
+        if (texto.Contains(termino)) return true;
+
+        int tolerancia = termino.Length <= 4 ? 1 : 2;
+
+        foreach (var palabra in texto.Split(' ', StringSplitOptions.RemoveEmptyEntries))
+        {
+            if (Levenshtein(palabra, termino) <= tolerancia) return true;
+        }
+        return false;
+    }
+
+    private int Levenshtein(string a, string b)
+    {
+        if (a.Length == 0) return b.Length;
+        if (b.Length == 0) return a.Length;
+
+        var d = new int[a.Length + 1, b.Length + 1];
+        for (int i = 0; i <= a.Length; i++) d[i, 0] = i;
+        for (int j = 0; j <= b.Length; j++) d[0, j] = j;
+
+        for (int i = 1; i <= a.Length; i++)
+            for (int j = 1; j <= b.Length; j++)
+                d[i, j] = Math.Min(Math.Min(
+                    d[i - 1, j] + 1,
+                    d[i, j - 1] + 1),
+                    d[i - 1, j - 1] + (a[i - 1] == b[j - 1] ? 0 : 1));
+
+        return d[a.Length, b.Length];
+    }
+}

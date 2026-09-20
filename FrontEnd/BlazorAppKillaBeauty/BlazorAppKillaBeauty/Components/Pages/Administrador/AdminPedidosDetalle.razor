@@ -1,0 +1,418 @@
+@page "/admin/pedidos/detalle/{Codigo}"
+@attribute [Authorize(Roles = "ADMINISTRADOR,TRABAJADOR")]
+@rendermode InteractiveServer
+@using static BlazorAppKillaBeauty.Services.PedidoService;
+@inject NavigationManager Navigation
+@inject PedidoService PedidoService
+
+<PageTitle>Detalle pedido - Killa Beauty</PageTitle>
+
+<main class="admin-page">
+    <AdminNavbar />
+
+    <section class="admin-content admin-order-detail-content">
+
+        <div class="admin-breadcrumb">
+            <span>Inicio</span>
+            <i class="bi bi-chevron-right"></i>
+            <span>Pedidos</span>
+            <i class="bi bi-chevron-right"></i>
+            <span>Detalles</span>
+        </div>
+
+        @if (cargando)
+        {
+            <header class="admin-order-detail-header">
+                <div>
+                    <h1>Detalle de pedido @Codigo</h1>
+                    <p>Cargando informaci&oacute;n del pedido...</p>
+                </div>
+            </header>
+        }
+        else if (pedido is null)
+        {
+            <header class="admin-order-detail-header">
+                <div>
+                    <h1>Detalle de pedido @Codigo</h1>
+                    <p>@(mensajeError ?? "No se encontro informacion para este pedido.")</p>
+                </div>
+
+                <button type="button" class="btn-detail-outline" @onclick="Volver">
+                    <i class="bi bi-arrow-left"></i>
+                    Volver
+                </button>
+            </header>
+        }
+        else
+        {
+            <header class="admin-order-detail-header">
+                <div>
+                    <h1>Detalle de pedido @pedido.Codigo</h1>
+                    <p>Realizado el @pedido.FechaPedido.ToString("dd/MM/yyyy")</p>
+                </div>
+
+                <button type="button" class="btn-detail-outline" @onclick="Volver">
+                    <i class="bi bi-arrow-left"></i>
+                    Volver
+                </button>
+            </header>
+
+            <section class="admin-order-tracking-card">
+                <div class="admin-order-tracking-top">
+                    <span class="admin-order-cancel-pill @(pedido.Cancelado ? "is-cancelled" : "is-active")">
+                        <i class="bi @(pedido.Cancelado ? "bi-x-circle-fill" : "bi-check-circle-fill")"></i>
+                        @(pedido.Cancelado ? "Pedido cancelado" : "Pedido no cancelado")
+                    </span>
+                    <span class="admin-order-current-status">@MostrarEstado(pedido.EstadoTexto)</span>
+                </div>
+
+                <div class="admin-order-progress" aria-label="Estado del pedido">
+                    @foreach (var estado in estadosProgreso)
+                    {
+                        <div class="admin-order-progress-step @GetProgressClass(estado)">
+                            <span class="progress-dot"></span>
+                            <span>@MostrarEstado(estado)</span>
+                        </div>
+                    }
+                </div>
+            </section>
+
+            <section class="admin-order-detail-grid">
+                <article class="admin-order-summary-card admin-order-panel">
+                    <div class="panel-heading">
+                        <i class="bi bi-bag-check"></i>
+                        <h2>Resumen de pedido</h2>
+                    </div>
+
+                    <div class="admin-order-products">
+                        @foreach (var item in pedido.Productos)
+                        {
+                            <div class="admin-order-product-row">
+                                @{
+                                    var urlImagen = item.Imagenes?.FirstOrDefault() ?? "/Images/Logo.png";
+                                }
+
+                                <img src="@urlImagen" alt="@item.NombreProducto" class="admin-product-thumbnail" />
+                                <div class="product-info">
+                                    <strong>@item.NombreProducto</strong>
+                                    <span>@(string.IsNullOrWhiteSpace(item.Marca) ? "Sin marca registrada" : item.Marca)</span>
+                                </div>
+                                <span>@item.Cantidad u.</span>
+                                <span>S/ @item.PrecioUnitario.ToString("F2")</span>
+                                <strong>S/ @item.Subtotal.ToString("F2")</strong>
+                            </div>
+                        }
+                    </div>
+
+                    <div class="admin-order-totals">
+                        <div>
+                            <span>Subtotal</span>
+                            <strong>S/ @pedido.Subtotal.ToString("F2")</strong>
+                        </div>
+                        <div>
+                            <span>IGV</span>
+                            <strong>S/ @pedido.Igv.ToString("F2")</strong>
+                        </div>
+                        <div class="discount-line">
+                            <span>Descuentos aplicados</span>
+                            <strong>@ResumenDescuento(pedido)</strong>
+                        </div>
+                        <div>
+                            <span>Costo de env&iacute;o</span>
+                            <strong>@MontoOPendiente(pedido.CostoEnvio, string.IsNullOrWhiteSpace(pedido.Direccion))</strong>
+                        </div>
+                        <div class="total-line">
+                            <span>Total final</span>
+                            <strong>S/ @pedido.Total.ToString("F2")</strong>
+                        </div>
+                    </div>
+                </article>
+
+                <aside class="admin-order-side-panels">
+                    <article class="admin-order-panel">
+                        <div class="panel-heading">
+                            <i class="bi bi-person"></i>
+                            <h2>Cliente</h2>
+                        </div>
+
+                        <div class="admin-order-info-list">
+                            <div><span>Nombre de usuario</span><strong>@Valor(pedido.Cliente)</strong></div>
+                            <div><span>Correo</span><strong>@Valor(pedido.Correo)</strong></div>
+                            <div><span>Contacto</span><strong>@Valor(pedido.Contacto)</strong></div>
+                        </div>
+                    </article>
+
+                    <article class="admin-order-panel">
+                        <div class="panel-heading">
+                            @if (string.IsNullOrWhiteSpace(pedido.Direccion))
+                            {
+                                <i class="bi bi-shop"></i>
+                                <h2>Direcci&oacute;n de recojo</h2>
+                            }
+                            else
+                            {
+                                <i class="bi bi-geo-alt"></i>
+                                <h2>Direcci&oacute;n de envio</h2>
+                            }
+                        </div>
+
+                        <div class="admin-order-info-list">
+                            @if (string.IsNullOrWhiteSpace(pedido.Direccion))
+                            {
+                                <div><span>Direcci&oacute;n</span><strong>Killa Beauty Store - Av. Javier Prado Este 4200</strong></div>
+                                <div><span>Referencia</span><strong>Frente al Centro Comercial La Rambla</strong></div>
+                                <div><span>Ubicacion</span><strong>San Borja, Lima, Lima</strong></div>
+                            }
+                            else
+                            {
+                                <div><span>Direcci&oacute;n</span><strong>@Valor(pedido.Direccion)</strong></div>
+                                <div><span>Referencia</span><strong>@Valor(pedido.Referencia)</strong></div>
+                                <div><span>Ubicaci&oacute;n</span><strong>@Valor(pedido.Ubicacion)</strong></div>
+                            }
+                        </div>
+                    </article>
+
+                    <article class="admin-order-panel">
+                        <div class="panel-heading">
+                            <i class="bi bi-credit-card"></i>
+                            <h2>M&eacute;todo de pago</h2>
+                        </div>
+
+                        <div class="admin-order-info-list">
+                            <div>
+                                <span>Estado pago</span>
+                                <strong>@(pedido.PagoAprobado ? "Aprobado" : "Rechazado o pendiente")</strong>
+                            </div>
+                            <div>
+                                <span>M&eacute;todo</span>
+                                <strong>
+                                    @{
+                                        var metodo = pedido.MetodoPago ?? "No registrado";
+                                        var textoAmigable = metodo switch
+                                        {
+                                            "TARJETA" => "Tarjeta de Crédito/Débito",
+                                            "YAPE" => "Yape / Plin",
+                                            "PLIN" => "Yape / Plin",
+                                            _ => metodo
+                                        };
+                                    }
+                                    @textoAmigable
+                                </strong>
+                            </div>
+                            <div><span>Comprobante</span><strong>@Valor(pedido.TipoComprobante)</strong></div>
+                            <div><span>Serie y n&uacute;mero</span><strong>@SerieComprobante(pedido)</strong></div>
+                            <div><span>Documento</span><strong>@Valor(pedido.DocumentoIdentidad)</strong></div>
+                            @if (!string.IsNullOrWhiteSpace(pedido.RazonSocial))
+                            {
+                                <div><span>Razon social</span><strong>@pedido.RazonSocial</strong></div>
+                            }
+                        </div>
+                    </article>
+
+                    <article class="admin-order-panel">
+                        <div class="panel-heading">
+                            <i class="bi bi-truck"></i>
+                            <h2>Despacho</h2>
+                        </div>
+
+                        <div class="admin-order-info-list">
+                            <div>
+                                <span>Courier</span>
+                                <strong>@Valor(pedido.Courier)</strong>
+                            </div>
+                            <div>
+                                <span>Numero de seguimiento</span>
+                                <strong>@Valor(pedido.NumeroSeguimiento)</strong>
+                            </div>
+                            <div>
+                                <span>Estado despacho</span>
+                                <select class="form-select" @bind="estadoEnvio">
+                                    <option value="PENDIENTE">Pendiente</option>
+                                    <option value="EN_CAMINO">En camino</option>
+                                    <option value="ENTREGADO">Entregado</option>
+                                </select>
+                            </div>
+                            <div>
+                                <span>Fecha entrega/envio</span>
+                                <input type="date" class="form-control" @bind="fechaEntrega" />
+                            </div>
+                            <div>
+                                <span>Descripcion</span>
+                                <input class="form-control" @bind="descripcionDespacho" />
+                            </div>
+                        </div>
+
+                        @if (!string.IsNullOrWhiteSpace(mensajeDespacho))
+                        {
+                            <p class="checkout-error" style="margin-top: 12px;">@mensajeDespacho</p>
+                        }
+
+                        <button type="button"
+                                class="admin-primary-action"
+                                style="width: 100%; margin-top: 14px;"
+                                disabled="@guardandoDespacho"
+                                @onclick="GuardarDespacho">
+                            @(guardandoDespacho ? "Guardando..." : "Actualizar despacho")
+                        </button>
+                    </article>
+                </aside>
+            </section>
+
+        }
+
+    </section>
+</main>
+
+@code {
+    [Parameter] public string Codigo { get; set; } = "";
+
+    private PedidoAdminDto? pedido;
+    private bool cargando = true;
+    private string? mensajeError;
+    private bool guardandoDespacho;
+    private string? mensajeDespacho;
+    private string estadoEnvio = "PENDIENTE";
+    private DateTime? fechaEntrega;
+    private string descripcionDespacho = "";
+    private readonly List<string> estadosProgreso = new() { "Pendiente", "Pagado", "En preparacion", "Enviado", "Entregado" };
+
+    protected override async Task OnParametersSetAsync()
+    {
+        cargando = true;
+        mensajeError = null;
+
+        try
+        {
+            var idTexto = Codigo
+                .Replace("PED-", "", StringComparison.OrdinalIgnoreCase)
+                .Replace("KIL-", "", StringComparison.OrdinalIgnoreCase);
+            if (!int.TryParse(idTexto, out var id))
+            {
+                mensajeError = "El codigo de pedido no es valido.";
+                return;
+            }
+
+            pedido = await PedidoService.ObtenerPorIdAsyncAdminDto(id);
+            CargarDatosDespacho();
+        }
+        catch (Exception ex)
+        {
+            mensajeError = $"No se pudo cargar el pedido. {ex.Message}";
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+
+    private void Volver() => Navigation.NavigateTo("/admin/pedidos");
+
+    private void CargarDatosDespacho()
+    {
+        if (pedido is null)
+        {
+            return;
+        }
+
+        estadoEnvio = string.IsNullOrWhiteSpace(pedido.EstadoEnvio) ? "PENDIENTE" : pedido.EstadoEnvio;
+        fechaEntrega = DateTime.TryParse(pedido.FechaEntrega, out var fecha)
+            ? fecha
+            : null;
+        descripcionDespacho = "";
+    }
+
+    private async Task GuardarDespacho()
+    {
+        if (pedido is null)
+        {
+            return;
+        }
+
+        mensajeDespacho = null;
+        guardandoDespacho = true;
+
+        try
+        {
+            pedido = await PedidoService.ActualizarDespachoAsync(pedido.Id, new PedidoDespachoDto
+            {
+                EstadoEnvio = estadoEnvio,
+                FechaEntrega = fechaEntrega?.ToString("yyyy-MM-dd") ?? "",
+                Descripcion = descripcionDespacho
+            });
+            CargarDatosDespacho();
+            mensajeDespacho = "Despacho actualizado correctamente.";
+        }
+        catch (Exception ex)
+        {
+            mensajeDespacho = $"No se pudo actualizar el despacho. {ex.Message}";
+        }
+        finally
+        {
+            guardandoDespacho = false;
+        }
+    }
+
+    private string GetProgressClass(string estado)
+    {
+        if (pedido is null || pedido.Cancelado)
+        {
+            return "disabled";
+        }
+
+        var estadosNormalizados = estadosProgreso.Select(NormalizarEstado).ToList();
+        var indiceActual = estadosNormalizados.IndexOf(NormalizarEstado(pedido.EstadoTexto));
+        var indicePaso = estadosNormalizados.IndexOf(NormalizarEstado(estado));
+
+        if (indiceActual == indicePaso)
+        {
+            return "active";
+        }
+
+        return indiceActual > indicePaso ? "completed" : "";
+    }
+
+    private static string NormalizarEstado(string estado)
+    {
+        return estado == "En preparacion" ? "En preparacion" : estado;
+    }
+
+    private static string MostrarEstado(string estado)
+    {
+        return estado == "En preparacion" ? "En preparaci\u00f3n" : estado;
+    }
+
+    private static string Valor(string? value)
+    {
+        return string.IsNullOrWhiteSpace(value) ? "No registrado" : value;
+    }
+
+    private static string MontoOPendiente(decimal monto, bool esRetiro)
+    {
+        if (esRetiro) return "Gratis";
+        return monto > 0 ? $"S/ {monto:F2}" : "Por determinar";
+    }
+
+    private static string ResumenDescuento(PedidoAdminDto pedido)
+    {
+        if (pedido.DescuentoCupon <= 0)
+        {
+            return pedido.CuponId.HasValue ? $"Cupon #{pedido.CuponId}" : "Sin cupon";
+        }
+
+        return pedido.CuponId.HasValue
+            ? $"S/ {pedido.DescuentoCupon:F2} (Cupon #{pedido.CuponId})"
+            : $"S/ {pedido.DescuentoCupon:F2}";
+    }
+
+    private static string SerieComprobante(PedidoAdminDto pedido)
+    {
+        if (string.IsNullOrWhiteSpace(pedido.SerieComprobante) &&
+            string.IsNullOrWhiteSpace(pedido.NumeroCorrelativo))
+        {
+            return "No registrado";
+        }
+
+        return string.Join("-", new[] { pedido.SerieComprobante, pedido.NumeroCorrelativo }
+            .Where(valor => !string.IsNullOrWhiteSpace(valor)));
+    }
+}

@@ -1,0 +1,97 @@
+﻿@page "/forgot-password"
+@rendermode InteractiveServer
+
+<PageTitle>Recuperar Contraseña - Killa Beauty</PageTitle>
+
+<section class="forgot-page">
+
+    <div class="forgot-card">
+
+        <div class="forgot-icon">
+            <img src="Images/RecuperarContra.png"
+                 alt="Recuperar contraseña" />
+        </div>
+
+        <h1>Recuperar Contraseña</h1>
+
+        <p class="forgot-subtitle">
+            Ingresa tu correo y te enviaremos un enlace para
+            <br />
+            restablecer tu contraseña
+        </p>
+
+        <div class="form-group">
+            <label>Correo electrónico</label>
+            <input type="email"
+                   placeholder="tu-correo@ejemplo.com"
+                   @bind="correo" />
+        </div>
+
+        @if (!string.IsNullOrEmpty(mensajeError))
+        {
+            <p class="validation-message">
+                @mensajeError
+            </p>
+        }
+
+        <button type="button"
+                class="forgot-button"
+                @onclick="EnviarRecuperacion">
+            Enviar Enlace de Recuperación
+        </button>
+
+        <p class="login-text">
+            ¿Recordaste tu contraseña?
+            <a href="/login">Inicia sesión</a>
+        </p>
+
+    </div>
+
+</section>
+
+@if (mostrarMensaje)
+{
+    <div class="popup-overlay">
+        <div class="popup-card">
+            <img src="Images/check.png"
+                 class="popup-check"
+                 alt="Éxito" />
+
+            <h3>Solicitud enviada</h3>
+
+            <p>Revisa tu correo para recuperar tu contraseña.</p>
+        </div>
+    </div>
+}
+
+@code {
+    [Inject]
+    private NavigationManager Navigation { get; set; } = default!;
+
+    private string correo = "";
+    private string mensajeError = "";
+    private bool mostrarMensaje = false;
+
+    private async Task EnviarRecuperacion()
+    {
+        mensajeError = "";
+
+        if (string.IsNullOrWhiteSpace(correo))
+        {
+            mensajeError = "Por favor ingresa tu correo electrónico.";
+            return;
+        }
+
+        if (!correo.Contains("@") || !correo.Contains("."))
+        {
+            mensajeError = "Ingrese un correo válido.";
+            return;
+        }
+
+        mostrarMensaje = true;
+
+        await Task.Delay(1200);
+
+        Navigation.NavigateTo("/login");
+    }
+}

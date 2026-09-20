@@ -1,0 +1,269 @@
+﻿@page "/cart"
+@attribute [Authorize(Roles = "CLIENTE,TRABAJADOR,ADMINISTRADOR")]
+@rendermode InteractiveServer
+@using BlazorAppKillaBeauty.ClienteREST.Models
+@using Microsoft.AspNetCore.Components
+@using static BlazorAppKillaBeauty.ClienteREST.ServicesAct.CartService
+@using BlazorAppKillaBeauty.ClienteREST.ServicesAct
+@inject AuthService AuthService
+@inject CartService CartService
+@inject NavigationManager Navigation
+
+
+
+<Navbar CantidadCarrito="@CantidadCarrito" />
+
+<section class="cart-page">
+
+    @if (CartService.Productos.Count == 0)
+    {
+        <div class="empty-cart-wrapper">
+
+            <div class="empty-cart">
+
+                <i class="bi bi-bag empty-cart-icon"></i>
+
+                <h1>Tu carrito está vacío</h1>
+
+                <p>Agrega productos para comenzar tu compra</p>
+
+                <NavLink href="/" class="cart-button">
+                    Explorar productos
+                </NavLink>
+
+            </div>
+
+        </div>
+    }
+    else
+    {
+        <div class="cart-container">
+
+            <div class="cart-list">
+
+                <h1>Carrito de Compras</h1>
+
+                @foreach (var detalle in CartService.Productos)
+                {
+                    var producto = detalle.Producto;
+
+                    <div class="cart-item">
+
+                        <img src="@(string.IsNullOrEmpty(producto?.Imagen) ? "/Images/Logo.png" : producto.Imagen)"
+                             alt="@(producto?.Nombre ?? "Producto")"
+                             class="cart-item-img" />
+
+                        <div class="cart-item-info">
+                            <h3>@(producto?.Nombre ?? $"Producto #{producto?.Id}")</h3>
+
+                            @if (producto != null && infoEscalas.TryGetValue(producto.Id, out var info))
+                            {
+                                <div class="discount-line">
+                                    <span class="cart-tag">@info.Etiqueta</span>
+
+                                    @if (info.Ahorro > 0)
+                                    {
+                                        <span class="saving-text">
+                                            ↝ Ahorro: S/ @info.Ahorro.ToString("0.00")
+                                        </span>
+                                    }
+
+                                    @if (!string.IsNullOrWhiteSpace(info.SiguienteEscala))
+                                    {
+                                        <span class="next-discount">@info.SiguienteEscala</span>
+                                    }
+                                </div>
+
+                                <p class="unit-price">
+                                    Precio unitario:
+                                    S/ @info.PrecioUnitario.ToString("0.00")
+
+                                    @if (producto != null && info.PrecioUnitario < producto.PrecioBase)
+                                    {
+                                        <span class="old-price">
+                                            S/ @producto.PrecioBase.ToString("0.00")
+                                        </span>
+                                    }
+                                </p>
+                            }
+                        </div>
+
+                <div class="cart-quantity-wrapper" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 150px;">
+                        <div class="cart-actions">
+                            <button @onclick="async () =>
+                                    {
+                                        if (producto != null && erroresStock.ContainsKey(producto.Id))
+                                        {
+                                            erroresStock.Remove(producto.Id);
+                                        }
+                                        
+                                        if (detalle.Id == 0)
+                                            await CartService.DisminuirCantidadProductoLocalAsync(producto!.Id);
+                                        else
+                                            await CartService.DisminuirCantidadAsync(detalle.Id);
+                                            
+                                        await ActualizarInfoEscalas();
+                                    }">
+                                -
+                            </button>
+
+                            <span>@detalle.Cantidad</span>
+
+                            <button @onclick="async () => AumentarCantidad(detalle)">
+                                +
+                            </button>
+                              @*  mensaje de error de stock debajo *@
+                                 @if (producto != null && erroresStock.ContainsKey(producto.Id))
+                                    {
+                                    <div style="color: #d84b6b; font-size: 0.85em; margin-top: 8px; font-weight: 500;">
+                                        <i class="bi bi-exclamation-triangle"></i> @erroresStock[producto.Id]
+                                     </div>
+                                    }
+                        </div>
+                      
+                </div>
+
+                   
+
+
+                        <div class="cart-subtotal">
+                            <small>Subtotal</small>
+                            <strong>
+                                S/ @((producto != null && infoEscalas.TryGetValue(producto.Id, out var infoSub)
+                                    ? infoSub.PrecioUnitario * detalle.Cantidad
+                                    : detalle.Cantidad * (producto?.PrecioBase ?? 0)).ToString("0.00"))
+                            </strong>
+                        </div>
+
+                        <button class="delete-btn"
+                                @onclick="async () =>
+                                        {
+                                            if (detalle.Id == 0)
+                                                await CartService.EliminarProductoLocalAsync(producto!.Id);
+                                            else
+                                                await CartService.EliminarDetalleAsync(detalle.Id);
+
+                                            await ActualizarInfoEscalas();
+                                        }">
+                            <i class="bi bi-trash"></i>
+                        </button>
+
+                    </div>
+                }
+
+            </div>
+
+            <div class="cart-summary">
+                <h2>Resumen del Pedido</h2>
+
+                <div class="summary-row">
+                    <span>Subtotal productos</span>
+                    <strong>S/ @((CartService.Total + CartService.DescuentoTotal).ToString("0.00"))</strong>
+                </div>
+
+                @if (CartService.DescuentoTotal > 0)
+                {
+                    <div class="summary-row discount">
+                        <span>Descuento por escala</span>
+                        <strong>-S/ @CartService.DescuentoTotal.ToString("0.00")</strong>
+                    </div>
+                }
+
+                <hr />
+
+                <div class="summary-total">
+                    <span>Total a pagar</span>
+                    <strong>S/ @CartService.Total.ToString("0.00")</strong>
+                </div>
+
+                @if (AuthService.EstaLogueado)
+                {
+                    <button class="pay-button"
+                            @onclick="ProcederPago">
+                        Proceder al pago
+                    </button>
+                }
+                else
+                {
+                    <button class="pay-button"
+                            @onclick="IrLogin">
+                        Iniciar sesión para continuar
+                    </button>
+                }
+
+                <NavLink href="/" class="continue-link">
+                    Continuar comprando
+                </NavLink>
+            </div>
+
+        </div>
+    }
+
+</section>
+
+@code {
+    private int CantidadCarrito => CartService.CantidadTotal;
+
+    private decimal Total => CartService.Total;
+
+    private string mensajeError = "";
+
+    private Dictionary<int, string> erroresStock = new Dictionary<int, string>();
+
+    private void ProcederPago()
+    {
+        Navigation.NavigateTo("/checkout");
+    }
+
+    private void IrLogin()
+    {
+        Navigation.NavigateTo("/login?returnUrl=/cart");
+    }
+
+    private Dictionary<int,InfoEscalaCarrito> infoEscalas = new();
+
+    private async Task ActualizarInfoEscalas()
+    {
+        infoEscalas.Clear();
+
+        foreach (var item in CartService.Productos)
+        {
+            if (item.Producto != null)
+            {
+                infoEscalas[item.Producto.Id] =
+                    await CartService.ObtenerInfoEscalaAsync(item);
+            }
+        }
+
+        await CartService.RecalcularTotalesAsync();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ActualizarInfoEscalas();
+    }
+
+    private async Task AumentarCantidad(CartItem detalle)
+    {
+        var producto = detalle.Producto;
+
+        if (producto == null)
+            return;
+
+        if (detalle.Cantidad + 1 > producto.Stock)
+        {
+            erroresStock[producto.Id] = "Solo quedan " + producto.Stock + " unidades disponibles.";
+            return;
+        }
+
+        erroresStock.Remove(producto.Id);
+
+        if (detalle.Id == 0)
+            await CartService.AumentarCantidadProductoLocalAsync(producto.Id);
+        else
+            await CartService.AumentarCantidadAsync(detalle.Id);
+
+        await ActualizarInfoEscalas();
+    }
+
+}

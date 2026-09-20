@@ -1,0 +1,51 @@
+﻿@inherits LayoutComponentBase
+@layout MainLayout
+@inject AuthService AuthService
+@using BlazorAppKillaBeauty.ClienteREST.ServicesAct
+@using BlazorAppKillaBeauty.ClienteREST.Models
+@using BlazorAppKillaBeauty.Services
+@inject CartService CartService
+@inject ProductoService ProductoService
+
+<Navbar CantidadCarrito="@CartService.CantidadTotal"
+        TodosLosProductos="@productosLayout" />
+
+<div class="page-background-wrapper">
+    <div class="account-main-container">
+        <h1 class="main-page-title">Mi Cuenta</h1>
+        
+        <div class="account-layout-grid">
+            <div class="account-sidebar-card">
+                <div class="profile-avatar-zone">
+                    <div class="avatar-circle">C</div>
+                    <h2 class="avatar-name">@AuthService.NombreUsuario</h2>
+                    <span class="avatar-email">@AuthService.CorreoElectronico</span>
+                </div>
+                
+                <SidebarMenu />
+            </div>
+
+            <div class="account-content-card">
+                @Body
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Inject] NavigationManager Navigation { get; set; }
+
+    private List<Producto> productosLayout = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!AuthService.EstaLogueado)
+        {
+            Navigation.NavigateTo("/login");
+            return;
+        }
+
+        try { productosLayout = await ProductoService.ObtenerCatalogoAsync(); }
+        catch { }
+    }
+}

@@ -1,0 +1,203 @@
+﻿/* --- CONTENEDOR PRINCIPAL --- */
+.orders-page-container {
+    max-width: 850px;
+    margin: 60px auto;
+    padding: 0 20px;
+}
+
+.orders-header h1 {
+    font-size: 2.2rem;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+/* --- ESTADO VACÍO --- */
+.empty-state-card {
+    background: var(--white);
+    border: 1px solid var(--gray-border);
+    border-radius: var(--radius);
+    padding: 60px 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    box-shadow: var(--shadow);
+    margin-top: 30px;
+}
+
+.empty-state-card i {
+    font-size: 5rem;
+    color: var(--rose-soft);
+}
+
+.empty-state-card p {
+    color: var(--gray);
+    font-size: 1.15rem;
+    margin: 0;
+}
+
+.btn-shop-solid {
+    background-color: var(--rose-soft);
+    color: var(--white) !important;
+    padding: 12px 35px;
+    border-radius: var(--radius);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1rem;
+    border: none;
+    transition: background 0.3s;
+}
+
+.btn-shop-solid:hover {
+    background-color: var(--rose);
+}
+
+/* --- TARJETA DE PEDIDO --- */
+.order-card {
+    background: var(--white);
+    border: 1px solid var(--gray-border);
+    border-radius: var(--radius);
+    padding: 25px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+}
+
+.status-badge {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.status-green {
+    background: #d4f7dc;
+    color: #1e7e34;
+}
+
+.status-yellow {
+    background: #ffe69c;
+    color: #6d4c00;
+}
+
+.status-gray {
+    background: #ced4da;
+    color: #2b2d2f;
+}
+
+.status-red {
+    background: #f1aeb5;
+    color: #58151c;
+}
+
+.status-purple {
+    background: #e1d5f7;
+    color: #4b2c8a;
+}
+
+.status-orange {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-default {
+    background: #eee;
+    color: #555;
+}
+
+.product-preview {
+    display: flex;
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.thumb {
+    width: 75px;
+    height: 75px;
+    border-radius: 10px;
+    object-fit: contain;
+    border: 1px solid #eee;
+}
+
+/* --- FOOTER DEL PEDIDO --- */
+.order-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid #f5f5f5;
+    padding-top: 20px;
+}
+
+.order-info-group {
+    display: flex;
+    flex-direction: column; /* Apila el precio debajo */
+    gap: 4px;
+}
+
+.item-count {
+    color: var(--gray-text);
+    font-size: 0.9rem;
+}
+
+.total-price {
+    color: var(--rose);
+    font-weight: 700;
+    font-size: 1.2rem;
+}
+
+.btn-outline-order-detail {
+    border: 1px solid var(--rose);
+    color: var(--rose);
+    padding: 10px 20px;
+    border-radius: var(--radius);
+    text-decoration: none;
+    font-weight: 500;
+    display: inline-block;
+    text-align: center;
+    /* SUAVIZADO: Hace que el cambio de color no sea un golpe seco */
+    transition: all 0.2s ease-in-out;
+}
+
+/* EFECTO HOVER: Se pinta de rosa con texto blanco al pasar el cursor */
+.btn-outline-order-detail:hover {
+    background-color: var(--rose);
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(242, 169, 186, 0.25);
+}
+
+/* EFECTO ACTIVE: Se encoge un poquito al hacer clic (efecto click físico) */
+.btn-outline-order-detail:active {
+    transform: scale(0.96);
+}
+
+.btn-outline:hover {
+    background-color: var(--rose-soft);
+    color: var(--white);
+}
+
+
+.more-items {
+    width: 40px;
+    height: 40px;
+    background-color: #fce4ec; /* Color rosa claro */
+    color: #e91e63; /* Color rosa fuerte */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-weight: bold;
+    font-size: 0.9rem;
+    margin-left: 5px;
+    border: 1px solid #e91e63;
+}
+
+.product-preview {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}

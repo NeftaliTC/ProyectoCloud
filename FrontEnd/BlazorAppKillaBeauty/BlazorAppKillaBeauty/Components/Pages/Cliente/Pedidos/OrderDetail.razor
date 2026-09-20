@@ -1,0 +1,308 @@
+﻿@page "/orders/order-detail/{OrderId}"
+@attribute [Authorize(Roles = "CLIENTE,TRABAJADOR,ADMINISTRADOR")]
+@rendermode InteractiveServer
+@using BlazorAppKillaBeauty.Services
+@using BlazorAppKillaBeauty.ClienteREST.ServicesAct
+@using BlazorAppKillaBeauty.ClienteREST.Models
+@inject CartService CartService
+@inject PedidoService PedidoService
+@inject NavigationManager Navigation
+@inject ProductoService ProductoService
+
+<Navbar CantidadCarrito="@CartService.CantidadTotal"
+        TodosLosProductos="@(new List<Producto>())" />
+
+<div class="order-detail-container">
+    <div class="breadcrumb-nav">
+        <a href="/orders" class="btn-back">
+            <i class="bi bi-arrow-left"></i> Volver a mis pedidos
+        </a>
+    </div>
+
+    @if (pedidoActual == null)
+    {
+        <div class="loading-state">
+            <p>Buscando la información del pedido #@OrderId...</p>
+        </div>
+    }
+    else
+    {
+        @* Encabezado principal del Pedido *@
+        <div class="order-header-main">
+            <div class="header-titles">
+                <h1>Pedido KIL-@pedidoActual.Id.ToString("D8")</h1>
+                <p class="order-date">Realizado el @FormatearFecha(pedidoActual.Fecha)</p>
+            </div>
+            <span class="status-badge-detail @GetStatusClass(pedidoActual.Estado)">
+                @GetStatusTexto(pedidoActual.Estado)
+            </span>
+        </div>
+
+        @* Grilla de dos columnas *@
+        <div class="order-detail-grid">
+            
+            @* COLUMNA IZQUIERDA: Seguimiento y Productos *@
+            <div class="detail-main-column">
+                
+                @* Tarjeta 1: Seguimiento del pedido *@
+                <div class="detail-card tracking-card">
+                    <h2>Seguimiento del pedido</h2>
+                    <div class="tracking-bar-container">
+                        <div class="tracking-line"></div>
+                        <div class="tracking-steps">
+                            <div class="step @(GetTrackingStepClass(pedidoActual.Estado, 1))">
+                                <span class="step-dot"></span>
+                                <span class="step-label">Pedido confirmado</span>
+                            </div>
+                            <div class="step @(GetTrackingStepClass(pedidoActual.Estado, 2))">
+                                <span class="step-dot"></span>
+                                <span class="step-label">En preparación</span>
+                            </div>
+                            <div class="step @(GetTrackingStepClass(pedidoActual.Estado, 3))">
+                                <span class="step-dot"></span>
+                                <span class="step-label">En camino</span>
+                            </div>
+                            <div class="step @(GetTrackingStepClass(pedidoActual.Estado, 4))">
+                                <span class="step-dot"></span>
+                                <span class="step-label">Entregado</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @* Tarjeta 2: Productos del pedido *@
+                <div class="detail-card products-card">
+                    <h2>Productos del pedido</h2>
+                    <div class="products-list">
+                        @foreach (var item in pedidoActual.Productos)
+                        {
+                            <div class="product-row-item">
+                                @{
+                                    var urlImagen = item.Imagenes?.FirstOrDefault() ?? "/Images/Logo.png";
+                                }
+
+                                <img src="@urlImagen" alt="@item.NombreProducto" class="product-thumbnail" />
+
+                                <div class="product-main-details">
+                                    <span class="product-title">@item.NombreProducto</span>
+                                    <span class="product-brand">@item.Marca</span>
+                                    <span class="product-qty-badge">@item.Cantidad unidad@(item.Cantidad > 1 ? "es" : "")</span>
+    
+                                    <div class="price-container">
+                                        @if (item.PrecioUnitario > item.PrecioUnitarioDescuento)
+                                        {
+                                            @* Precio original tachado *@
+                                            <span class="product-unit-price" style="text-decoration: line-through; color: #888; margin-right: 8px;">
+                                                S/ @item.PrecioUnitario.ToString("F2")
+                                            </span>
+                                        }
+                                        @* Precio con descuento (o normal) *@
+                                        <span class="product-unit-price" style="font-weight: bold; color: #d63384;">
+                                            S/ @item.PrecioUnitarioDescuento.ToString("F2")
+                                        </span>
+                                    </div>
+
+                                    @if (item.AhorroVolumen > 0)
+                                    {
+                                        <span class="savings-tag" style="color: #28a745; font-size: 0.85em;">
+                                            <i class="bi bi-tags"></i> Ahorraste: S/ @item.AhorroVolumen.ToString("F2")
+                                        </span>
+                                    }
+                                </div>
+                                <div class="product-actions-column">
+                                    <button type="button"
+                                            class="btn-review-outline"
+                                            @onclick="() => IrAReview(pedidoActual.Id.ToString(), item.NombreProducto)">
+                                        <i class="bi bi-star"></i> Reseñar
+                                    </button>
+                                    <div class="subtotal-label">
+                                        Subtotal: S/ @((item.PrecioUnitarioDescuento * item.Cantidad).ToString("F2"))
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                    
+                    @if (pedidoActual.Productos.Any(p => p.AhorroVolumen > 0))
+                    {
+                        <div class="alert-savings-banner">
+                            <i class="bi bi-ticket-perk"></i> ¡Ahorraste S/ @pedidoActual.Productos.Sum(p => p.AhorroVolumen).ToString("F2") en este pedido por precios por volumen!
+                        </div>
+                    }
+                </div>
+            </div>
+
+            @* COLUMNA DERECHA: Resumen, Entrega, Pago y Comprobante *@
+            <div class="detail-sidebar-column">
+                
+                @* Tarjeta 3: Resumen del Pedido *@
+                <div class="detail-card summary-card">
+                    <h2>Resumen del Pedido</h2>
+                    <div class="summary-rows">
+                        <div class="summary-line">
+                            <span>Subtotal</span>
+                            <span>S/ @((pedidoActual.Total + pedidoActual.DescuentoCupon - pedidoActual.CostoEnvio).ToString("F2"))</span>
+                        </div>
+                        <div class="summary-line">
+                            <span>Envío</span>
+                            <span>@(pedidoActual.CostoEnvio > 0 ? "S/ " + pedidoActual.CostoEnvio.ToString("F2") : "Gratis")</span>
+                        </div>
+                        @if (pedidoActual.DescuentoCupon > 0)
+                        {
+                            <div class="summary-line coupon-line">
+                                <span><i class="bi bi-tag-fill"></i> Cupón de dscto</span>
+                                <span>- S/ @pedidoActual.DescuentoCupon.ToString("F2")</span>
+                            </div>
+                        }
+                        <hr class="summary-divider" />
+                        <div class="summary-line total-line">
+                            <span>Total pagado</span>
+                            <span class="final-price">S/ @pedidoActual.Total.ToString("F2")</span>
+                        </div>
+                    </div>
+                </div>
+
+                @* Tarjeta 4: Comprobante de Pago *@
+                <div class="detail-card invoice-card">
+                    <h2>Comprobante Electrónico</h2>
+                    <div class="invoice-details-box">
+                        <div class="invoice-meta">
+                            <p class="invoice-type"><strong>Tipo:</strong> @pedidoActual.TipoComprobante</p>
+                            @if (pedidoActual.TipoComprobante.Contains("Factura"))
+                            {
+                                <p><strong>RUC:</strong> @pedidoActual.DocumentoIdentidad</p>
+                                <p><strong>Razón Social:</strong> @pedidoActual.RazonSocial</p>
+                            }
+                            else
+                            {
+                                <p><strong>DNI:</strong> @pedidoActual.DocumentoIdentidad</p>
+                            }
+                        </div>
+                        <button class="btn-download-invoice-solid">
+                            <i class="bi bi-download"></i> Descargar @pedidoActual.TipoComprobante
+                        </button>
+                    </div>
+                </div>
+
+                @* Tarjeta 5: Método de entrega *@
+                <div class="detail-card shipping-card">
+                    <h2>Método de entrega</h2>
+                    <div class="info-icon-block">
+                        <i class="bi @(!string.IsNullOrEmpty(pedidoActual.NumeroSeguimiento) ? "bi-box-seam" : "bi-bag") icon-pink"></i>
+                        <div class="block-text">
+                            @if (!string.IsNullOrEmpty(pedidoActual.Direccion))
+                            {
+                                <h3>Envío a domicilio</h3>
+                                @if (!string.IsNullOrEmpty(pedidoActual.Courier))
+                                {
+                                    <p class="courier-highlight">Operado por @pedidoActual.Courier</p>
+                                }
+                                <div class="tracking-container">
+                                    <span class="tracking-label">N° de Seguimiento:</span>
+                                    <strong class="tracking-number">@pedidoActual.NumeroSeguimiento</strong>
+                                </div>
+                                <p>@pedidoActual.Direccion</p>
+                                <p>@pedidoActual.Ubicacion</p>
+                                @if (!string.IsNullOrEmpty(pedidoActual.Referencia))
+                                {
+                                    <p class="reference-text">Ref: @pedidoActual.Referencia</p>
+                                }
+                            }
+                            else
+                            {
+                                <h3>Recojo en tienda</h3>
+                                <p>Killa Beauty Store</p>
+                                <p>Av. Javier Prado Este 4200, San Borja, Lima</p>
+                                <p class="reference-text">Ref: Frente al Centro Comercial La Rambla</p>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                @* Tarjeta 6: Medio de pago *@
+                <div class="detail-card payment-card">
+                    <h2>Medio de pago</h2>
+                    <div class="info-icon-block">
+                        <i class="bi @(pedidoActual.MetodoPago == "TARJETA" ? "bi-credit-card-2-front" : "bi-phone") icon-pink"></i>
+                        <div class="block-text">
+                            <h3>@(pedidoActual.MetodoPago == "TARJETA" ? "Tarjeta de Crédito/Débito" : pedidoActual.MetodoPago == "YAPE_PLIN" ? "Yape / Plin" : pedidoActual.MetodoPago)</h3>
+                            <p>Pago procesado correctamente</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public string? OrderId { get; set; }
+    private PedidoService.PedidoAdminDto? pedidoActual;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (int.TryParse(OrderId, out int id))
+        {
+            pedidoActual = await PedidoService.ObtenerPorIdAsyncAdminDto(id);
+        }
+    }
+
+    private string GetTrackingStepClass(string estadoBackend, int stepNumber)
+    {
+        int currentStepWeight = estadoBackend.ToUpperInvariant() switch
+        {
+            "PENDIENTE" => 1,
+            "PAGADO" => 1,
+            "EN_PREPARACION" => 2,
+            "ENVIADO" => 3,
+            "ENTREGADO" => 4,
+            _ => 0
+        };
+
+        if (currentStepWeight == stepNumber) return "active";
+        if (currentStepWeight > stepNumber) return "completed";
+        return "";
+    }
+
+    private void IrAReview(string? orderId, string? itemNombre)
+    {
+        if (string.IsNullOrWhiteSpace(orderId) || string.IsNullOrWhiteSpace(itemNombre)) return;
+        Navigation.NavigateTo($"/review/{orderId}/{ConvertirParaUrl(itemNombre)}");
+    }
+
+    private string ConvertirParaUrl(string texto)
+    {
+        return texto.Trim().Replace(" ", "-").Replace("/", "-");
+    }
+
+    private string FormatearFecha(string fecha)
+    {
+        if (DateTime.TryParse(fecha, out var dt))
+            return dt.ToString("dd 'de' MMMM 'del' yyyy",
+                new System.Globalization.CultureInfo("es-PE"));
+        return fecha;
+    }
+
+    private string GetStatusClass(string estado) => estado.ToUpperInvariant() switch
+    {
+        "PENDIENTE" => "status-gray",
+        "PAGADO" => "status-gray",
+        "EN_PREPARACION" => "status-yellow",
+        "ENVIADO" => "status-purple",
+        "ENTREGADO" => "status-green",
+        "CANCELADO" => "status-red",
+        _ => "status-gray"
+    };
+
+    private string GetStatusTexto(string estado) => estado.ToUpperInvariant() switch
+    {
+        "PENDIENTE" => "Confirmado",
+        "PAGADO" => "Confirmado",
+        "EN_PREPARACION" => "En preparación",
+        "ENVIADO" => "En camino",
+        "ENTREGADO" => "Entregado",
+        "CANCELADO" => "Cancelado",
+        _ => estado
+    };
+}

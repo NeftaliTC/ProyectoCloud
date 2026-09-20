@@ -1,0 +1,53 @@
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject AuthService AuthService
+
+@if (PuedeCambiarModo)
+{
+    <button type="button"
+            class="mode-switch @ModoActualClass"
+            title="@Titulo"
+            @onclick="CambiarModo">
+        <span class="mode-switch-pill">
+            <span class="mode-switch-option mode-client">
+                <i class="bi bi-bag-heart"></i>
+                Tienda
+            </span>
+            <span class="mode-switch-option mode-admin">
+                <i class="bi bi-stars"></i>
+                Gestion
+            </span>
+            <span class="mode-switch-thumb"></span>
+        </span>
+    </button>
+}
+
+@code {
+    [Parameter] public string ModoActual { get; set; } = "cliente";
+
+    private bool PuedeCambiarModo { get; set; }
+
+    private bool EstaEnAdmin =>
+        ModoActual.Equals("admin", StringComparison.OrdinalIgnoreCase);
+
+    private string ModoActualClass => EstaEnAdmin ? "is-admin" : "is-client";
+
+    private string Titulo => EstaEnAdmin
+        ? "Ir a la tienda"
+        : "Ir al panel de gestion";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        AuthService.LoadFromPrincipal(authState.User);
+
+        PuedeCambiarModo = authState.User.IsInRole("ADMINISTRADOR")
+            || authState.User.IsInRole("TRABAJADOR")
+            || AuthService.Rol is "ADMINISTRADOR" or "TRABAJADOR";
+    }
+
+    private void CambiarModo()
+    {
+        Navigation.NavigateTo(EstaEnAdmin ? "/" : "/admin");
+    }
+}

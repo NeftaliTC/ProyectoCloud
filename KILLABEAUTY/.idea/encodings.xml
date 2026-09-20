@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Encoding">
+    <file url="file://$PROJECT_DIR$/KillaREST/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/KillaREST/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/dbManager/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/dbManager/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/killaBusiness/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/killaBusiness/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/killaDAO/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/killaDAO/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/killaModelo/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/killaModelo/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/killaReporte/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/killaReporte/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/resources" charset="UTF-8" />
+  </component>
+</project>

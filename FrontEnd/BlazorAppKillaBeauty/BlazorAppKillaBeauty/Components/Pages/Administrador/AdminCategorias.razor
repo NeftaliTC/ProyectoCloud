@@ -1,0 +1,771 @@
+@page "/admin/categorias"
+@attribute [Authorize(Roles = "ADMINISTRADOR,TRABAJADOR")]
+@rendermode InteractiveServer
+@using BlazorAppKillaBeauty.Services
+@using BlazorAppKillaBeauty.ClienteREST.Models
+@inject NavigationManager NavManager
+@inject CategoriaService CategoriaService
+
+<PageTitle>Categorias Admin - Killa Beauty</PageTitle>
+
+<link rel="stylesheet" href="css/admin-categorias.css" />
+
+<main class="admin-page">
+    <AdminNavbar />
+
+    <section class="admin-content admin-orders-content">
+
+        <div class="admin-breadcrumb">
+            <span>Administrador</span>
+            <i class="bi bi-chevron-right"></i>
+            <span>Categori­as</span>
+        </div>
+
+        <header class="admin-header admin-orders-header d-flex justify-content-between align-items-center">
+            <div>
+                <h1>Gestión de Categorías</h1>
+                <p>Administra las categorí­as y subcategorías del catalogo de productos.</p>
+            </div>
+            <button class="btn-add-marca" @onclick="AbrirNuevaCategoria">
+                <i class="bi bi-plus-circle"></i> Nueva Categoría
+            </button>
+        </header>
+
+        @if (!string.IsNullOrWhiteSpace(mensajeExito))
+        {
+            <div class="admin-cat-alert-success">
+                <span><i class="bi bi-check-circle-fill"></i> @mensajeExito</span>
+                <button type="button" @onclick="() => mensajeExito = null"></button>
+            </div>
+        }
+
+        <section class="admin-orders-filters">
+            <div class="admin-orders-search">
+                <i class="bi bi-search"></i>
+                <input type="text"
+                       placeholder="Buscar por descripción de categorí­a o subcategorí­a..."
+                       @bind="filtroBusqueda"
+                       @bind:event="oninput"
+                       @bind:after="AplicarFiltros" />
+            </div>
+
+            <div class="admin-orders-filter-row cat-filter-grid">
+                <div class="admin-status-filter">
+                    <span>Estado:</span>
+                    <select @bind="filtroEstado" @bind:after="AplicarFiltros">
+                        <option value="Todos">Todos</option>
+                        <option value="Activo">Activo</option>
+                        <option value="Inactivo">Inactivo</option>
+                    </select>
+                </div>
+
+                <div class="d-flex align-items-end">
+                    <button class="admin-clear-filters" @onclick="LimpiarFiltros">
+                        <i class="bi bi-x-circle"></i> Limpiar filtros
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section class="admin-table-card admin-orders-table-card">
+            <PaginatedTable TItem="CategoriaItem"
+                            Page="paginaCategorias"
+                            OnChanged="OnPageChanged"
+                            ColSpan="5"
+                            InitialPageSize="6"
+                            PageSizeOptions="opcionesPagina"
+                            ContainerClass="table-responsive"
+                            TableClass="admin-table admin-orders-table"
+                            HeaderClass=""
+                            EmptyMessage="No se encontraron categorías.">
+                <TableHeader>
+                    <tr>
+                        <th style="padding-left: 2rem !important;">ID</th>
+                        <th>NOMBRE</th>
+                        <th class="text-center">SUBCATEGORÍAS</th>
+                        <th class="text-center">ESTADO</th>
+                        <th class="text-end" style="padding-right: 2rem !important;">ACCIONES</th>
+                    </tr>
+                </TableHeader>
+                <RowTemplate Context="cat">
+                    <tr class="@(!cat.Activo ? "cat-row-inactive" : "")">
+                        <td style="padding-left: 2rem !important; color: #777;">
+                            @cat.Id.ToString("D5")
+                        </td>
+                        <td>
+                            <div class="cat-name-cell">
+                                <div class="cat-icon-badge">
+                                    <i class="bi bi-tag-fill"></i>
+                                </div>
+                                <strong>@cat.Nombre</strong>
+                            </div>
+                        </td>
+                        <td class="text-center">
+                            <button class="cat-sub-pill" @onclick="() => ToggleExpandir(cat.Id)">
+                                <i class="bi bi-grid-3x3-gap"></i>
+                                @cat.Subcategorias.Count subcategorias
+                                <i class="bi @(expandidas.Contains(cat.Id) ? "bi-chevron-up" : "bi-chevron-down")"></i>
+                            </button>
+                        </td>
+                        <td class="text-center">
+                            @if (cat.Activo)
+                            {
+                                <span class="admin-status success">Activo</span>
+                            }
+                            else
+                            {
+                                <span class="admin-status danger">Inactivo</span>
+                            }
+                        </td>
+                        <td class="text-end" style="padding-right: 2rem !important;">
+                            <div class="d-flex justify-content-end gap-2">
+                                <button class="btn-action-icon edit"
+                                        title="Agregar subcategoría"
+                                        @onclick="() => AbrirNuevaSubcategoria(cat)">
+                                    <i class="bi bi-plus"></i>
+                                </button>
+                                <button class="btn-action-icon edit"
+                                        title="Editar"
+                                        @onclick="() => AbrirEditarCategoria(cat)">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn-action-icon delete"
+                                        title="@(cat.Activo ? "Desactivar" : "Activar")"
+                                        @onclick="() => AbrirToggleEstado(cat)">
+                                    <i class="bi @(cat.Activo ? "bi-slash-circle" : "bi-arrow-counterclockwise")"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+
+                    @if (expandidas.Contains(cat.Id))
+                    {
+                        <tr class="cat-sub-expanded-row">
+                            <td colspan="5" style="padding: 0;">
+                                <div class="cat-sub-panel">
+                                    <div class="cat-sub-panel-header">
+                                        <span>
+                                            <i class="bi bi-diagram-3"></i>
+                                            Subcategorías de <strong>@cat.Nombre</strong>
+                                        </span>
+                                        <button class="cat-sub-add-btn"
+                                                @onclick="() => AbrirNuevaSubcategoria(cat)">
+                                            <i class="bi bi-plus-circle"></i> Agregar subcategoría
+                                        </button>
+                                    </div>
+
+                                    @if (!cat.Subcategorias.Any())
+                                    {
+                                        <div class="cat-sub-empty">
+                                            <i class="bi bi-folder2-open"></i>
+                                            <span>No hay subcategorías registradas para esta categoría.</span>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="cat-sub-grid">
+                                            @foreach (var sub in cat.Subcategorias)
+                                            {
+                                                <div class="cat-sub-card @(!sub.Activo ? "cat-sub-card-inactive" : "")">
+                                                    <div class="cat-sub-card-body">
+                                                        <div class="cat-sub-dot @(sub.Activo ? "dot-active" : "dot-inactive")"></div>
+                                                        <span class="cat-sub-name">@sub.Nombre</span>
+                                                    </div>
+                                                    <div class="cat-sub-card-actions">
+                                                        <button class="cat-sub-icon-btn"
+                                                                title="Editar"
+                                                                @onclick="() => AbrirEditarSubcategoria(sub, cat)">
+                                                            <i class="bi bi-pencil"></i>
+                                                        </button>
+                                                        <button class="cat-sub-icon-btn cat-sub-icon-danger"
+                                                                title="@(sub.Activo ? "Desactivar" : "Activar")"
+                                                                @onclick="() => AbrirToggleEstadoSub(sub)">
+                                                            <i class="bi @(sub.Activo ? "bi-slash-circle" : "bi-arrow-counterclockwise")"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </RowTemplate>
+            </PaginatedTable>
+        </section>
+
+    </section>
+</main>
+
+<!-- 
+     MODAL: Nueva / Editar CATEGORiA -->
+@if (mostrarModalCategoria)
+{
+    <div class="admin-modal-overlay">
+        <div class="admin-modal-card admin-cat-modal-card">
+            <header class="admin-cat-modal-header">
+                <h2>
+                    <i class="bi @(esModoEdicionCat ? "bi-pencil-square" : "bi-plus-lg")"></i>
+                    @(esModoEdicionCat ? "Editar categori­a" : "Nueva categorí­a")
+                </h2>
+                <button type="button" class="admin-cat-modal-close" @onclick="CerrarModalCategoria">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </header>
+
+            @if (!string.IsNullOrWhiteSpace(errorModalCat))
+            {
+                <div class="admin-cat-modal-error">
+                    <i class="bi bi-exclamation-circle-fill"></i>
+                    <span>@errorModalCat</span>
+                </div>
+            }
+
+            <div class="admin-cat-modal-body">
+                <div class="scales-form-field">
+                    <label>Nombre de la categorí­a <span class="req">*</span></label>
+                    <input type="text"
+                           placeholder="Ej: Skincare, Maquillaje, Cabello..."
+                           @bind="formCat.Nombre" />
+                </div>
+
+                @if (esModoEdicionCat)
+                {
+                    <div class="scales-form-field">
+                        <label>Estado</label>
+                        <div class="cat-toggle-row">
+                            <span>@(formCat.Activo ? "Activo" : "Inactivo")</span>
+                            <label class="switch">
+                                <input type="checkbox" @bind="formCat.Activo" />
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <footer class="scales-modal-actions">
+                <button type="button" class="btn-scale-cancel" @onclick="CerrarModalCategoria">
+                    Cancelar
+                </button>
+                <button type="button" class="btn-scale-save" @onclick="GuardarCategoria">
+                    @(esModoEdicionCat ? "Guardar cambios" : "Crear categoría")
+                </button>
+            </footer>
+        </div>
+    </div>
+}
+
+<!-- 
+     MODAL: Nueva / Editar SUBCATEGORiA-->
+@if (mostrarModalSubcategoria)
+{
+    <div class="admin-modal-overlay">
+        <div class="admin-modal-card admin-cat-modal-card">
+            <header class="admin-cat-modal-header">
+                <h2>
+                    <i class="bi @(esModoEdicionSub ? "bi-pencil-square" : "bi-plus-lg")"></i>
+                    @(esModoEdicionSub ? "Editar subcategorí­a" : "Nueva subcategorí­a")
+                </h2>
+                <button type="button" class="admin-cat-modal-close" @onclick="CerrarModalSubcategoria">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </header>
+
+            @if (!string.IsNullOrWhiteSpace(errorModalSub))
+            {
+                <div class="admin-cat-modal-error">
+                    <i class="bi bi-exclamation-circle-fill"></i>
+                    <span>@errorModalSub</span>
+                </div>
+            }
+
+            <div class="admin-cat-modal-body">
+                <div class="scales-form-field">
+                    <label>Categori­a padre</label>
+                    <input type="text" disabled value="@categoriaPadreSeleccionada?.Nombre" class="cat-input-disabled" />
+                </div>
+
+                <div class="scales-form-field">
+                    <label>Nombre de la subcategoría <span class="req">*</span></label>
+                    <input type="text"
+                           placeholder="Ej: Serums, Labios, Shampoo..."
+                           @bind="formSub.Nombre" />
+                </div>
+
+                @if (esModoEdicionSub)
+                {
+                    <div class="scales-form-field">
+                        <label>Estado</label>
+                        <div class="cat-toggle-row">
+                            <span>@(formSub.Activo ? "Activo" : "Inactivo")</span>
+                            <label class="switch">
+                                <input type="checkbox" @bind="formSub.Activo" />
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <footer class="scales-modal-actions">
+                <button type="button" class="btn-scale-cancel" @onclick="CerrarModalSubcategoria">
+                    Cancelar
+                </button>
+                <button type="button" class="btn-scale-save" @onclick="GuardarSubcategoria">
+                    @(esModoEdicionSub ? "Guardar cambios" : "Crear subcategoría")
+                </button>
+            </footer>
+        </div>
+    </div>
+}
+
+<!-- 
+     MODAL: Confirmar cambio de estado (Categori­a) -->
+@if (mostrarModalToggle && categoriaToggle != null)
+{
+    <div class="admin-modal-overlay">
+        <div class="admin-modal-card">
+            <div class="admin-modal-icon">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+            </div>
+            <h2>@(categoriaToggle.Activo ? "¿Desactivar categoría?" : "¿Activar categorí­a?")</h2>
+            <p class="admin-modal-text">
+                @if (categoriaToggle.Activo)
+                {
+                    <span>La categori­a <strong>@categoriaToggle.Nombre</strong> y sus subcategorías activas dejari¡n de mostrarse en el cati¡logo.</span>
+                }
+                else
+                {
+                    <span>La categori­a <strong>@categoriaToggle.Nombre</strong> volveri¡ a estar disponible en el cati¡logo.</span>
+                }
+            </p>
+            <div class="admin-modal-actions">
+                <button class="admin-modal-btn-cancel" @onclick="() => mostrarModalToggle = false">Cancelar</button>
+                <button class="admin-modal-btn-confirm @(categoriaToggle.Activo ? "" : "btn-confirm-success")"
+                        @onclick="ConfirmarToggleEstado">
+                    @(categoriaToggle.Activo ? "Desactivar" : "Activar")
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+<!--
+     MODAL: Confirmar cambio de estado (Subcategori­a) -->
+@if (mostrarModalToggleSub && subcategoriaToggle != null)
+{
+    <div class="admin-modal-overlay">
+        <div class="admin-modal-card">
+            <div class="admin-modal-icon">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+            </div>
+            <h2>@(subcategoriaToggle.Activo ? "¿Desactivar subcategorí­a?" : "¿Activar subcategorí­a?")</h2>
+            <p class="admin-modal-text">
+                @if (subcategoriaToggle.Activo)
+                {
+                    <span>La subcategorí­a <strong>@subcategoriaToggle.Nombre</strong> dejari¡ de estar disponible.</span>
+                }
+                else
+                {
+                    <span>La subcategoría <strong>@subcategoriaToggle.Nombre</strong> volveri¡ a estar disponible.</span>
+                }
+            </p>
+            <div class="admin-modal-actions">
+                <button class="admin-modal-btn-cancel" @onclick="() => mostrarModalToggleSub = false">Cancelar</button>
+                <button class="admin-modal-btn-confirm @(subcategoriaToggle.Activo ? "" : "btn-confirm-success")"
+                        @onclick="ConfirmarToggleEstadoSub">
+                    @(subcategoriaToggle.Activo ? "Desactivar" : "Activar")
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private class SubcategoriaItem
+    {
+        public int Id { get; set; }
+        public string Nombre { get; set; } = "";
+        public bool Activo { get; set; }
+        public int CategoriaId { get; set; }
+    }
+
+    private class CategoriaItem
+    {
+        public int Id { get; set; }
+        public string Nombre { get; set; } = "";
+        public bool Activo { get; set; }
+        public List<SubcategoriaItem> Subcategorias { get; set; } = new();
+    }
+
+    private class CategoriaForm
+    {
+        public string Nombre { get; set; } = "";
+        public bool Activo { get; set; } = true;
+    }
+
+    private class SubcategoriaForm
+    {
+        public string Nombre { get; set; } = "";
+        public bool Activo { get; set; } = true;
+    }
+
+    private string? mensajeExito;
+    private string? mensajeError;
+
+    private string filtroBusqueda = "";
+    private string filtroEstado = "Todos";
+
+    private readonly int[] opcionesPagina = new[] { 6, 10, 25, 50, 100 };
+    private PageQuery queryActual = new(1, 6);
+    private TablePage<CategoriaItem> paginaCategorias = new();
+
+    private HashSet<int> expandidas = new();
+
+    private bool mostrarModalCategoria = false;
+    private bool esModoEdicionCat = false;
+    private CategoriaItem? categoriaEditando;
+    private CategoriaForm formCat = new();
+    private string? errorModalCat;
+
+    private bool mostrarModalSubcategoria = false;
+    private bool esModoEdicionSub = false;
+    private SubcategoriaItem? subcategoriaEditando;
+    private CategoriaItem? categoriaPadreSeleccionada;
+    private SubcategoriaForm formSub = new();
+    private string? errorModalSub;
+
+    private bool mostrarModalToggle = false;
+    private CategoriaItem? categoriaToggle;
+
+    private bool mostrarModalToggleSub = false;
+    private SubcategoriaItem? subcategoriaToggle;
+
+    private List<CategoriaItem> categorias = new();
+    private List<CategoriaItem> categoriasFiltradas = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarCategoriasAsync();
+    }
+
+    private async Task CargarCategoriasAsync()
+    {
+        try
+        {
+            var categoriasApi = await CategoriaService.ListarCategoriasAsync();
+            var subcategoriasApi = await CategoriaService.ListarSubcategoriasAsync();
+
+            categorias = categoriasApi
+                .Select(c => new CategoriaItem
+                {
+                    Id = c.Id,
+                    Nombre = c.Descripcion,
+                    Activo = c.Activo,
+                    Subcategorias = subcategoriasApi
+                        .Where(s => s.Categoria?.Id == c.Id)
+                        .Select(s => new SubcategoriaItem
+                        {
+                            Id = s.Id,
+                            Nombre = s.Descripcion,
+                            Activo = s.Activo,
+                            CategoriaId = c.Id
+                        })
+                        .OrderBy(s => s.Nombre)
+                        .ToList()
+                })
+                .OrderBy(c => c.Nombre)
+                .ToList();
+
+            mensajeError = null;
+            AplicarFiltros();
+        }
+        catch (Exception ex)
+        {
+            mensajeError = $"No se pudieron cargar las categorías: {ex.Message}";
+            categorias = new();
+            categoriasFiltradas = new();
+            ActualizarPaginaCategorias();
+        }
+    }
+
+    private void AplicarFiltros()
+    {
+        var q = categorias.AsEnumerable();
+
+        if (!string.IsNullOrWhiteSpace(filtroBusqueda))
+        {
+            var term = filtroBusqueda.Trim();
+            q = q.Where(c =>
+                c.Nombre.Contains(term, StringComparison.OrdinalIgnoreCase) ||
+                c.Subcategorias.Any(s => s.Nombre.Contains(term, StringComparison.OrdinalIgnoreCase)));
+        }
+
+        if (filtroEstado == "Activo")
+            q = q.Where(c => c.Activo);
+        else if (filtroEstado == "Inactivo")
+            q = q.Where(c => !c.Activo);
+
+        categoriasFiltradas = q.OrderBy(c => c.Nombre).ToList();
+        ResetearPaginacion();
+    }
+
+    private void LimpiarFiltros()
+    {
+        filtroBusqueda = "";
+        filtroEstado = "Todos";
+        AplicarFiltros();
+    }
+
+    private void OnPageChanged(PageQuery query)
+    {
+        queryActual = query;
+        ActualizarPaginaCategorias();
+    }
+
+    private void ResetearPaginacion()
+    {
+        queryActual = new PageQuery(1, queryActual.PageSize);
+        ActualizarPaginaCategorias();
+    }
+
+    private void ActualizarPaginaCategorias()
+    {
+        paginaCategorias = new TablePage<CategoriaItem>
+        {
+            Items = categoriasFiltradas
+                .Skip((queryActual.Page - 1) * queryActual.PageSize)
+                .Take(queryActual.PageSize)
+                .ToList(),
+            TotalRecords = categoriasFiltradas.Count
+        };
+    }
+
+    private void ToggleExpandir(int id)
+    {
+        if (expandidas.Contains(id)) expandidas.Remove(id);
+        else expandidas.Add(id);
+    }
+
+    private void AbrirNuevaCategoria()
+    {
+        esModoEdicionCat = false;
+        categoriaEditando = null;
+        formCat = new CategoriaForm();
+        errorModalCat = null;
+        mostrarModalCategoria = true;
+    }
+
+    private void AbrirEditarCategoria(CategoriaItem cat)
+    {
+        esModoEdicionCat = true;
+        categoriaEditando = cat;
+        formCat = new CategoriaForm { Nombre = cat.Nombre, Activo = cat.Activo };
+        errorModalCat = null;
+        mostrarModalCategoria = true;
+    }
+
+    private void CerrarModalCategoria()
+    {
+        mostrarModalCategoria = false;
+        errorModalCat = null;
+    }
+
+    private async Task GuardarCategoria()
+    {
+        if (string.IsNullOrWhiteSpace(formCat.Nombre))
+        {
+            errorModalCat = "La descripcion de la categoría es obligatoria.";
+            return;
+        }
+
+        var nombre = formCat.Nombre.Trim();
+        var existe = categorias.Any(c =>
+            (!esModoEdicionCat || c.Id != categoriaEditando?.Id) &&
+            c.Nombre.Equals(nombre, StringComparison.OrdinalIgnoreCase));
+
+        if (existe)
+        {
+            errorModalCat = "Ya existe una categoría con esa descripción.";
+            return;
+        }
+
+        try
+        {
+            if (esModoEdicionCat && categoriaEditando != null)
+            {
+                await CategoriaService.ActualizarCategoriaAsync(new Categoria
+                {
+                    Id = categoriaEditando.Id,
+                    Descripcion = nombre,
+                    Activo = formCat.Activo
+                });
+                mensajeExito = $"Categoría \"{nombre}\" actualizada correctamente.";
+            }
+            else
+            {
+                await CategoriaService.CrearCategoriaAsync(new Categoria
+                {
+                    Descripcion = nombre,
+                    Activo = true
+                });
+                mensajeExito = $"Categoría \"{nombre}\" creada correctamente.";
+            }
+
+            CerrarModalCategoria();
+            await CargarCategoriasAsync();
+        }
+        catch (Exception ex)
+        {
+            errorModalCat = $"No se pudo guardar la categoría: {ex.Message}";
+        }
+    }
+
+    private void AbrirNuevaSubcategoria(CategoriaItem cat)
+    {
+        esModoEdicionSub = false;
+        subcategoriaEditando = null;
+        categoriaPadreSeleccionada = cat;
+        formSub = new SubcategoriaForm();
+        errorModalSub = null;
+        mostrarModalSubcategoria = true;
+        if (!expandidas.Contains(cat.Id)) expandidas.Add(cat.Id);
+    }
+
+    private void AbrirEditarSubcategoria(SubcategoriaItem sub, CategoriaItem cat)
+    {
+        esModoEdicionSub = true;
+        subcategoriaEditando = sub;
+        categoriaPadreSeleccionada = cat;
+        formSub = new SubcategoriaForm { Nombre = sub.Nombre, Activo = sub.Activo };
+        errorModalSub = null;
+        mostrarModalSubcategoria = true;
+    }
+
+    private void CerrarModalSubcategoria()
+    {
+        mostrarModalSubcategoria = false;
+        errorModalSub = null;
+    }
+
+    private async Task GuardarSubcategoria()
+    {
+        if (string.IsNullOrWhiteSpace(formSub.Nombre))
+        {
+            errorModalSub = "La descripcion de la subcategoría es obligatoria.";
+            return;
+        }
+
+        if (categoriaPadreSeleccionada == null) return;
+
+        var nombre = formSub.Nombre.Trim();
+        var existe = categoriaPadreSeleccionada.Subcategorias.Any(s =>
+            (!esModoEdicionSub || s.Id != subcategoriaEditando?.Id) &&
+            s.Nombre.Equals(nombre, StringComparison.OrdinalIgnoreCase));
+
+        if (existe)
+        {
+            errorModalSub = "Ya existe una subcategoría con esa descripcion en esta categoría.";
+            return;
+        }
+
+        try
+        {
+            if (esModoEdicionSub && subcategoriaEditando != null)
+            {
+                await CategoriaService.ActualizarSubcategoriaAsync(new Subcategoria
+                {
+                    Id = subcategoriaEditando.Id,
+                    Descripcion = nombre,
+                    Activo = formSub.Activo,
+                    Categoria = new Categoria { Id = categoriaPadreSeleccionada.Id }
+                });
+                mensajeExito = $"Subcategoría \"{nombre}\" actualizada.";
+            }
+            else
+            {
+                await CategoriaService.CrearSubcategoriaAsync(new Subcategoria
+                {
+                    Descripcion = nombre,
+                    Activo = true,
+                    Categoria = new Categoria { Id = categoriaPadreSeleccionada.Id }
+                });
+                mensajeExito = $"Subcategoría \"{nombre}\" agregada a \"{categoriaPadreSeleccionada.Nombre}\".";
+            }
+
+            CerrarModalSubcategoria();
+            await CargarCategoriasAsync();
+        }
+        catch (Exception ex)
+        {
+            errorModalSub = $"No se pudo guardar la subcategoría: {ex.Message}";
+        }
+    }
+
+    private void AbrirToggleEstado(CategoriaItem cat)
+    {
+        categoriaToggle = cat;
+        mostrarModalToggle = true;
+    }
+
+    private async Task ConfirmarToggleEstado()
+    {
+        if (categoriaToggle != null)
+        {
+            try
+            {
+                await CategoriaService.ActualizarCategoriaAsync(new Categoria
+                {
+                    Id = categoriaToggle.Id,
+                    Descripcion = categoriaToggle.Nombre,
+                    Activo = !categoriaToggle.Activo
+                });
+                mensajeExito = !categoriaToggle.Activo
+                    ? $"Categoría \"{categoriaToggle.Nombre}\" activada."
+                    : $"Categoría \"{categoriaToggle.Nombre}\" desactivada.";
+                await CargarCategoriasAsync();
+            }
+            catch (Exception ex)
+            {
+                mensajeError = $"No se pudo cambiar el estado de la categoría: {ex.Message}";
+            }
+        }
+        mostrarModalToggle = false;
+        categoriaToggle = null;
+    }
+
+    private void AbrirToggleEstadoSub(SubcategoriaItem sub)
+    {
+        subcategoriaToggle = sub;
+        mostrarModalToggleSub = true;
+    }
+
+    private async Task ConfirmarToggleEstadoSub()
+    {
+        if (subcategoriaToggle != null)
+        {
+            try
+            {
+                await CategoriaService.ActualizarSubcategoriaAsync(new Subcategoria
+                {
+                    Id = subcategoriaToggle.Id,
+                    Descripcion = subcategoriaToggle.Nombre,
+                    Activo = !subcategoriaToggle.Activo,
+                    Categoria = new Categoria { Id = subcategoriaToggle.CategoriaId }
+                });
+                mensajeExito = !subcategoriaToggle.Activo
+                    ? $"Subcategoría \"{subcategoriaToggle.Nombre}\" activada."
+                    : $"Subcategoría \"{subcategoriaToggle.Nombre}\" desactivada.";
+                await CargarCategoriasAsync();
+            }
+            catch (Exception ex)
+            {
+                mensajeError = $"No se pudo cambiar el estado de la subcategoría: {ex.Message}";
+            }
+        }
+        mostrarModalToggleSub = false;
+        subcategoriaToggle = null;
+    }
+}

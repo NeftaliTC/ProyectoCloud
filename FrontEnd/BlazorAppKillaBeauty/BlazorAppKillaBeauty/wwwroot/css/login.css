@@ -1,0 +1,165 @@
+/* LOGIN PAGE */
+
+html,
+body {
+    margin: 0;
+    background: var(--rose-bg);
+}
+
+.back-home {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: fit-content;
+    margin-left: -8px; 
+    margin-top: 10px; 
+    margin-bottom: 18px;
+    color: var(--gray-soft);
+    text-decoration: none;
+    font-size: 15px;
+    transition: .2s;
+}
+
+    .back-home i {
+        font-size: 17px;
+    }
+
+    .back-home:hover {
+        color: var(--rose);
+    }
+
+.login-page {
+    min-height: 97vh;
+    background: var(--rose-bg);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+/* CARD LOGIN */
+
+.login-card {
+    width: 100%;
+    max-width: 520px;
+    background: var(--white);
+    border: 1px solid var(--rose-light);
+    border-radius: 28px;
+    padding: 18px 45px 20px;
+    text-align: center;
+}
+
+/* ICONO */
+
+.login-icon {
+    width: 135px;
+    height: 135px;
+    margin: 0 auto -10px;
+}
+
+    .login-icon img {
+        width: 135px;
+        height: 135px;
+        object-fit: contain;
+    }
+
+/* TITULOS */
+
+.login-card h1 {
+    font-size: 34px;
+    font-weight: 700;
+    margin-top: 0;
+    margin-bottom: 4px;
+}
+
+.login-subtitle {
+    font-size: 17px;
+    color: var(--gray-soft);
+    margin-bottom: 22px;
+}
+
+/* FORMULARIO */
+
+.form-group {
+    width: 100%;
+    max-width: 560px;
+    margin: 0 auto 16px;
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+}
+
+    .form-group label {
+        font-size: 14px;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+
+    .form-group input {
+        width: 100%;
+        height: 46px;
+        border: 1px solid var(--rose-light);
+        border-radius: 18px;
+        background: var(--cream);
+        padding: 0 28px;
+        font-size: 14px;
+        color: black;
+        outline: none;
+        box-sizing: border-box;
+    }
+
+        .form-group input::placeholder {
+            color: var(--gray-text);
+        }
+
+/* OLVIDASTE CONTRASEÑA */
+
+.forgot-password {
+    max-width: 560px;
+    margin: -2px auto 18px;
+    text-align: right;
+}
+
+    .forgot-password a {
+        color: var(--rose-soft);
+        text-decoration: underline;
+    }
+
+/* BOTÓN LOGIN */
+
+.login-button {
+    width: 100%;
+    max-width: 560px;
+    height: 50px;
+    border: none;
+    border-radius: 18px;
+    background: var(--rose-soft);
+    color: var(--white);
+    font-size: 18px;
+    font-weight: 700;
+    display: block;
+    margin: 0 auto 16px;
+    cursor: pointer;
+    transition: .2s;
+}
+
+    .login-button:hover {
+        background: var(--rose);
+    }
+
+/* REGISTRO */
+
+.register-text {
+    color: var(--gray-soft);
+}
+
+    .register-text a {
+        color: var(--rose-soft);
+        text-decoration: underline;
+    }
+
+.validation-message {
+    color: #e8607a;
+    font-size: 13px;
+    margin-top: 6px;
+}

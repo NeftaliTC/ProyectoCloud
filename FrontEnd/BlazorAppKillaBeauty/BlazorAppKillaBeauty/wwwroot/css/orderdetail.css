@@ -1,0 +1,445 @@
+﻿/* ==========================================================================
+   CONTENEDOR PRINCIPAL Y NAVEGACIÓN (BREADCRUMB FIX)
+   ========================================================================== */
+.order-detail-container {
+    max-width: 1100px;
+    margin: 40px auto;
+    padding: 0 20px;
+    font-family: system-ui, -apple-system, sans-serif;
+}
+
+/* FIX DEFINITIVO: Forzar el color rosa y quitar la línea subrayada por defecto */
+.breadcrumb-nav .btn-back {
+    color: #e91e63 !important;
+    text-decoration: none !important;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 1rem;
+    transition: color 0.2s ease;
+}
+
+    .breadcrumb-nav .btn-back:hover {
+        color: #c2185b !important;
+        text-decoration: none !important; /* Mantiene limpio el enlace incluso en hover */
+    }
+
+/* Encabezado del Pedido */
+.order-header-main {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 25px;
+    margin-bottom: 30px;
+}
+
+    .order-header-main h1 {
+        margin: 0;
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #222;
+    }
+
+.order-date {
+    color: #666;
+    margin: 6px 0 0 0;
+    font-size: 0.95rem;
+}
+
+/* Estado del pedido (Pills superiores) */
+.status-badge-detail {
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: bold;
+}
+
+.status-orange {
+    background: #ffe0b2;
+    color: #e65100;
+}
+
+.status-purple {
+    background: #e1bee7;
+    color: #4a148c;
+}
+
+.status-green {
+    background: #c8e6c9;
+    color: #1b5e20;
+}
+
+/* ==========================================================================
+   ESTRUCTURA DE LA GRILLA (DOS COLUMNAS)
+   ========================================================================== */
+.order-detail-grid {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr;
+    gap: 24px;
+    align-items: start;
+}
+
+/* Tarjeta Base Multiuso */
+.detail-card {
+    background: white;
+    padding: 25px;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    border: 1px solid #f0f0f0;
+    margin-bottom: 20px;
+}
+
+    .detail-card h2 {
+        margin-top: 0;
+        margin-bottom: 20px;
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #222;
+    }
+
+/* ==========================================================================
+   BARRA DE SEGUIMIENTO HORIZONTAL
+   ========================================================================== */
+.tracking-bar-container {
+    position: relative;
+    padding: 15px 0;
+}
+
+.tracking-line {
+    position: absolute;
+    top: 24px;
+    left: 40px;
+    right: 40px;
+    height: 3px;
+    background-color: #e0e0e0;
+    z-index: 1;
+}
+
+.tracking-steps {
+    display: flex;
+    justify-content: space-between;
+    position: relative;
+    z-index: 2;
+}
+
+.step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 25%;
+}
+
+.step-dot {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background-color: #b0bec5;
+    margin-bottom: 10px;
+    border: 3px solid #ffffff;
+    box-shadow: 0 0 0 2px #e0e0e0;
+    transition: all 0.3s ease;
+}
+
+.step-label {
+    font-size: 0.8rem;
+    color: #78909c;
+    text-align: center;
+}
+
+/* Iluminación secuencial de la barra */
+.step.completed .step-dot {
+    background-color: #e91e63;
+    box-shadow: 0 0 0 2px #e91e63;
+}
+
+.step.active .step-dot {
+    background-color: #ffffff;
+    border: 5px solid #e91e63;
+    box-shadow: 0 0 0 2px #e91e63;
+    transform: scale(1.15);
+}
+
+.step.active .step-label {
+    color: #e91e63;
+    font-weight: 600;
+}
+
+/* ==========================================================================
+   LISTA DE PRODUCTOS Y BOTÓN DE RESEÑA (PREMIUM OUTLINE)
+   ========================================================================== */
+.product-row-item {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 20px 0;
+    border-bottom: 1px solid #f5f5f5;
+}
+
+    .product-row-item:last-child {
+        border-bottom: none;
+    }
+
+.product-thumbnail {
+    width: 75px;
+    height: 75px;
+    object-fit: contain;
+    border-radius: 10px;
+    border: 1px solid #eaeaea;
+    flex-shrink: 0;
+}
+
+.product-main-details {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    gap: 4px;
+}
+
+.product-title {
+    font-weight: 600;
+    font-size: 1rem;
+    color: #222;
+}
+
+.product-brand {
+    font-size: 0.85rem;
+    color: #888;
+}
+
+.product-qty-badge {
+    font-size: 0.8rem;
+    background: #fce4ec;
+    color: #e91e63;
+    padding: 2px 10px;
+    border-radius: 12px;
+    width: max-content;
+    font-weight: 500;
+}
+
+.product-unit-price {
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.savings-tag {
+    font-size: 0.8rem;
+    color: #2e7d32;
+    font-weight: 600;
+}
+
+/* Columna Central del Botón "Reseñar" */
+.product-review-column {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0 10px;
+}
+
+.product-actions-column {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 30px;
+}
+
+.btn-review-outline {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid #f8bbd0;
+    background-color: #fff5f7;
+    color: #e91e63;
+    padding: 10px 22px;
+    border-radius: 10px;
+    font-weight: 500;
+    font-size: 0.95rem;
+    text-decoration: none !important;
+    transition: all 0.2s ease-in-out;
+    cursor: pointer;
+}
+
+    .btn-review-outline:hover {
+        background-color: #fce4ec;
+        border-color: #e91e63;
+        transform: translateY(-1px);
+    }
+
+/* Columna del Subtotal del producto extremo derecho */
+.product-subtotal-column {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: center;
+    min-width: 140px;
+    margin-left: auto;
+}
+
+.subtotal-label {
+    font-weight: 600;
+    color: #333;
+    white-space: nowrap;
+    font-size: 1rem;
+}
+
+/* Banner rosa de ahorros grupales */
+.alert-savings-banner {
+    background: #fce4ec;
+    color: #c2185b;
+    padding: 14px 16px;
+    border-radius: 10px;
+    margin-top: 20px;
+    font-size: 0.88rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* ==========================================================================
+   COLUMNA DERECHA (DESGLOSE, COMPROBANTE Y DETALLES OLVA)
+   ========================================================================== */
+.summary-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.summary-line {
+    display: flex;
+    justify-content: space-between;
+    color: #555;
+    font-size: 0.95rem;
+}
+
+.coupon-line {
+    color: #2e7d32;
+    font-weight: 500;
+}
+
+.summary-divider {
+    border: 0;
+    border-top: 1px solid #eee;
+    margin: 8px 0;
+}
+
+.total-line {
+    font-size: 1.15rem;
+    font-weight: bold;
+    color: #222;
+}
+
+.final-price {
+    color: #e91e63;
+}
+
+/* Caja de Comprobante Electrónico */
+.invoice-details-box {
+    background: #fafafa;
+    padding: 16px;
+    border-radius: 12px;
+    border: 1px solid #eee;
+}
+
+.invoice-meta p {
+    margin: 6px 0;
+    font-size: 0.9rem;
+    color: #444;
+}
+
+.btn-download-invoice-solid {
+    background: #e91e63;
+    color: white;
+    border: none;
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    margin-top: 14px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.95rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    transition: background 0.2s ease;
+}
+
+    .btn-download-invoice-solid:hover {
+        background: #c2185b;
+    }
+
+/* Tarjetas de entrega de Olva */
+.info-icon-block {
+    display: flex;
+    gap: 15px;
+    align-items: flex-start;
+}
+
+.icon-pink {
+    color: #e91e63;
+    font-size: 1.4rem;
+    margin-top: 2px;
+}
+
+.courier-highlight {
+    color: #e91e63;
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin: 2px 0 6px 0 !important;
+}
+
+.block-text h3 {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.block-text p {
+    margin: 4px 0;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.block-text .reference-text {
+    color: #888;
+    font-style: italic;
+    margin-top: 6px;
+}
+
+.loading-state {
+    text-align: center;
+    padding: 50px;
+    color: #666;
+}
+
+
+/* NUMERO DE SEGUIMIENTO - TRACKING*/
+.tracking-container {
+    background-color: #fdf2f8;
+    border-left: 4px solid #e83e8c;
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+    width: 270px;
+}
+
+.tracking-label {
+    font-size: 0.85em;
+    color: #666;
+    font-weight: 600;
+}
+
+.tracking-number {
+    display: block;
+    font-size: 1.1em;
+    color: #e83e8c;
+    margin-top: 2px;
+}
+
+.tracking-link {
+    font-size: 0.8em;
+    color: #0d6efd;
+    text-decoration: underline;
+}

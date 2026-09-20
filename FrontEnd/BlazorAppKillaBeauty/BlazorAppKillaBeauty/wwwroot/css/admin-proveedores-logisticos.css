@@ -1,0 +1,180 @@
+﻿/* ESTILOS ADICIONALES PARA PROVEEDORES */
+.admin-providers-content {
+    max-width: 1240px;
+}
+
+/* Botón Editar de la tabla */
+.admin-providers-btn-edit {
+    min-height: 36px;
+    border: 1px solid var(--gray-border);
+    background: var(--white);
+    color: #4f4148;
+    border-radius: 11px;
+    padding: 0 14px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+    .admin-providers-btn-edit:hover {
+        background: var(--gray-light);
+    }
+
+/* Botón Eliminar de la tabla */
+.admin-providers-btn-delete {
+    min-height: 36px;
+    border: 1px solid var(--red-border);
+    background: var(--white);
+    color: #a12828;
+    border-radius: 11px;
+    padding: 0 14px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+    .admin-providers-btn-delete:hover {
+        background: var(--gray-light);
+    }
+
+/* Botón interactivo de Asignación Exclusiva */
+.admin-providers-btn-assign {
+    min-height: 36px;
+    border: 1px solid var(--rose-soft);
+    background: transparent;
+    color: var(--rose);
+    border-radius: 11px;
+    padding: 0 14px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+    .admin-providers-btn-assign:hover {
+        background: var(--rose);
+        color: var(--white);
+        border-color: var(--rose);
+    }
+
+/* Texto indicador para el courier activo actual */
+.admin-providers-txt-active {
+    color: #1f7a3d;
+    font-weight: 800;
+    font-size: 0.9rem;
+    padding: 0 14px;
+}
+
+/* NUEVA ETIQUETA: ESTILO NEUTRAL (GRIS) PARA "NO ASIGNADO" */
+.admin-status.neutral {
+    background: #f1f1f1;
+    color: #666666;
+}
+
+/* MODAL DE CONFIRMACIÓN */
+.admin-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(47, 37, 42, 0.4);
+    backdrop-filter: blur(2px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+}
+
+.admin-modal-card {
+    background: var(--white);
+    padding: 32px;
+    border-radius: var(--radius);
+    width: 100%;
+    max-width: 460px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(70, 45, 55, 0.15);
+    border: 1px solid var(--gray-border);
+}
+
+.admin-modal-icon {
+    font-size: 3.2rem;
+    color: #a12828;
+    margin-bottom: 12px;
+}
+
+.admin-modal-card h2 {
+    font-size: 1.45rem;
+    font-weight: 800;
+    color: #2f252a;
+    margin: 0 0 12px 0;
+}
+
+.admin-modal-text {
+    color: var(--gray);
+    font-size: 0.98rem;
+    line-height: 1.5;
+    margin: 0 0 24px 0;
+}
+
+.admin-modal-actions {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+}
+
+.admin-modal-btn-cancel {
+    min-height: 42px;
+    border: 1px solid var(--gray-border);
+    background: var(--white);
+    color: #4f4148;
+    border-radius: 12px;
+    padding: 0 20px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.admin-modal-btn-confirm {
+    min-height: 42px;
+    border: none;
+    background: #a12828;
+    color: var(--white);
+    border-radius: 12px;
+    padding: 0 20px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+    .admin-modal-btn-confirm:hover {
+        background: #821f1f;
+    }
+
+/* Estilos para inputs del formulario */
+.admin-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 16px;
+}
+
+    .admin-form-group label {
+        font-size: 0.85rem;
+        font-weight: 800;
+        color: var(--gray);
+    }
+
+    .admin-form-group input {
+        min-height: 44px;
+        border: 1px solid var(--gray-border);
+        border-radius: 12px;
+        padding: 0 14px;
+        font-size: 0.95rem;
+        color: #2f252a;
+        outline: none;
+        background: var(--white);
+        transition: border-color 0.2s;
+    }
+
+        .admin-form-group input:focus {
+            border-color: var(--rose-soft);
+        }

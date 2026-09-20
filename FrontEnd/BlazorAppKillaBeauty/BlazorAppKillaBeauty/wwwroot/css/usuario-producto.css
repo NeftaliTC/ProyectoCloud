@@ -1,0 +1,559 @@
+﻿.usuario-producto-page {
+    background: #fffafa;
+    min-height: 100vh;
+    padding: 24px 30px 70px;
+    font-family: Arial, sans-serif;
+}
+
+.producto-breadcrumb {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 7px;
+    color: #f48fa5;
+    font-size: 13px;
+    margin-bottom: 22px;
+}
+
+.producto-breadcrumb-link {
+    color: #ff6f91;
+    text-decoration: none;
+}
+
+    .producto-breadcrumb-link:hover {
+        text-decoration: underline;
+    }
+
+.producto-breadcrumb-current {
+    color: #ff6f91;
+}
+
+.producto-detalle-layout {
+    display: grid;
+    grid-template-columns: 130px minmax(320px, 1fr) minmax(360px, 445px);
+    gap: 16px;
+    align-items: stretch;
+}
+
+.producto-miniaturas {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    align-items: center;
+}
+
+.producto-miniatura {
+    width: 130px;
+    height: 105px;
+    border: 1.5px solid #ffd1da;
+    background: white;
+    border-radius: 4px;
+    padding: 8px;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+    .producto-miniatura:hover,
+    .producto-miniatura.activa {
+        border-color: #ff9db2;
+        box-shadow: 0 4px 12px rgba(255, 157, 178, 0.22);
+    }
+
+    .producto-miniatura img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+
+.miniatura-flecha {
+    border: none;
+    background: transparent;
+    color: #ff9db2;
+    font-size: 30px;
+    cursor: pointer;
+}
+
+.producto-imagen-principal-card {
+    position: relative;
+    background: white;
+    border: 1.5px solid #ffd1da;
+    border-radius: 34px;
+    min-height: 520px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.producto-imagen-principal {
+    width: 78%;
+    height: 440px;
+    object-fit: contain;
+}
+
+.producto-flecha {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    border: none;
+    background: transparent;
+    color: #ff9db2;
+    font-size: 46px;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+    .producto-flecha.deshabilitada,
+    .producto-flecha:disabled {
+        color: #ffd6df;
+        cursor: not-allowed;
+        opacity: 0.45;
+    }
+    .producto-flecha:hover {
+        color: #f26f8f;
+    }
+
+    .producto-flecha.izquierda {
+        left: 16px;
+    }
+
+    .producto-flecha.derecha {
+        right: 16px;
+    }
+
+.producto-info-card {
+    background: white;
+    border: 1.5px solid #ffd1da;
+    border-radius: 34px;
+    padding: 28px 34px 0;
+    position: relative;
+    overflow: hidden;
+}
+
+    .producto-info-card h1 {
+        color: #f49aae;
+        font-size: 27px;
+        font-weight: 800;
+        margin: 0 0 14px;
+    }
+
+.producto-nombre-completo {
+    color: #111;
+    font-size: 16px;
+    margin-bottom: 14px;
+}
+
+.producto-precio-linea {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 16px;
+}
+
+.producto-precio-actual {
+    font-size: 30px;
+    font-weight: 800;
+    color: #000;
+}
+
+.producto-precio-anterior {
+    color: #c9c9c9;
+    font-size: 18px;
+    text-decoration: line-through;
+}
+
+.producto-descuento {
+    background: #f5a6b9;
+    color: white;
+    font-size: 10px;
+    padding: 3px 5px;
+    border-radius: 2px;
+}
+
+.producto-ayuda-precios {
+    color: #f49aae;
+    font-size: 11px;
+    margin-bottom: 18px;
+}
+
+.producto-escalas {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 24px;
+}
+
+.producto-escala {
+    height: 41px;
+    border: 1.5px solid #ff8fa8;
+    border-radius: 6px;
+    background: white;
+    color: #222;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    padding: 0 12px 0 14px;
+    cursor: pointer;
+    position: relative;
+    transition: 0.2s ease;
+    text-align: left;
+}
+
+    .producto-escala strong {
+        font-size: 16px;
+        font-weight: 400;
+    }
+
+    .producto-escala small {
+        position: absolute;
+        right: 14px;
+        bottom: 3px;
+        color: #c7c7c7;
+        font-size: 6px;
+    }
+
+    .producto-escala:hover,
+    .producto-escala.activa {
+        background: #f3a0b4;
+        color: white;
+        border-color: #f3a0b4;
+    }
+
+    .producto-escala.activa {
+        grid-template-columns: 24px 1fr auto;
+    }
+
+        .producto-escala.activa::before {
+            content: "✓";
+            color: white;
+            font-size: 18px;
+            font-weight: 400;
+        }
+
+        .producto-escala.activa span {
+            color: white;
+        }
+
+        .producto-escala.activa strong {
+            color: white;
+        }
+
+        .producto-escala.activa small {
+            color: rgba(255, 255, 255, 0.75);
+        }
+
+.producto-compra-row {
+    display: flex;
+    align-items: center;
+    gap: 58px;
+    margin-bottom: 26px;
+}
+
+.producto-cantidad {
+    width: 118px;
+    height: 36px;
+    border: 1.5px solid #ff9db2;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    color: #111;
+}
+
+    .producto-cantidad button {
+        border: none;
+        background: transparent;
+        color: #ff9db2;
+        font-size: 20px;
+        cursor: pointer;
+    }
+
+    .producto-cantidad span {
+        font-size: 20px;
+    }
+
+.producto-btn-carrito {
+    border: none;
+    background: #f3a0b4;
+    color: white;
+    font-weight: 800;
+    font-size: 15px;
+    border-radius: 22px;
+    height: 38px;
+    min-width: 190px;
+    max-width: 220px;
+    padding: 0 20px;
+    cursor: pointer;
+    transition: 0.2s ease;
+    white-space: nowrap;
+}
+
+    .producto-btn-carrito:hover {
+        background: #ec829d;
+    }
+
+.producto-meta {
+    border-top: 1px solid #eee;
+    margin-left: -34px;
+    margin-right: -34px;
+    padding: 12px 34px 18px;
+}
+
+    .producto-meta p {
+        color: #f48fa5;
+        font-size: 12px;
+        margin: 8px 0;
+    }
+
+.producto-resenas-section {
+    margin-top: 40px;
+    background: white;
+    border-top: 1px solid #ead5d9;
+    padding-bottom: 30px;
+}
+
+.producto-tabs {
+    border-bottom: 1px solid #ead5d9;
+}
+
+    .producto-tabs button {
+        background: transparent;
+        border: none;
+        color: #ff6f91;
+        font-size: 18px;
+        padding: 16px 36px 8px;
+        border-bottom: 4px solid #f5a6b9;
+    }
+
+.producto-resumen-resenas {
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    gap: 40px;
+    padding: 28px 60px 28px;
+    border-bottom: 1px solid #ead5d9;
+}
+
+.producto-promedio strong {
+    font-size: 92px;
+    line-height: 1;
+    color: #000;
+}
+
+.producto-estrellas {
+    color: #f5a6b9;
+    font-size: 24px;
+    margin-top: 8px;
+}
+
+.producto-promedio p {
+    font-size: 18px;
+    color: #111;
+    margin-top: 4px;
+}
+
+.producto-barras {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    justify-content: center;
+}
+
+.barra-row {
+    display: grid;
+    grid-template-columns: 40px 1fr 30px;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+}
+
+.barra-fondo {
+    height: 8px;
+    background: #555;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.barra-relleno {
+    height: 100%;
+    background: #f5a6b9;
+    border-radius: 10px;
+}
+
+.producto-filtros-resenas {
+    padding: 18px 24px;
+}
+
+    .producto-filtros-resenas h3 {
+        font-size: 20px;
+        font-weight: 400;
+        margin-bottom: 22px;
+    }
+
+    .producto-filtros-resenas select {
+        width: 245px;
+        height: 31px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        margin-right: 56px;
+        padding: 0 12px;
+        color: #444;
+        background: white;
+    }
+
+.producto-lista-resenas {
+    padding: 0 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.producto-resena-card {
+    border: 1px solid #ffd1da;
+    border-radius: 24px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+}
+
+.resena-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: #e8ecff;
+    color: #4b5c98;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    flex-shrink: 0;
+}
+
+.resena-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.resena-contenido {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.resena-estrellas {
+    color: #e8b82e;
+    font-size: 13px;
+}
+
+.resena-nombre {
+    font-weight: bold;
+    font-size: 16px;
+    color: #111;
+}
+
+.resena-fecha {
+    margin: 2px 0 10px;
+    color: #777;
+    font-size: 12px;
+}
+
+.resena-titulo {
+    font-size: 14px;
+    font-weight: 600;
+    margin: 8px 0 3px 0;
+    color: #222;
+}
+
+.resena-comentario {
+    margin: 0;
+    font-size: 14px;
+    color: #444;
+}
+
+.producto-sin-resenas {
+    padding: 50px 30px;
+    text-align: center;
+    color: #777;
+}
+
+    .producto-sin-resenas h3 {
+        color: #f48fa5;
+        margin-bottom: 8px;
+    }
+
+.producto-no-encontrado {
+    background: white;
+    border: 1px solid #ffd1da;
+    border-radius: 20px;
+    padding: 40px;
+    text-align: center;
+}
+
+    .producto-no-encontrado button {
+        border: none;
+        background: #f3a0b4;
+        color: white;
+        padding: 10px 24px;
+        border-radius: 20px;
+        font-weight: 700;
+    }
+
+@media (max-width: 1050px) {
+    .producto-detalle-layout {
+        grid-template-columns: 100px 1fr;
+    }
+
+    .producto-info-card {
+        grid-column: 1 / -1;
+    }
+
+    .producto-resumen-resenas {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 720px) {
+    .usuario-producto-page {
+        padding: 18px 14px 50px;
+    }
+
+    .producto-detalle-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .producto-miniaturas {
+        flex-direction: row;
+        overflow-x: auto;
+    }
+
+    .producto-miniatura {
+        min-width: 100px;
+    }
+
+    .producto-imagen-principal-card {
+        min-height: 360px;
+    }
+
+    .producto-imagen-principal {
+        height: 300px;
+    }
+
+    .producto-compra-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        margin-bottom: 26px;
+    }
+
+    .producto-filtros-resenas select {
+        width: 100%;
+        margin: 0 0 12px;
+    }
+}
+
+.producto-marca-detalle {
+    color: #111;
+    font-size: 16px;
+    margin-bottom: 14px;
+}

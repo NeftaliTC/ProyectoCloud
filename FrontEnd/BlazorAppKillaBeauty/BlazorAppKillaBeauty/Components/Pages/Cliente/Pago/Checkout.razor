@@ -1,0 +1,889 @@
+﻿@page "/checkout"
+@attribute [Authorize(Roles = "CLIENTE,TRABAJADOR,ADMINISTRADOR")]
+@rendermode InteractiveServer
+@using BlazorAppKillaBeauty.Services
+@using BlazorAppKillaBeauty.ClienteREST.ServicesAct
+@using BlazorAppKillaBeauty.ClienteREST.Models
+@inject CartService CartService
+@inject AddressService AddressService
+@inject CuponService cuponService
+@inject PedidoService PedidoService
+@inject AuthService AuthService
+@inject UbigeoService UbigeoService
+@inject ProductoService ProductoService
+
+<Navbar CantidadCarrito="@CartService.CantidadTotal"
+        TodosLosProductos="@(new List<Producto>())" />
+
+<section class="checkout-page">
+
+    <div class="checkout-left">
+
+        <h1>Finalizar Compra</h1>
+
+        <div class="checkout-card">
+            <h2>
+                <i class="bi bi-truck"></i>
+                Método de entrega
+            </h2>
+
+            <div class="delivery-options">
+
+                <button class="delivery-option @(metodoEntrega == "DELIVERY" ? "selected" : "")"
+                        @onclick='() => SeleccionarEntrega("DELIVERY")'>
+                    <i class="bi bi-truck"></i>
+                    <strong>Delivery</strong>
+                    <span>Según distrito</span>
+                </button>
+
+                <button class="delivery-option @(metodoEntrega == "RECOJO" ? "selected" : "")"
+                        @onclick='() => SeleccionarEntrega("RECOJO")'>
+                    <i class="bi bi-bag"></i>
+                    <strong>Recojo en tienda</strong>
+                    <span>Gratis</span>
+                </button>
+
+            </div>
+
+            @if (!string.IsNullOrEmpty(errorEntrega))
+            {
+                <p class="checkout-error">@errorEntrega</p>
+            }
+        </div>
+
+        @if (metodoEntrega == "DELIVERY")
+        {
+            <div class="checkout-card">
+
+                <div class="card-title-row">
+                    <h2>
+                        <i class="bi bi-geo-alt"></i>
+                        Dirección de Entrega
+                    </h2>
+
+                    <button class="btn-new-address"
+                            @onclick="AbrirModalDireccion">
+                        + Nueva Dirección
+                    </button>
+                </div>
+
+                @foreach (var direccion in AddressService.UserAddresses)
+                {
+                    <div class="address-option @(direccionSeleccionada?.Id == direccion.Id ? "selected" : "")"
+                         @onclick="() => SeleccionarDireccion(direccion)">
+
+                        <h3>
+                            @direccion.Alias
+
+                            @if (direccion.IsDefault)
+                            {
+                                <span class="default-badge">
+                                    ★ Predeterminada
+                                </span>
+                            }
+                        </h3>
+
+                        <p>
+                            @direccion.DireccionDetalle<br />
+                            @direccion.Distrito, @direccion.Provincia<br />
+                            @direccion.Referencia
+                        </p>
+
+                    </div>
+                }
+
+                @if (!string.IsNullOrEmpty(errorDireccionEntrega))
+                {
+                    <p class="checkout-error">@errorDireccionEntrega</p>
+                }
+
+            </div>
+        }
+
+        <div class="checkout-card">
+            <h2>
+                <i class="bi bi-tag"></i>
+                Cupón de Descuento
+            </h2>
+
+            <div class="coupon-row">
+                <input placeholder="Ingresa tu código de cupón"
+                       value="@cupon"
+                       disabled="@(cuponAplicado != null)"
+                       @oninput="ActualizarCupon" />
+
+                @if (cuponAplicado == null)
+                {
+                    <button class="coupon-button"
+                            disabled="@string.IsNullOrWhiteSpace(cupon)"
+                            @onclick="AplicarCupon">
+                        Aplicar
+                    </button>
+                }
+                else
+                {
+                    <button class="coupon-button coupon-remove"
+                            @onclick="QuitarCupon">
+                        Quitar
+                    </button>
+                }
+            </div>
+
+            @if (cuponAplicado != null)
+            {
+                <p class="coupon-discount">
+                    @cuponAplicado?.Codigo
+                </p>
+
+                <div class="coupon-success">
+                    ✓ Cupón <strong>@cuponAplicado.Codigo</strong> aplicado correctamente
+                </div>
+            }
+            @if (!string.IsNullOrEmpty(errorCupon))
+            {
+                <div class="coupon-error">
+                    @errorCupon
+                </div>
+            }
+        </div>
+
+        <div class="checkout-card">
+            <h2>
+                <i class="bi bi-file-earmark-text"></i>
+                Tipo de Comprobante
+            </h2>
+
+            <div class="voucher-options">
+
+                <button type="button"
+                        class="voucher-option @(tipoComprobante == "BOLETA" ? "selected" : "")"
+                        @onclick='() => SeleccionarComprobante("BOLETA")'>
+                    <i class="bi bi-file-earmark-text"></i>
+                    <strong>Boleta</strong>
+                    <span>Para personas naturales</span>
+                </button>
+
+                <button type="button"
+                        class="voucher-option @(tipoComprobante == "FACTURA" ? "selected" : "")"
+                        @onclick='() => SeleccionarComprobante("FACTURA")'>
+                    <i class="bi bi-receipt"></i>
+                    <strong>Factura</strong>
+                    <span>Para empresas</span>
+                </button>
+
+            </div>
+
+            @if (tipoComprobante == "BOLETA")
+            {
+                <div class="checkout-field">
+                    <label>DNI</label>
+                    <input placeholder="DNI del usuario"
+                           value="@dni"
+                           maxlength="8"
+                           readonly />
+                </div>
+            }
+
+            @if (tipoComprobante == "FACTURA")
+            {
+                <div class="checkout-field">
+                    <label>RUC</label>
+                    <input placeholder="Ingresa el RUC de tu empresa"
+                           value="@ruc"
+                           maxlength="11"
+                           @oninput="FiltrarRuc"
+                           onkeydown="return event.key >= '0' && event.key <= '9'
+                    || event.key === 'Backspace'
+                    || event.key === 'Delete'
+                    || event.key === 'Tab'
+                    || event.key === 'ArrowLeft'
+                    || event.key === 'ArrowRight'" />
+                </div>
+
+                <div class="checkout-field">
+                    <label>Razón Social</label>
+                    <input placeholder="Nombre o razón social de la empresa"
+                           @bind="razonSocial" />
+                </div>
+
+                <div class="checkout-field">
+                    <label>Dirección Fiscal</label>
+                    <input placeholder="Dirección registrada en SUNAT"
+                           @bind="direccionFiscal" />
+                </div>
+            }
+
+            @if (!string.IsNullOrEmpty(errorComprobante))
+            {
+                <p class="checkout-error">@errorComprobante</p>
+            }
+        </div>
+
+        <div class="checkout-card">
+            <h2>
+                <i class="bi bi-credit-card"></i>
+                Método de pago
+            </h2>
+
+            <div class="payment-options">
+
+                <button type="button"
+                        class="payment-option-btn @(metodoPago == "TARJETA" ? "selected" : "")"
+                        @onclick='() => SeleccionarPago("TARJETA")'>
+                    <span class="payment-radio @(metodoPago == "TARJETA" ? "active" : "")"></span>
+                    <i class="bi bi-credit-card"></i>
+                    Tarjeta de Crédito/Débito
+                </button>
+
+                <button type="button"
+                        class="payment-option-btn @(metodoPago == "YAPE_PLIN" ? "selected" : "")"
+                        @onclick='() => SeleccionarPago("YAPE_PLIN")'>
+                    <span class="payment-radio @(metodoPago == "YAPE_PLIN" ? "active" : "")"></span>
+                    <i class="bi bi-phone"></i>
+                    Yape / Plin
+                </button>
+
+            </div>
+
+            @if (!string.IsNullOrEmpty(errorPago))
+            {
+                <p class="checkout-error">@errorPago</p>
+            }
+        </div>
+
+    </div>
+
+    <div class="checkout-summary">
+        <h2>Resumen del Pedido</h2>
+
+        @foreach (var producto in CartService.Productos)
+        {
+            <div class="summary-product">
+                <span>@($"{producto.Producto?.Nombre} x{producto.Cantidad}")</span>
+                <strong>S/ @((producto.Cantidad * producto.Producto?.PrecioBase ?? 0).ToString("0.00"))</strong>
+            </div>
+        }
+
+        <hr />
+
+        <div class="summary-row">
+            <span>Subtotal</span>
+            <strong>S/ @((CartService.Total + CartService.DescuentoTotal).ToString("0.00"))</strong>
+        </div>
+
+        @if (CartService.DescuentoTotal > 0)
+        {
+            <div class="summary-row discount">
+                <span>Descuento por volumen</span>
+                <strong>- S/ @CartService.DescuentoTotal.ToString("0.00")</strong>
+            </div>
+        }
+
+        @if (descuentoCupon > 0)
+        {
+            <div class="summary-row discount">
+                <span>
+                    <i class="bi bi-tag"></i>
+                    Cupón de descuento
+                </span>
+                <strong>-S/ @descuentoCupon.ToString("0.00")</strong>
+            </div>
+        }
+
+        @if (metodoEntrega == "DELIVERY")
+        {
+            <div class="summary-row">
+                <span>Envío</span>
+                @if (direccionSeleccionada is null)
+                {
+                    <strong>-</strong>
+                }
+                else
+                {
+                    <strong>S/ @costoEnvio.ToString("0.00")</strong>
+                }
+            </div>
+        }
+        else if (metodoEntrega == "RECOJO")
+        {
+            <div class="summary-row">
+                <span>Envío</span>
+                <strong>Gratis</strong>
+            </div>
+        }
+
+        <hr />
+
+        <div class="summary-total">
+            <span>Total a pagar</span>
+            <strong>S/ @TotalFinal.ToString("0.00")</strong>
+        </div>
+
+        <button class="confirm-button"
+                @onclick="ConfirmarPedido"
+                disabled="@validandoCompra">
+            @(validandoCompra ? "Validando..." : "Confirmar pedido")
+        </button>
+    </div>
+
+</section>
+
+@if (mostrarModalDireccion)
+{
+    <div class="modal-overlay">
+
+        <div class="address-modal">
+
+            <h2>Nueva Dirección</h2>
+
+            <div class="modal-grid">
+                <div class="form-group">
+                    <label>Alias</label>
+                    <input @bind="nuevaDireccion.Alias" placeholder="Casa / Oficina" />
+                </div>
+
+                <div class="form-group">
+                    <label>Teléfono</label>
+                    <input value="@nuevaDireccion.Telefono"
+                           maxlength="9"
+                           placeholder="987654321"
+                           @oninput="FiltrarTelefono"
+                           onkeydown="return event.key >= '0' && event.key <= '9'
+                    || event.key === 'Backspace'
+                    || event.key === 'Delete'
+                    || event.key === 'Tab'
+                    || event.key === 'ArrowLeft'
+                    || event.key === 'ArrowRight'" />
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Dirección</label>
+                <input @bind="nuevaDireccion.DireccionDetalle" placeholder="Calle, número, departamento" />
+            </div>
+
+            <div class="modal-grid">
+                <div class="form-group">
+                    <label>Departamento</label>
+                    <div class="select-wrapper disabled-select">
+                        @* Para expansión futura: *@
+                        @* <select value="@deptoSeleccionado" @onchange="OnDepartamentoChanged">
+                            <option value="">Seleccione...</option>
+                            @foreach (var depto in departamentos)
+                            {
+                                <option value="@depto">@depto</option>
+                            }
+                        </select> *@
+                        <select value="@deptoSeleccionado" disabled>
+                            <option value="Lima">Lima</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Provincia</label>
+                    <div class="select-wrapper disabled-select">
+                        @* Para expansión futura: *@
+                        @* <select value="@provSeleccionada" @onchange="OnProvinciaChanged" disabled="@string.IsNullOrEmpty(deptoSeleccionado)">
+                            <option value="">Seleccione...</option>
+                            @foreach (var prov in provincias)
+                            {
+                                <option value="@prov">@prov</option>
+                            }
+                        </select> *@
+                        <select value="@provSeleccionada" disabled>
+                            <option value="Lima">Lima</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-grid" style="grid-template-columns: 1fr 1fr;">
+                <div class="form-group">
+                    <label>Distrito</label>
+                    <div class="select-wrapper">
+                        <select value="@distritoSeleccionado" @onchange="OnDistritoChanged" disabled="@string.IsNullOrEmpty(provSeleccionada)">
+                            <option value="">Seleccione...</option>
+                            @foreach (var dist in distritos)
+                            {
+                                <option value="@dist">@dist</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div></div>
+            </div>
+
+            <div class="form-group">
+                <label>Referencia</label>
+                <input @bind="nuevaDireccion.Referencia" placeholder="Frente a..., al lado de..." />
+            </div>
+
+            @if (!string.IsNullOrEmpty(errorDireccion))
+            {
+                <p class="address-error">@errorDireccion</p>
+            }
+
+            <div class="modal-actions">
+                <button class="btn-cancel" @onclick="CerrarModalDireccion">Cancelar</button>
+                <button class="btn-save" @onclick="GuardarNuevaDireccion">Usar esta Dirección</button>
+            </div>
+
+        </div>
+
+    </div>
+}
+
+@if (validandoCompra)
+{
+    <div class="modal-overlay">
+        <div class="validating-modal">
+            <div class="spinner-border text-danger" role="status"></div>
+            <h2>Validando compra...</h2>
+            <p>Estamos verificando tu pago. Por favor espera.</p>
+        </div>
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(errorValidacionCompra))
+{
+    <div class="modal-overlay">
+        <div class="validating-modal">
+            <i class="bi bi-x-circle text-danger fs-1"></i>
+            <h2>Compra no validada</h2>
+            <p>@errorValidacionCompra</p>
+            <button class="btn-save" @onclick="() => errorValidacionCompra = string.Empty">
+                Intentar nuevamente
+            </button>
+        </div>
+    </div>
+}
+
+@code {
+    private string metodoEntrega = "";
+    private string metodoPago = "";
+    private Address? direccionSeleccionada;
+    private decimal costoEnvio = 0;
+
+    private string errorEntrega = "";
+    private string errorDireccionEntrega = "";
+    private string errorPago = "";
+
+    private List<string> departamentos = new();
+    private List<string> provincias = new();
+    private List<string> distritos = new();
+
+    private string deptoSeleccionado = "Lima"; //por el momento a Lima
+    private string provSeleccionada = "Lima";
+    private string distritoSeleccionado = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await UbigeoService.InitializeAsync();
+        departamentos = UbigeoService.GetDepartamentos();
+
+        //Por el alcance actual, luego no sera necesario
+        deptoSeleccionado = "Lima";
+        provSeleccionada = "Lima";
+        provincias = UbigeoService.GetProvincias(deptoSeleccionado);
+        distritos = UbigeoService.GetDistritos(deptoSeleccionado, provSeleccionada);
+
+        if (AuthService.UsuarioId.HasValue)
+        {
+            validandoCompra = false;
+            errorValidacionCompra = "";
+            if (!AuthService.EstaLogueado || !AuthService.UsuarioId.HasValue)
+            {
+                Navigation.NavigateTo("/login?returnUrl=/checkout", replace: true);
+                return;
+            }
+
+            await AddressService.CargarPorUsuarioAsync(AuthService.UsuarioId.Value);
+            direccionSeleccionada = AddressService.ObtenerPredeterminada();
+
+            dni = AuthService.Dni ?? "";
+        }
+    }
+
+    private void SeleccionarEntrega(string metodo)
+    {
+        metodoEntrega = metodo;
+        errorEntrega = "";
+
+        if (metodo == "RECOJO")
+        {
+            costoEnvio = 0;
+            direccionSeleccionada = null;
+        }
+
+        if (metodo == "DELIVERY")
+        {
+            direccionSeleccionada ??= AddressService.ObtenerPredeterminada();
+
+            if (direccionSeleccionada != null)
+            {
+                costoEnvio = AddressService.CalcularEnvio(direccionSeleccionada);
+            }
+        }
+    }
+
+    private void SeleccionarDireccion(Address direccion)
+    {
+        direccionSeleccionada = direccion;
+        errorDireccionEntrega = "";
+        costoEnvio = AddressService.CalcularEnvio(direccion);
+    }
+
+    private void SeleccionarPago(string metodo)
+    {
+        metodoPago = metodo;
+        errorPago = "";
+    }
+
+    private string cupon = "";
+    private Cupon? cuponAplicado;
+    private decimal descuentoCupon = 0;
+    private string errorCupon = "";
+
+    private async Task AplicarCupon()
+    {
+        errorCupon = "";
+        cuponAplicado = null;
+        descuentoCupon = 0;
+
+        try
+        {
+            var encontrado = await cuponService.BuscarCuponAsync(cupon);
+
+            if (encontrado == null)
+            {
+                errorCupon = "Cupón no válido.";
+                return;
+            }
+
+            if (AuthService.UsuarioId.HasValue)
+            {
+                var (disponible, motivo) = await cuponService.VerificarDisponibilidadAsync(
+                    encontrado.Codigo, AuthService.UsuarioId.Value);
+
+                if (!disponible)
+                {
+                    errorCupon = motivo ?? "Este cupón ya no está disponible.";
+                    return;
+                }
+            }
+
+            descuentoCupon = cuponService.CalcularDescuento(encontrado, CartService.Total);
+
+            if (descuentoCupon <= 0)
+            {
+                errorCupon = encontrado.MontoMinimoCompra.HasValue
+                    ? $"Compra mínima S/ {encontrado.MontoMinimoCompra.Value:0.00} o cupón fuera de vigencia."
+                    : "El cupón no está vigente.";
+                return;
+            }
+
+            cuponAplicado = encontrado;
+        }
+        catch (Exception ex)
+        {
+            errorCupon = $"No se pudo validar el cupón: {ex.Message}";
+        }
+    }
+    private bool mostrarModalDireccion = false;
+    private string errorDireccion = "";
+    private Address nuevaDireccion = new();
+
+    private void AbrirModalDireccion()
+    {
+        errorDireccion = "";
+
+        //Por el alcance actual, luego no sera necesario
+        deptoSeleccionado = "Lima";
+        provSeleccionada = "Lima";
+        provincias = UbigeoService.GetProvincias(deptoSeleccionado);
+        distritos = UbigeoService.GetDistritos(deptoSeleccionado, provSeleccionada);
+
+        nuevaDireccion = new Address
+        {
+            Departamento = "Lima", //Por el momento Lima
+            Provincia = "Lima",
+            Distrito = ""
+        };
+        
+        distritoSeleccionado = "";
+        mostrarModalDireccion = true;
+    }
+
+    private void CerrarModalDireccion()
+    {
+        mostrarModalDireccion = false;
+    }
+
+    private async Task GuardarNuevaDireccion()
+    {
+        errorDireccion = "";
+
+        if (string.IsNullOrWhiteSpace(nuevaDireccion.Alias) ||
+            string.IsNullOrWhiteSpace(nuevaDireccion.Telefono) ||
+            string.IsNullOrWhiteSpace(nuevaDireccion.DireccionDetalle) ||
+            string.IsNullOrWhiteSpace(nuevaDireccion.Distrito) ||
+            string.IsNullOrWhiteSpace(nuevaDireccion.Referencia))
+        {
+            errorDireccion = "Complete todos los campos obligatorios.";
+            return;
+        }
+
+        if (nuevaDireccion.Telefono.Length != 9 ||
+            !nuevaDireccion.Telefono.All(char.IsDigit) ||
+            !nuevaDireccion.Telefono.StartsWith("9"))
+        {
+            errorDireccion = "Ingrese un celular válido.";
+            return;
+        }
+
+        try
+        {
+            nuevaDireccion.Usuario = new UsuarioDireccion { Id = AuthService.UsuarioId.Value };
+        
+            await AddressService.CrearAsync(nuevaDireccion, AuthService.UsuarioId.Value);
+
+            await AddressService.CargarPorUsuarioAsync(AuthService.UsuarioId.Value);
+
+            direccionSeleccionada = nuevaDireccion;
+            costoEnvio = AddressService.CalcularEnvio(direccionSeleccionada);
+            mostrarModalDireccion = false;
+        }
+        catch (Exception ex)
+        {
+            errorDireccion = "Error al guardar en el servidor: " + ex.Message;
+        }
+    }
+
+    private void OnDepartamentoChanged(ChangeEventArgs e)
+    {
+        deptoSeleccionado = e.Value?.ToString() ?? "";
+        provSeleccionada = "";
+        distritoSeleccionado = "";
+
+        provincias = UbigeoService.GetProvincias(deptoSeleccionado);
+        distritos = new();
+
+        nuevaDireccion.Departamento = deptoSeleccionado;
+        nuevaDireccion.Provincia = "";
+        nuevaDireccion.Distrito = "";
+    }
+
+    private void OnProvinciaChanged(ChangeEventArgs e)
+    {
+        provSeleccionada = e.Value?.ToString() ?? "";
+        distritoSeleccionado = "";
+
+        distritos = UbigeoService.GetDistritos(deptoSeleccionado, provSeleccionada);
+
+        nuevaDireccion.Provincia = provSeleccionada;
+        nuevaDireccion.Distrito = "";
+    }
+
+    private void OnDistritoChanged(ChangeEventArgs e)
+    {
+        distritoSeleccionado = e.Value?.ToString() ?? "";
+        var ubigeoCompleto = UbigeoService.GetUbigeoCompleto(deptoSeleccionado, provSeleccionada, distritoSeleccionado);
+
+        if (ubigeoCompleto != null)
+        {
+            nuevaDireccion.Distrito = ubigeoCompleto.Distrito;
+        }
+        else
+        {
+            nuevaDireccion.Distrito = distritoSeleccionado;
+        }
+    }
+
+    private string tipoComprobante = "BOLETA";
+    private string dni = "";
+    private string ruc = "";
+    private string razonSocial = "";
+    private string direccionFiscal = "";
+    private string errorComprobante = "";
+    private bool validandoCompra = false;
+    private string errorValidacionCompra = "";
+
+    private void SeleccionarComprobante(string tipo)
+    {
+        tipoComprobante = tipo;
+        errorComprobante = "";
+    }
+
+    private bool ValidarTodo()
+    {
+        var valido = true;
+
+        errorEntrega = "";
+        errorDireccionEntrega = "";
+        errorPago = "";
+        errorComprobante = "";
+
+        if (string.IsNullOrEmpty(metodoEntrega))
+        {
+            errorEntrega = "Selecciona un método de entrega.";
+            valido = false;
+        }
+
+        if (metodoEntrega == "DELIVERY" && direccionSeleccionada is null)
+        {
+            errorDireccionEntrega = "Selecciona una dirección de entrega.";
+            valido = false;
+        }
+
+        if (string.IsNullOrEmpty(metodoPago))
+        {
+            errorPago = "Selecciona un método de pago.";
+            valido = false;
+        }
+
+        if (tipoComprobante == "BOLETA")
+        {
+            if (dni.Length != 8 || !dni.All(char.IsDigit))
+            {
+                errorComprobante = "Ingrese un DNI válido de 8 dígitos.";
+                valido = false;
+            }
+        }
+
+        if (tipoComprobante == "FACTURA")
+        {
+            if (ruc.Length != 11 || !ruc.All(char.IsDigit))
+            {
+                errorComprobante = "Ingrese un RUC válido de 11 dígitos.";
+                valido = false;
+            }
+            else if (!(ruc.StartsWith("10") || ruc.StartsWith("20")))
+            {
+                errorComprobante = "El RUC debe iniciar con 10 o 20.";
+                valido = false;
+            }
+            else if (string.IsNullOrWhiteSpace(razonSocial) || string.IsNullOrWhiteSpace(direccionFiscal))
+            {
+                errorComprobante = "Complete los datos de facturación.";
+                valido = false;
+            }
+        }
+
+        return valido;
+    }
+
+    [Inject]
+    private NavigationManager Navigation { get; set; } = default!;
+
+    private async Task ConfirmarPedido()
+    {
+        if (!ValidarTodo()) return;
+        if (!AuthService.UsuarioId.HasValue)
+        {
+            Navigation.NavigateTo("/login?returnUrl=/checkout");
+            return;
+        }
+
+        validandoCompra = true;
+        errorValidacionCompra = "";
+        StateHasChanged();
+
+        try
+        {
+            // Construir items con precio con escala
+            var items = new List<PedidoService.PedidoCheckoutDto.ItemCarritoDto>();
+            foreach (var item in CartService.Productos.Where(i => i.Producto != null))
+            {
+                var precio = await CartService.ObtenerPrecioUnitarioAsync(item);
+                items.Add(new PedidoService.PedidoCheckoutDto.ItemCarritoDto
+                {
+                    ProductoId = item.Producto!.Id,
+                    Cantidad = item.Cantidad,
+                    PrecioAplicado = precio
+                });
+            }
+
+            var request = new PedidoService.PedidoCheckoutDto
+            {
+                UsuarioId = AuthService.UsuarioId.Value,
+                DireccionId = direccionSeleccionada?.Id ?? 0,
+                CuponId = cuponAplicado?.Id,
+                CostoEnvio = costoEnvio,
+                DescuentoCupon = descuentoCupon,
+                MetodoPago = metodoPago,
+                TipoComprobante = tipoComprobante,
+                Dni = dni,
+                Ruc = ruc,
+                RazonSocial = razonSocial,
+                DireccionFiscal = direccionFiscal,
+                Items = items
+            };
+
+            await PedidoService.CheckoutAsync(request);
+            await CartService.VaciarCarritoAsync(AuthService.UsuarioId.Value);
+
+            Navigation.NavigateTo("/order-confirmed", replace: true);
+        }
+        catch (Exception ex)
+        {
+            errorValidacionCompra = LimpiarMensajeError(ex.Message);
+        }
+        finally
+        {
+            validandoCompra = false;
+        }
+    }
+
+    private static string LimpiarMensajeError(string mensaje)
+    {
+        if (string.IsNullOrWhiteSpace(mensaje))
+        {
+            return "No se pudo completar el pedido.";
+        }
+
+        return mensaje
+            .Replace("{\"message\":\"", "", StringComparison.OrdinalIgnoreCase)
+            .Replace("\"}", "", StringComparison.OrdinalIgnoreCase)
+            .Replace("{\"mensaje\":\"", "", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private void FiltrarDni(ChangeEventArgs e)
+    {
+        dni = SoloNumeros(e.Value?.ToString(), 8);
+    }
+
+    private void FiltrarRuc(ChangeEventArgs e)
+    {
+        ruc = SoloNumeros(e.Value?.ToString(), 11);
+    }
+
+    private string SoloNumeros(string? texto, int maximo)
+    {
+        return new string((texto ?? "")
+            .Where(char.IsDigit)
+            .Take(maximo)
+            .ToArray());
+    }
+
+    private void FiltrarTelefono(ChangeEventArgs e)
+    {
+        nuevaDireccion.Telefono = SoloNumeros(e.Value?.ToString(), 9);
+    }
+
+    private void ActualizarCupon(ChangeEventArgs e)
+    {
+        cupon = e.Value?.ToString() ?? "";
+    }
+
+    private void QuitarCupon()
+    {
+        cupon = "";
+        cuponAplicado = null;
+        descuentoCupon = 0;
+        errorCupon = "";
+    }
+
+    private decimal TotalFinal =>
+        CartService.Total + costoEnvio - descuentoCupon;
+}

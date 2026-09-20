@@ -1,0 +1,462 @@
+.admin-page {
+    min-height: 100vh;
+    background: #fbf7f9;
+    color: #2f252a;
+}
+
+.admin-navbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    min-height: 78px;
+    background: var(--white);
+    border-bottom: 1px solid var(--gray-border);
+    box-shadow: 0 3px 18px rgba(70, 45, 55, 0.08);
+    padding: 0 34px;
+    display: flex;
+    align-items: center;
+    gap: 28px;
+}
+
+.admin-brand {
+    color: var(--rose);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.05rem;
+    font-weight: 800;
+    flex-shrink: 0;
+}
+
+.admin-brand img {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+}
+
+.admin-nav-links {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 12px 0;
+}
+
+.admin-nav-button {
+    min-height: 44px;
+    color: #4f4148;
+    border-radius: 14px;
+    padding: 0 15px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-weight: 700;
+    white-space: nowrap;
+    transition: background 0.2s, color 0.2s, transform 0.2s;
+}
+
+.admin-nav-button:hover {
+    background: var(--rose-pale);
+    color: var(--rose);
+}
+
+.admin-nav-button.active {
+    background: var(--rose);
+    color: var(--white);
+}
+
+.admin-content {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 36px 24px 64px;
+}
+
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 22px;
+    margin-bottom: 26px;
+}
+
+.admin-eyebrow {
+    color: var(--rose);
+    font-size: 0.82rem;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.admin-header h1 {
+    font-size: 2.25rem;
+    font-weight: 800;
+    margin: 5px 0 6px;
+}
+
+.admin-header p {
+    color: var(--gray);
+    font-size: 1.02rem;
+    margin: 0;
+}
+
+.admin-primary-action {
+    min-height: 46px;
+    border: none;
+    border-radius: 14px;
+    background: var(--rose);
+    color: var(--white);
+    padding: 0 18px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 800;
+    white-space: nowrap;
+    box-shadow: var(--shadow);
+}
+
+.admin-table-card,
+.admin-item-card,
+.admin-coupon-card,
+.admin-report-card {
+    background: var(--white);
+    border: 1px solid var(--gray-border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+}
+
+.admin-table-card {
+    overflow-x: auto;
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.admin-table th,
+.admin-table td {
+    padding: 18px;
+    border-bottom: 1px solid #f0e7eb;
+    text-align: left;
+    vertical-align: middle;
+}
+
+.admin-table th {
+    color: var(--gray);
+    background: #fff8fa;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+}
+
+.admin-table tr:last-child td {
+    border-bottom: none;
+}
+
+.admin-product-cell {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 800;
+}
+
+.admin-product-cell img {
+    width: 54px;
+    height: 54px;
+    border-radius: 12px;
+    object-fit: cover;
+    border: 1px solid #f0e7eb;
+}
+
+.admin-status {
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 0.82rem;
+    font-weight: 800;
+}
+
+.admin-status.active {
+    background: #dff7e7;
+    color: #1f7a3d;
+}
+
+.admin-status.warning {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.admin-status.info {
+    background: #e8ddff;
+    color: #56329a;
+}
+
+.admin-grid-list,
+.admin-report-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.admin-item-card {
+    padding: 22px;
+    display: flex;
+    gap: 16px;
+}
+
+.admin-item-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 16px;
+    background: var(--rose-pale);
+    color: var(--rose);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 1.35rem;
+}
+
+.admin-item-card h2,
+.admin-coupon-card h2 {
+    font-size: 1.12rem;
+    font-weight: 800;
+    margin: 0 0 7px;
+}
+
+.admin-item-card p,
+.admin-coupon-card p,
+.admin-report-card p {
+    color: var(--gray);
+    margin: 0 0 10px;
+}
+
+.admin-item-card span {
+    color: var(--rose);
+    font-weight: 800;
+}
+
+.admin-coupon-card {
+    padding: 22px;
+    border-left: 7px solid var(--rose-soft);
+}
+
+.admin-coupon-card > span {
+    color: var(--rose);
+    font-weight: 900;
+    display: block;
+    margin-bottom: 10px;
+}
+
+.admin-coupon-card div {
+    color: var(--gray);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.admin-report-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.admin-report-card {
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.admin-report-card i {
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+    background: var(--rose-pale);
+    color: var(--rose);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+}
+
+.admin-report-card span {
+    color: var(--gray);
+    font-weight: 700;
+}
+
+.admin-report-card strong {
+    color: #2f252a;
+    font-size: 1.55rem;
+}
+
+@media (max-width: 900px) {
+    .admin-navbar {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 4px;
+        padding: 14px 18px 0;
+    }
+
+    .admin-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .admin-grid-list,
+    .admin-report-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 640px) {
+    .admin-content {
+        padding: 28px 16px 48px;
+    }
+
+    .admin-header h1 {
+        font-size: 1.8rem;
+    }
+
+    .admin-primary-action {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .admin-nav-button span {
+        font-size: 0.92rem;
+    }
+}_
+
+.admin-navbar {
+    display: flex;
+    align-items: center;
+}
+
+.admin-nav-right {
+    margin-left: auto;
+    padding-right: 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+/* Diseño básico del botón para que no parezca un botón feo por defecto */
+.btn-logout {
+    background: none;
+    border: none;
+    color: #dc3545; /* Un rojo sutil para indicar "peligro/salir" */
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 15px;
+    border-radius: 5px;
+    transition: background-color 0.2s;
+}
+
+    .btn-logout:hover {
+        background-color: #ffe6e6; /* Fondo rojizo claro al pasar el mouse */
+    }
+
+/* El fondo oscuro transparente que bloquea la pantalla completa */
+.killa-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.4); /* Capa oscura */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999; /* Asegura que esté por encima de TODO */
+}
+
+/* La cajita del aviso en el centro */
+.killa-modal-box {
+    background-color: #ffffff;
+    padding: 30px;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 380px;
+    text-align: center;
+    box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.2);
+    border: 2px solid #fdf2f8; /* Toque rosa sutil */
+    animation: zoomIn 0.2s ease-out; /* Efecto de aparición */
+}
+
+/* Icono de advertencia en color rosa/rojo */
+.killa-modal-icon i {
+    font-size: 3.5rem;
+    color: #e83e8c; /* Rosa oscuro distintivo */
+    display: inline-block;
+    margin-bottom: 15px;
+}
+
+.killa-modal-box h3 {
+    color: #333333;
+    font-size: 1.4rem;
+    margin-bottom: 10px;
+    font-weight: 700;
+}
+
+.killa-modal-box p {
+    color: #666666;
+    font-size: 0.95rem;
+    margin-bottom: 25px;
+    line-height: 1.4;
+}
+
+/* Contenedor de botones lado a lado */
+.killa-modal-buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+/* Botón Cancelar (Gris neutro) */
+.btn-killa-cancel {
+    background-color: #f8f9fa;
+    color: #495057;
+    border: 1px solid #ced4da;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    flex: 1;
+    transition: background-color 0.2s;
+}
+
+    .btn-killa-cancel:hover {
+        background-color: #e2e6ea;
+    }
+
+/* Botón Confirmar (Rojo/Rosa de peligro) */
+.btn-killa-confirm {
+    background-color: #dc3545; /* Rojo de salida */
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    flex: 1;
+    transition: background-color 0.2s;
+}
+
+    .btn-killa-confirm:hover {
+        background-color: #bd2130;
+    }
+
+/* Animación bonita para que el modal "salte" a la pantalla */
+@keyframes zoomIn {
+    from {
+        transform: scale(0.9);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}

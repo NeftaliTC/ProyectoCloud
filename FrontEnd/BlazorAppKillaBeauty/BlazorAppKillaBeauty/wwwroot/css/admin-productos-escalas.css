@@ -1,0 +1,294 @@
+﻿.admin-scales-content {
+    max-width: 1240px;
+}
+
+.admin-scales-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 18px;
+    margin-bottom: 12px;
+}
+
+    .admin-scales-header h1 {
+        font-size: 2.1rem;
+        font-weight: 900;
+        margin: 6px 0 0;
+    }
+
+.admin-scales-header-actions {
+    display: inline-flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.btn-scales-back {
+    min-height: 42px;
+    border: 1px solid var(--gray-border);
+    background: var(--white);
+    border-radius: 12px;
+    padding: 0 16px;
+    font-weight: 900;
+    color: #4f4148;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-scales-add {
+    min-height: 42px;
+    border: none;
+    background: var(--rose-soft);
+    color: var(--white);
+    border-radius: 12px;
+    padding: 0 16px;
+    font-weight: 900;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: var(--shadow);
+}
+
+    .btn-scales-add:hover {
+        background: var(--rose);
+    }
+
+.admin-scales-subinfo {
+    padding: 10px 0 18px;
+    border-bottom: 1px solid #ead7de;
+    margin-bottom: 18px;
+}
+
+.subinfo-row {
+    display: flex;
+    gap: 40px;
+    flex-wrap: wrap;
+    color: #4f4148;
+    font-weight: 800;
+}
+
+    .subinfo-row strong {
+        color: #2f252a;
+        font-weight: 900;
+    }
+
+.stock-pill {
+    background: #dff7e7;
+    border: 1px solid #bdeccc;
+    color: #1f7a3d !important;
+    padding: 2px 10px;
+    border-radius: 999px;
+}
+
+.admin-scales-table-card {
+    background: #fffafb;
+    border: 1px solid var(--rose-light);
+    border-radius: 28px;
+    overflow: hidden;
+}
+
+.admin-scales-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+    .admin-scales-table th,
+    .admin-scales-table td {
+        padding: 16px 18px;
+        border-bottom: 1px solid #f0e7eb;
+        text-align: left;
+        vertical-align: middle;
+    }
+
+    .admin-scales-table th {
+        color: #7a6b72;
+        background: #fff8fa;
+        font-size: 0.82rem;
+        text-transform: none;
+        font-weight: 900;
+    }
+
+    .admin-scales-table tr:last-child td {
+        border-bottom: none;
+    }
+
+.td-strong {
+    font-weight: 900;
+}
+
+.pill-state {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-weight: 900;
+    font-size: 0.82rem;
+    white-space: nowrap;
+}
+
+.pill-active {
+    background: #dff7e7;
+    color: #1f7a3d;
+    border: 1px solid #bdeccc;
+}
+
+.pill-inactive {
+    background: #f1f1f1;
+    color: #666;
+    border: 1px solid #e5e5e5;
+}
+
+.scales-actions {
+    display: inline-flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.btn-scale-outline {
+    min-height: 34px;
+    border: 1px solid var(--gray-border);
+    border-radius: 11px;
+    background: var(--white);
+    padding: 0 12px;
+    font-weight: 900;
+    cursor: pointer;
+    color: #4f4148;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+}
+
+    .btn-scale-outline:hover {
+        background: var(--gray-light);
+    }
+
+.admin-scales-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 18px;
+    flex-wrap: wrap;
+}
+
+/* Modal grande “Agregar escala” */
+.scales-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(47, 37, 42, 0.45);
+    backdrop-filter: blur(2px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 150;
+}
+
+.scales-modal-card {
+    width: min(680px, 92vw);
+    background: var(--white);
+    border-radius: 28px;
+    border: 1px solid var(--gray-border);
+    box-shadow: 0 18px 48px rgba(47, 37, 42, 0.25);
+    overflow: hidden;
+}
+
+.scales-modal-header {
+    padding: 22px 24px 10px;
+}
+
+    .scales-modal-header h2 {
+        margin: 0;
+        font-size: 2rem;
+        font-weight: 900;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+.scales-modal-body {
+    padding: 6px 24px 18px;
+    display: grid;
+    gap: 14px;
+}
+
+.scales-form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+    .scales-form-field label {
+        font-weight: 900;
+        font-size: 1.05rem;
+    }
+
+.req {
+    color: #a12828;
+}
+
+.scales-form-field input {
+    min-height: 52px;
+    border: 1px solid #f1b7c7;
+    background: #fff7f9;
+    border-radius: 999px;
+    padding: 0 18px;
+    outline: none;
+    font-size: 1.05rem;
+}
+
+    .scales-form-field input:focus {
+        background: var(--white);
+        border-color: var(--rose-soft);
+    }
+
+.scales-form-field small {
+    color: #7a6b72;
+    font-weight: 700;
+}
+
+.scales-modal-actions {
+    padding: 18px 24px 22px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.btn-scale-cancel {
+    min-height: 44px;
+    border: 1px solid var(--gray-border);
+    background: var(--white);
+    border-radius: 12px;
+    padding: 0 18px;
+    font-weight: 900;
+    color: #4f4148;
+}
+
+.btn-scale-save {
+    min-height: 44px;
+    border: none;
+    background: var(--rose-soft);
+    color: var(--white);
+    border-radius: 12px;
+    padding: 0 18px;
+    font-weight: 900;
+    box-shadow: var(--shadow);
+}
+
+    .btn-scale-save:hover {
+        background: var(--rose);
+    }
+
+@media (max-width: 900px) {
+    .admin-scales-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .admin-scales-header-actions,
+    .admin-scales-footer {
+        width: 100%;
+        justify-content: flex-start;
+    }
+}

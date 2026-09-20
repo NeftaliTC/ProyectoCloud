@@ -1,0 +1,417 @@
+﻿@page "/admin/empleados"
+@attribute [Authorize(Roles = "ADMINISTRADOR")]
+@rendermode InteractiveServer
+@inject AuthService AuthService
+@inject NavigationManager NavManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@using ClienteREST.ServicesAct
+@using ClienteREST.Models
+@inject UsuarioService UsuarioService
+<PageTitle>Gestión de Empleados - Killa Beauty</PageTitle>
+
+<main class="admin-page">
+    <AdminNavbar />
+
+    <section class="admin-content admin-employees-content">
+        @if (!tienePermisoAdmin)
+        {
+            <div class="access-denied-container">
+                <div class="access-denied-icon">
+                    <i class="bi bi-shield-slash-fill"></i>
+                </div>
+                <h2>Acceso Restringido</h2>
+                <p>
+                    Lo sentimos, tu usuario actual cuenta con el rol de <strong>@rolActual</strong>.
+                    Se requieren permisos exclusivos de <strong>SuperAdmin</strong> para gestionar el personal.
+                </p>
+                <a href="/admin/productos" class="admin-primary-action text-decoration-none">
+                    Volver al Panel
+                </a>
+            </div>
+        }
+        else
+        {
+            <div class="admin-breadcrumb">
+                <span>SuperAdministrador</span>
+                <i class="bi bi-chevron-right"></i>
+                <span>Gestión de Empleados</span>
+            </div>
+
+            <header class="admin-header">
+                <div>
+                    <h1>Panel de Control de Personal</h1>
+                    <p>Agrega colaboradores, gestiona sus roles operativos y controla los estados de acceso al sistema.</p>
+                </div>
+                <button class="admin-primary-action" @onclick="AbrirCrear">
+                    <i class="bi bi-person-plus-fill"></i>
+                    Nuevo empleado
+                </button>
+            </header>
+
+            @if (!string.IsNullOrEmpty(mensajeError))
+            {
+                <div class="admin-alert-error">
+                    <span><i class="bi bi-exclamation-circle-fill"></i> @mensajeError</span>
+                    <button @onclick="() => mensajeError = null" class="btn-close-alert">X</button>
+                </div>
+            }
+
+            <section class="admin-orders-filters">
+                <div class="admin-orders-search" style="margin-bottom: 0;">
+                    <i class="bi bi-search"></i>
+                    <input type="text"
+                           placeholder="Buscar por DNI, descripcion, apellido o correo..."
+                           @bind="busqueda"
+                           @bind:event="oninput" />
+                </div>
+            </section>
+
+            <section class="admin-table-card">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>DNI</th>
+                            <th>Empleado / Colaborador</th>
+                            <th>Correo Electrónico</th>
+                            <th>Teléfono</th>
+                            <th>Rol de Sistema</th>
+                            <th>Estado</th>
+                            <th style="text-align: right;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (cargando)
+                        {
+                            <tr>
+                                <td colspan="7" style="text-align: center; padding: 60px 0;">
+                                    <div class="spinner-border" role="status" style="color: #d84b6b; width: 3rem; height: 3rem; margin-bottom: 15px;">
+                                        <span class="visually-hidden">Cargando...</span>
+                                    </div>
+                                    <h5 style="color: #a18893; font-weight: 600; margin: 0;">Cargando lista de personal...</h5>
+                                </td>
+                            </tr>
+                        }
+                        else if (EmpleadosFiltrados.Count == 0)
+                        {
+                            <tr>
+                                <td colspan="7">
+                                    <div class="admin-empty-orders">
+                                        <i class="bi bi-people"></i>
+                                        <span>No se encontraron colaboradores registrados.</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var emp in EmpleadosFiltrados)
+                            {
+                                <tr style="@(emp.Activo ? "" : "opacity: 0.65;")">
+                                    <td style="font-weight: 700; color: var(--gray);">@emp.Dni</td>
+                                    <td>
+                                        <div style="display: flex; flex-direction: column;">
+                                            <span style="font-weight: 800; color: #2f252a;">@emp.Nombre @emp.ApellidoPaterno</span>
+                                            <small style="color: #a18893; font-size: 0.75rem;">ID: EMP-@(emp.Dni?.Length >= 4 ? emp.Dni.Substring(0, 4) : "0000")</small>
+                                        </div>
+                                    </td>
+                                    <td>@emp.CorreoElectronico</td>
+                                    <td>@emp.Telefono</td>
+                                    <td>
+                                        <span class="badge-role @(emp.TipoUsuario == "ADMINISTRADOR" ? "role-super" : "role-admin")">
+                                            <i class="@(emp.TipoUsuario == "ADMINISTRADOR" ? "bi bi-crown-fill" : "bi bi-person-badge-fill")"></i>
+                                            @(emp.TipoUsuario == "TRABAJADOR" ? "Trabajador" : emp.TipoUsuario)
+                                        </span>
+                                    </td>
+                                    <td>
+                                        @if (emp.Activo)
+                                        {
+                                            <span class="admin-status active">Activo</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="admin-status neutral">Suspendido</span>
+                                        }
+                                    </td>
+                                    <td style="text-align: right;">
+                                        <div style="display: inline-flex; gap: 8px; align-items: center;">
+                                            <button class="admin-providers-btn-edit" @onclick="() => AbrirEditar(emp)">
+                                                <i class="bi bi-pencil-square"></i> Editar
+                                            </button>
+
+                                            @if (emp.Activo)
+                                            {
+                                                <button class="btn-action-status suspend" @onclick="() => CambiarEstadoEmpleado(emp)">
+                                                    <i class="bi bi-person-x"></i> Suspender
+                                                </button>
+                                            }
+                                            else
+                                            {
+                                                <button class="btn-action-status activate" @onclick="() => CambiarEstadoEmpleado(emp)">
+                                                    <i class="bi bi-person-check"></i> Activar
+                                                </button>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </section>
+        }
+    </section>
+</main>
+
+@if (mostrarFormulario)
+{
+    <div class="admin-modal-overlay">
+        <div class="admin-modal-card" style="text-align: left; max-width: 550px;">
+            <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="margin: 0; font-size: 1.4rem; color: #4a1525; font-weight: 700;">
+                    <i class="bi @(esEdicion ? "bi-pencil-square" : "bi-person-up")"></i>
+                    @(esEdicion ? "Editar Rol de Empleado" : "Ascender Cliente a Empleado")
+                </h2>
+                <button type="button" @onclick="CerrarFormulario" class="btn-close-modal">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </header>
+
+            @* PASO 1: Buscador (Solo aparece al crear) *@
+            @if (!esEdicion)
+            {
+                <div style="margin-bottom: 20px;">
+                    <label style="font-weight: bold; display: block; margin-bottom: 5px;">Buscar por Correo del Cliente</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="email" class="form-control" placeholder="cliente@correo.com" @bind="emailBusqueda" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 6px;" />
+                        <button type="button" class="admin-primary-action" style="padding: 8px 15px; min-height: auto;" @onclick="BuscarCliente">Buscar</button>
+                    </div>
+                </div>
+            }
+            @if (!string.IsNullOrEmpty(mensajeErrorModal))
+            {
+                <div class="admin-alert-error" style="margin-top: 12px;">
+                    <span><i class="bi bi-exclamation-circle-fill"></i> @mensajeErrorModal</span>
+                </div>
+            }
+            @* PASO 2: Datos y Selector (Aparece si encontramos al cliente o estamos editando) *@
+            @if (clienteEncontrado || esEdicion)
+            {
+                <div style="margin-bottom: 15px; padding: 15px; background-color: #f9f9f9; border-radius: 8px;">
+                    <p style="margin: 0; font-size: 0.9rem; color: gray;">Usuario Seleccionado:</p>
+                    <p style="margin: 5px 0 0 0; font-weight: bold; font-size: 1.1rem;">@modeloFormulario.Nombre @modeloFormulario.ApellidoPaterno</p>
+                    <p style="margin: 0; font-size: 0.85rem;">@modeloFormulario.CorreoElectronico | DNI: @modeloFormulario.Dni</p>
+                </div>
+
+                <div class="admin-form-group" style="margin-bottom: 25px;">
+                    <label style="font-weight: bold; display: block; margin-bottom: 5px;">Asignar Nuevo Rol</label>
+                    <select @bind="modeloFormulario.TipoUsuario" class="admin-form-select">
+                        <option value="ADMINISTRADOR">Administrador</option>
+                        <option value="TRABAJADOR">Trabajador</option>
+                    </select>
+                </div>
+
+                <div class="admin-modal-actions" style="margin-top: 28px; justify-content: flex-end;">
+                    <button type="button" class="admin-modal-btn-cancel" @onclick="CerrarFormulario">Cancelar</button>
+                    <button type="button" class="admin-primary-action" @onclick="GuardarEmpleado" style="box-shadow: none; min-height: 42px;">
+                        <i class="bi bi-hdd-fill"></i> Guardar Cambios
+                    </button>
+                </div>
+            }
+            else if (!esEdicion)
+            {
+                <div style="background-color: #e9ecef; color: #495057; padding: 15px; border-radius: 8px; text-align: center; font-size: 0.9rem;">
+                    <i class="bi bi-info-circle"></i> Ingresa el correo de un cliente registrado y presiona "Buscar" para asignarle un rol administrativo.
+                </div>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    private string busqueda = "";
+    private string? mensajeError;
+    private string? mensajeErrorModal;
+    private bool mostrarFormulario = false;
+    private bool esEdicion = false;
+    private bool cargando = true;
+    private bool tienePermisoAdmin = false;
+    private string rolActual = "Invitado";
+
+    // --- VARIABLES PARA EL BUSCADOR DE CORREO ---
+    private string emailBusqueda = "";
+    private bool clienteEncontrado = false;
+
+    private Usuario modeloFormulario = new Usuario();
+    private List<Usuario> listaEmpleados = new List<Usuario>();
+
+    private List<Usuario> EmpleadosFiltrados => listaEmpleados
+        .Where(e => string.IsNullOrWhiteSpace(busqueda) ||
+                    (e.Dni != null && e.Dni.Contains(busqueda)) ||
+                    (e.Nombre != null && e.Nombre.Contains(busqueda, StringComparison.OrdinalIgnoreCase)) ||
+                    (e.ApellidoPaterno != null && e.ApellidoPaterno.Contains(busqueda, StringComparison.OrdinalIgnoreCase)) ||
+                    (e.CorreoElectronico != null && e.CorreoElectronico.Contains(busqueda, StringComparison.OrdinalIgnoreCase)))
+        .ToList();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        AuthService.LoadFromPrincipal(authState.User);
+
+        rolActual = AuthService.EstaLogueado ? AuthService.Rol : "Invitado";
+        tienePermisoAdmin = authState.User.IsInRole("ADMINISTRADOR") || AuthService.Rol == "ADMINISTRADOR";
+
+        if (tienePermisoAdmin)
+        {
+            await CargarEmpleados();
+        }
+        else
+        {
+            cargando = false;
+        }
+    }
+
+    private async Task CargarEmpleados()
+    {
+        cargando = true;
+        try
+        {
+            var superAdmins = await UsuarioService.ListarPorTipoUsuarioAsync(1);
+            var trabajadores = await UsuarioService.ListarPorTipoUsuarioAsync(3);
+
+            listaEmpleados = superAdmins
+                .Concat(trabajadores)
+                .ToList();
+        }
+        catch (Exception ex)
+        {
+            mensajeError = "Error de conexión: " + ex.Message;
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+
+    private void AbrirCrear()
+    {
+        esEdicion = false;
+        mensajeError = null;
+        mensajeErrorModal = null;
+
+        // Reiniciamos las variables del buscador cada vez que abrimos el modal
+        emailBusqueda = "";
+        clienteEncontrado = false;
+
+        modeloFormulario = new Usuario();
+        mostrarFormulario = true;
+    }
+
+    private async Task BuscarCliente()
+    {
+        mensajeErrorModal = null;
+        clienteEncontrado = false;
+
+        if (string.IsNullOrWhiteSpace(emailBusqueda))
+        {
+            mensajeErrorModal = "Por favor, ingresa un correo para buscar.";
+            return;
+        }
+
+        try
+        {
+            var cliente = await UsuarioService.ObtenerUsuarioPorEmailAsync(emailBusqueda);
+
+            if (cliente != null)
+            {
+                modeloFormulario = cliente;
+                clienteEncontrado = true;
+                // Le asignamos un rol predeterminado para sugerirle al SuperAdmin
+                modeloFormulario.TipoUsuario = "ADMINISTRADOR";
+            }
+            else
+            {
+                mensajeErrorModal = "No se encontró ningún cliente registrado con ese correo.";
+            }
+        }
+        catch (Exception ex)
+        {
+            mensajeErrorModal = "Error al buscar el correo: " + ex.Message;
+        }
+    }
+
+    private void AbrirEditar(Usuario emp)
+    {
+        esEdicion = true;
+        mensajeError = null;
+        mensajeErrorModal = null;
+        modeloFormulario = new Usuario
+        {
+            Id = emp.Id,
+            Dni = emp.Dni,
+            Nombre = emp.Nombre,
+            ApellidoPaterno = emp.ApellidoPaterno,
+            CorreoElectronico = emp.CorreoElectronico,
+            Telefono = emp.Telefono,
+            TipoUsuario = emp.TipoUsuario,
+            Activo = emp.Activo,
+            Contrasena = emp.Contrasena,
+            FechaNacimiento = emp.FechaNacimiento
+        };
+        mostrarFormulario = true;
+    }
+    private void CerrarFormulario()
+    {
+        mostrarFormulario = false;
+    }
+    private async Task GuardarEmpleado()
+    {
+        mensajeError = null;
+        mensajeErrorModal = null; 
+        try
+        {
+            // Validamos que el modelo ya tenga los datos de un usuario real
+            if (modeloFormulario.Id == 0)
+            {
+                mensajeErrorModal = "Debes buscar y seleccionar un cliente válido primero.";
+                return;
+            }
+            
+
+            await UsuarioService.ActualizarUsuarioAsync(modeloFormulario.Id, modeloFormulario);
+            await CargarEmpleados();
+
+            // mostrarFormulario = false;
+            // clienteEncontrado = false;
+            // emailBusqueda = "";
+            // modeloFormulario = new Usuario();
+            CerrarFormulario();
+            StateHasChanged();  
+    
+        }
+        catch (Exception ex)
+        {
+            mensajeErrorModal = ex.Message;
+        }
+    }
+    private async Task CambiarEstadoEmpleado(Usuario emp)
+    {
+        if (emp.Id == AuthService.UsuarioId)
+        {
+            mensajeError = "Operación denegada. No puedes suspender tu propia cuenta de SuperAdministrador activa.";
+            return;
+        }
+        try
+        {
+            emp.Activo = !emp.Activo;
+
+            await UsuarioService.ActualizarUsuarioAsync(emp.Id, emp);
+            mensajeError = null;
+        }
+        catch (Exception ex)
+        {
+            emp.Activo = !emp.Activo;
+            mensajeError = "Error al suspender: " + ex.Message;
+        }
+    }
+}
+

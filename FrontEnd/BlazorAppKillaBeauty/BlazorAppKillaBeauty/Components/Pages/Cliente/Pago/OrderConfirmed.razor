@@ -1,0 +1,60 @@
+﻿@page "/order-confirmed"
+@attribute [Authorize(Roles = "CLIENTE,TRABAJADOR,ADMINISTRADOR")]
+@rendermode InteractiveServer
+@using BlazorAppKillaBeauty.ClienteREST.ServicesAct
+@inject CartService CartService
+@inject NavigationManager Navigation
+@implements IDisposable
+
+<Navbar CantidadCarrito="0" />
+
+<section class="confirmed-page">
+
+    <div class="confirmed-content">
+
+        <img src="Images/check.png"
+             class="confirmed-check"
+             alt="Pedido confirmado" />
+
+        <h1>¡Pedido Confirmado!</h1>
+
+        <p>Tu pedido ha sido registrado exitosamente. Recibirás un correo con los detalles.</p>
+
+        <p class="confirmed-redirect">
+            Redirigiendo a tus pedidos en @segundos segundos...
+        </p>
+
+        <NavLink href="/orders" class="confirmed-button">
+            Ver mis pedidos
+        </NavLink>
+
+    </div>
+
+</section>
+
+@code {
+    private int segundos = 5;
+    private Timer? timer;
+
+    protected override void OnInitialized()
+    {
+        timer = new Timer(async _ =>
+        {
+            segundos--;
+
+            await InvokeAsync(StateHasChanged);
+
+            if (segundos <= 0)
+            {
+                timer?.Dispose();
+                await InvokeAsync(() =>
+                    Navigation.NavigateTo("/orders", replace: true));
+            }
+        }, null, 1000, 1000);
+    }
+
+    public void Dispose()
+    {
+        timer?.Dispose();
+    }
+}

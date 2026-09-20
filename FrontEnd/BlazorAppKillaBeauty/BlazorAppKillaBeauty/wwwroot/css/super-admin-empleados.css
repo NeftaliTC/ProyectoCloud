@@ -1,0 +1,165 @@
+﻿/* ==========================================
+   VISTA DE ACCESO DENEGADO (PROTECCIÓN URL)
+   ========================================== */
+.access-denied-container {
+    text-align: center;
+    padding: 60px 30px;
+    background: #ffffff;
+    border-radius: 16px;
+    border: 1px solid #f3e1e6;
+    max-width: 550px;
+    margin: 60px auto 0 auto;
+    box-shadow: 0 4px 20px rgba(74, 21, 37, 0.04);
+}
+
+.access-denied-icon {
+    font-size: 4.5rem;
+    color: #dc3545;
+    margin-bottom: 20px;
+    animation: pulse 2s infinite;
+}
+
+.access-denied-container h2 {
+    color: #4a1525;
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+
+.access-denied-container p {
+    color: #7d636a;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin-bottom: 28px;
+}
+
+.text-decoration-none {
+    text-decoration: none;
+}
+
+/* ==========================================
+   COMPONENTES ESPECÍFICOS DE LA TABLA
+   ========================================== */
+.badge-role {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+    .badge-role.role-super {
+        background: rgba(232, 62, 140, 0.1);
+        color: var(--rose, #e83e8c);
+        border: 1px solid rgba(232, 62, 140, 0.2);
+    }
+
+    .badge-role.role-admin {
+        background: #f1f0f2;
+        color: #5d4f57;
+        border: 1px solid #dcd9de;
+    }
+
+/* Botones de acción de estados cambiantes */
+.btn-action-status {
+    background: transparent;
+    border: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 6px 10px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.2s ease;
+}
+
+    .btn-action-status.suspend {
+        color: #bb2d3b;
+    }
+
+        .btn-action-status.suspend:hover {
+            background: #fdf2f2;
+        }
+
+    .btn-action-status.activate {
+        color: #157347;
+    }
+
+        .btn-action-status.activate:hover {
+            background: #f2f9f5;
+        }
+
+/* Alertas de Error estilizadas */
+.admin-alert-error {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 20px;
+    background: #fff5f5;
+    color: #a12828;
+    border-left: 4px solid #e05252;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.btn-close-alert {
+    background: transparent;
+    border: none;
+    color: #a12828;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+/* Modal form select */
+.admin-form-select {
+    width: 100%;
+    min-height: 44px;
+    border: 1px solid #e1dbdd;
+    border-radius: 8px;
+    padding: 0 12px;
+    font-family: inherit;
+    color: #2f252a;
+    background-color: white;
+    font-size: 0.9rem;
+    outline: none;
+    cursor: pointer;
+}
+
+    .admin-form-select:focus {
+        border-color: var(--rose, #e83e8c);
+    }
+
+.btn-close-modal {
+    background: transparent;
+    border: none;
+    font-size: 1.3rem;
+    color: #a18893;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+    .btn-close-modal:hover {
+        color: #4a1525;
+    }
+
+/* Animación sutil de pulso */
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.05);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}

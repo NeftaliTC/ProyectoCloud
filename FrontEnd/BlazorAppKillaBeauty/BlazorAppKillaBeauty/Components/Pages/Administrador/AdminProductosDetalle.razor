@@ -1,0 +1,810 @@
+﻿@page "/admin/productos/{Codigo}"
+@attribute [Authorize(Roles = "ADMINISTRADOR,TRABAJADOR")]
+@rendermode InteractiveServer
+@using BlazorAppKillaBeauty.Services
+@using BlazorAppKillaBeauty.ClienteREST.ServicesAct
+@inject NavigationManager Navigation
+@inject ProductoService ProductoService
+@inject EscalaPrecioService EscalaPrecioService
+@inject IJSRuntime JS
+@using BlazorAppKillaBeauty.ClienteREST.Models
+@using Microsoft.AspNetCore.Components.Forms
+
+<PageTitle>Detalle producto - Killa Beauty</PageTitle>
+
+<main class="admin-page">
+    <AdminNavbar />
+
+    <section class="admin-content admin-product-detail-content">
+
+        <div class="admin-breadcrumb">
+            <span>Inicio</span>
+            <i class="bi bi-chevron-right"></i>
+            <span>Productos</span>
+            <i class="bi bi-chevron-right"></i>
+            <span>@Codigo</span>
+        </div>
+
+        <header class="admin-product-detail-header">
+            <div>
+                <h1>@producto.Nombre</h1>
+            </div>
+
+            <div class="admin-product-detail-actions">
+                <button type="button" class="btn-detail-outline" @onclick="Volver">
+                    <i class="bi bi-arrow-left"></i>
+                    Volver
+                </button>
+
+                <button type="button" class="btn-detail-outline" @onclick="AbrirEditarProducto">
+                    <i class="bi bi-pencil-square"></i>
+                    Editar
+                </button>
+
+                <button type="button" class="btn-detail-warning" @onclick="IrAEscalas">
+                    <i class="bi bi-currency-dollar"></i>
+                    Escalas de precio
+                </button>
+
+                <button type="button" class="btn-detail-danger" @onclick="AbrirDarDeBaja">
+                    <i class="bi bi-slash-circle"></i>
+                    Dar de baja
+                </button>
+            </div>
+        </header>
+
+        <section class="admin-product-detail-top">
+            <article class="admin-product-detail-image">
+                <img src="@producto.ImagenUrl" alt="@producto.Nombre" />
+            </article>
+
+            <article class="admin-product-detail-card">
+                <div class="admin-product-detail-columns">
+                    <div class="admin-product-detail-col">
+                        <h2>Datos del producto</h2>
+
+                        <div class="detail-row"><span>Código</span><strong>@producto.Codigo</strong></div>
+                        <div class="detail-row"><span>Nombre</span><strong>@producto.Nombre</strong></div>
+                        <div class="detail-row"><span>Categoría</span><strong>@producto.Categoria</strong></div>
+                        <div class="detail-row"><span>Subcategoría</span><strong>@producto.Subcategoria</strong></div>
+                        <div class="detail-row"><span>Marca</span><strong>@producto.Marca</strong></div>
+                    </div>
+
+                    <div class="admin-product-detail-col">
+                        <h2>Stock y precio</h2>
+
+                        <div class="admin-product-metrics">
+                            <div class="metric-card">
+                                <span>Precio base</span>
+                                <strong>S/. @producto.PrecioBase.ToString("F2")</strong>
+                            </div>
+
+                            <div class="metric-card metric-stock">
+                                <span>Stock actual</span>
+                                <strong>@producto.Stock u.</strong>
+                            </div>
+
+                            <div class="metric-card">
+                                <span>Disponible</span>
+                                <strong>@(producto.Disponible ? "Sí" : "No")</strong>
+                            </div>
+
+                            <div class="metric-card">
+                                <span>En promoción</span>
+                                <strong>@(producto.EnPromocion ? "Sí" : "No")</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+        </section>
+
+        <section class="admin-product-detail-tabs">
+            <button type="button"
+                    class="tab-btn @(tabActual == "escalas" ? "active" : "")"
+                    @onclick="SeleccionarEscalas">
+                Escalas de precio
+            </button>
+
+            <button type="button"
+                    class="tab-btn @(tabActual == "resenas" ? "active" : "")"
+                    @onclick="SeleccionarResenas">
+                Reseñas (@resenas.Count)
+            </button>
+        </section>
+
+        @if (tabActual == "escalas")
+        {
+            <section class="admin-product-detail-table-card">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Escala</th>
+                            <th>Cantidad mínima</th>
+                            <th>Precio unitario</th>
+                            <th>Ahorro vs. base</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var e in escalas)
+                        {
+                            <tr>
+                                <td style="font-weight:800;">@e.Nombre</td>
+                                <td>@e.CantidadMinima u.</td>
+                                <td>S/. @e.PrecioUnitario.ToString("F2")</td>
+                                <td>@e.Ahorro</td>
+                                <td>
+                                    <span class="admin-products-pill pill-success">Activa</span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </section>
+        }
+        else
+        {
+            <section class="admin-reviews-panel">
+
+                <div class="admin-reviews-summary">
+                    <div class="admin-reviews-score">
+                        <strong class="score-number">@PromedioCalificacion.ToString("0.0")</strong>
+
+                        <div class="score-stars" aria-label="Calificación promedio">
+                            @for (int i = 1; i <= 5; i++)
+                            {
+                                <i class="bi @(i <= (int)Math.Round(PromedioCalificacion) ? "bi-star-fill" : "bi-star")"></i>
+                            }
+                        </div>
+
+                        <span class="score-subtext">@ResenasVerificadas.Count reseñas verificadas</span>
+                    </div>
+
+                    <div class="admin-reviews-bars">
+                        @for (int star = 5; star >= 1; star--)
+                        {
+                            var count = ConteoPorEstrella(star);
+                            var pct = PorcentajePorEstrella(star);
+
+                            <div class="bar-row">
+                                <span class="bar-label">@star *</span>
+                                <div class="bar-track">
+                                    <div class="bar-fill" style="width:@pct%"></div>
+                                </div>
+                                <span class="bar-count">@count</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="admin-reviews-filters">
+                    <span class="filters-label">Filtrar:</span>
+
+                    <select class="filters-select" @bind="filtroCalificacion">
+                        <option value="0">Todas las calificaciones</option>
+                        <option value="5">5 estrellas</option>
+                        <option value="4">4 estrellas</option>
+                        <option value="3">3 estrellas</option>
+                        <option value="2">2 estrellas</option>
+                        <option value="1">1 estrella</option>
+                    </select>
+
+                    <select class="filters-select" @bind="filtroOrden">
+                        <option value="recientes">Más recientes primero</option>
+                        <option value="antiguas">Más antiguas primero</option>
+                        <option value="mejor">Mejor calificación</option>
+                        <option value="peor">Peor calificación</option>
+                    </select>
+
+                    <select class="filters-select" @bind="filtroVerificadas">
+                        <option value="todas">Todas</option>
+                        <option value="verificadas">Compra verificada</option>
+                        <option value="noverificadas">No verificadas</option>
+                    </select>
+                </div>
+
+                <div class="admin-reviews-list">
+                    @foreach (var r in ResenasFiltradas)
+                    {
+                        <article class="admin-review-card">
+                            <div class="review-left">
+                                <div class="review-avatar">@Iniciales(r.Cliente)</div>
+                            </div>
+
+                            <div class="review-main">
+                                <div class="review-header">
+                                    <div class="review-author">
+                                        <strong>@r.Cliente</strong>
+                                        <small>@r.Fecha.ToString("dd MMM yyyy") · Pedido #@r.CodigoPedido</small>
+                                    </div>
+
+                                    <div class="review-right">
+                                        @if (r.Verificada)
+                                        {
+                                            <span class="verified-pill">
+                                                <i class="bi bi-check-circle-fill"></i>
+                                                Compra verificada
+                                            </span>
+                                        }
+
+                                        <span class="review-stars">
+                                            @for (int i = 1; i <= 5; i++)
+                                            {
+                                                <i class="bi @(i <= r.Calificacion ? "bi-star-fill" : "bi-star")"></i>
+                                            }
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="review-body">
+                                    <strong class="review-title">@r.Titulo</strong>
+                                    <p>@r.Comentario</p>
+                                </div>
+                            </div>
+                        </article>
+                    }
+
+                    @if (ResenasFiltradas.Count == 0)
+                    {
+                        <div class="admin-empty-orders" style="min-height: 140px;">
+                            <i class="bi bi-inbox"></i>
+                            <span>No hay reseñas con esos filtros.</span>
+                        </div>
+                    }
+                </div>
+
+            </section>
+        }
+
+    </section>
+</main>
+
+@if (mostrarModalBaja)
+{
+    <div class="admin-modal-overlay">
+        <div class="admin-modal-card">
+            <div class="admin-modal-icon">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+            </div>
+            <h2>¿Dar de baja el producto?</h2>
+            <p class="admin-modal-text">
+                El producto <strong>@producto.Nombre</strong> dejará de mostrarse como disponible.
+            </p>
+            <div class="admin-modal-actions">
+                <button class="admin-modal-btn-cancel" @onclick="CerrarDarDeBaja">Cancelar</button>
+                <button class="admin-modal-btn-confirm" @onclick="ConfirmarDarDeBaja">Confirmar</button>
+            </div>
+        </div>
+    </div>
+}
+
+@if (mostrarModalEditar)
+{
+    <div class="admin-modal-overlay">
+        <div class="admin-modal-card admin-product-edit-modal">
+            <header class="admin-product-edit-header">
+                <h2>
+                    <i class="bi bi-pencil-square"></i>
+                    Editar producto
+                </h2>
+
+                <button type="button" class="admin-product-edit-close" @onclick="CerrarEditarProducto">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </header>
+
+            @if (!string.IsNullOrWhiteSpace(mensajeErrorEditar))
+            {
+                <div class="admin-product-edit-error">
+                    <i class="bi bi-exclamation-circle-fill"></i>
+                    <span>@mensajeErrorEditar</span>
+                </div>
+            }
+
+            <EditForm Model="formEditar" OnValidSubmit="GuardarEdicionProducto">
+                <div class="admin-product-edit-grid">
+                    <div class="admin-product-edit-field">
+                        <label>Código</label>
+                        <input disabled value="@producto.Codigo" />
+                        <small>No se puede editar el código.</small>
+                    </div>
+
+                    <div class="admin-product-edit-field">
+                        <label>Nombre <span class="req">*</span></label>
+                        <input type="text" placeholder="Ej: Sérum vitamina C 30ml" @bind-value="formEditar.Nombre" />
+                    </div>
+
+                    <div class="admin-product-edit-field">
+                        <label>Categoría <span class="req">*</span></label>
+                        <select @bind="formEditar.CategoriaId">
+                            <option value="0">Seleccionar</option>
+                            @foreach (var c in categorias)
+                            {
+                                <option value="@c.Id">@c.Descripcion</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="admin-product-edit-field">
+                        <label>Subcategoría <span class="req">*</span></label>
+                        <select @bind="formEditar.SubcategoriaId" disabled="@(formEditar.CategoriaId <= 0)">
+                            <option value="0">Seleccionar</option>
+                            @foreach (var s in SubcategoriasFiltradas)
+                            {
+                                <option value="@s.Id">@s.Descripcion</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="admin-product-edit-field">
+                        <label>Marca <span class="req">*</span></label>
+                        <select @bind="formEditar.MarcaId">
+                            <option value="0">Seleccionar</option>
+                            @foreach (var m in marcas)
+                            {
+                                <option value="@m.Id">@m.Descripcion</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="admin-product-edit-field">
+                        <label>Precio base (S/.) <span class="req">*</span></label>
+                        <input type="number" step="0.01" placeholder="0.00" @bind-value="formEditar.PrecioBase" />
+                    </div>
+
+                    <div class="admin-product-edit-field">
+                        <label>Stock <span class="req">*</span></label>
+                        <input type="number" placeholder="0" @bind-value="formEditar.Stock" />
+                    </div>
+
+                    <div class="admin-product-edit-field">
+                        <label>Imágenes del producto</label>
+                        <button type="button" class="admin-upload-box" @onclick="AbrirWidgetCloudinary">
+                            <i class="bi bi-image"></i>
+                            <span>Seleccionar imágenes</span>
+                            <small>PNG, JPG o JPEG</small>
+                        </button>
+                        @if (urlsImagenesEditar.Any())
+                        {
+                            <small class="admin-file-help">
+                                @urlsImagenesEditar.Count imagen(es) seleccionada(s)
+                            </small>
+                        }
+                    </div>
+
+                    <div class="admin-product-edit-switches">
+                        <div class="switch-row">
+                            <span>Disponible</span>
+                            <label class="switch">
+                                <input type="checkbox" @bind="formEditar.Disponible" />
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="switch-row">
+                            <span>En promoción</span>
+                            <label class="switch">
+                                <input type="checkbox" @bind="formEditar.EnPromocion" />
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <footer class="admin-product-edit-actions">
+                    <button type="button" class="admin-modal-btn-cancel" @onclick="CerrarEditarProducto">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="admin-product-edit-save">
+                        <i class="bi bi-download"></i>
+                        Guardar cambios
+                    </button>
+                </footer>
+            </EditForm>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public string Codigo { get; set; } = "";
+
+    private string tabActual = "escalas";
+    private bool mostrarModalBaja = false;
+
+    private int filtroCalificacion = 0;        // 0 = todas
+    private string filtroOrden = "recientes";  // recientes/antiguas/mejor/peor
+    private string filtroVerificadas = "todas"; // todas/verificadas/noverificadas
+
+    private ProductoDetalle producto = new();
+    private ProductoApi? productoApi;
+    private List<EscalaDetalle> escalas = new();
+    private List<ResenaDetalle> resenas = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var id = ObtenerIdProducto();
+
+        try
+        {
+            productoApi = await ProductoService.ObtenerPorIdAsync(id);
+
+            if (productoApi == null)
+            {
+                producto = new ProductoDetalle { Codigo = Codigo, Nombre = $"Producto {Codigo}" };
+                return;
+            }
+
+            producto = MapearDetalle(productoApi);
+            await CargarOpcionesFormulario();
+
+            resenas = (await ProductoService.ObtenerResenasAsync(id))
+                .Select((r, index) => new ResenaDetalle(
+                    (r.Cliente != null && !string.IsNullOrWhiteSpace(r.Cliente.Nombre))
+                        ? $"{r.Cliente.Nombre} {r.Cliente.ApellidoPaterno}"
+                        : $"Usuario {r.IdUsuario}",
+                    string.IsNullOrWhiteSpace(r.Titulo) ? "Reseña del producto" : r.Titulo,
+                    r.Comentario,
+                    r.Calificacion,
+                    r.Verificado,
+                    r.FechaPublicacion != null
+                        ? DateTime.TryParse(r.FechaPublicacion.Replace("[UTC]", ""),
+                            System.Globalization.CultureInfo.InvariantCulture,
+                            System.Globalization.DateTimeStyles.RoundtripKind,
+                            out var f) ? f : DateTime.Today
+                        : DateTime.Today,
+                    $"KIL-{r.Id:D8}"))
+                .ToList();
+
+            escalas = (await EscalaPrecioService.ListarPorProductoAsync(id))
+                .Where(e => e.Activo)
+                .OrderBy(e => e.CantidadMinima)
+                .Select(e => new EscalaDetalle(
+                    NombreEscala(e.CantidadMinima),
+                    e.CantidadMinima,
+                    e.PrecioUnitario,
+                    CalcularAhorroTexto(e.PrecioUnitario, producto.PrecioBase)))
+                .ToList();
+        }
+        catch (Exception ex)
+        {
+            producto = new ProductoDetalle
+            {
+                Codigo = Codigo,
+                Nombre = "No se pudo cargar el producto",
+                Categoria = ex.Message,
+                ImagenUrl = "/Images/placeholder-product.png"
+            };
+        }
+    }
+
+    private int ObtenerIdProducto()
+    {
+        if (int.TryParse(Codigo, out var id))
+        {
+            return id;
+        }
+
+        if (Codigo.StartsWith("KB-", StringComparison.OrdinalIgnoreCase)
+            && int.TryParse(Codigo[3..], out var codigoId))
+        {
+            return codigoId;
+        }
+
+        return 0;
+    }
+
+    private static ProductoDetalle MapearDetalle(ProductoApi producto)
+    {
+        return new ProductoDetalle
+        {
+            Id = producto.Id,
+            Codigo = $"KB-{producto.Id:000}",
+            Nombre = producto.Nombre,
+            Categoria = producto.Subcategoria?.Categoria?.Descripcion ?? "",
+            Subcategoria = producto.Subcategoria?.Descripcion ?? "",
+            Marca = producto.Marca?.Descripcion ?? "",
+            MarcaId = producto.Marca?.Id ?? 0,
+            SubcategoriaId = producto.Subcategoria?.Id ?? 0,
+            SubcategoriaCategoriaId = producto.Subcategoria?.Categoria?.Id ?? 0,
+            PrecioBase = producto.PrecioBase,
+            Stock = producto.Stock,
+            Disponible = producto.Disponible,
+            EnPromocion = producto.Promocion,
+            ImagenUrl = producto.Imagenes.FirstOrDefault(i => i.Principal)?.Url?? producto.Imagenes.FirstOrDefault()?.Url?? "/Images/Logo.png"
+        };
+    }
+
+    private void Volver() => Navigation.NavigateTo("/admin/productos");
+    private void IrAEscalas() => Navigation.NavigateTo($"/admin/productos/{producto.Id}/escalas");
+
+    private void AbrirDarDeBaja() => mostrarModalBaja = true;
+    private void CerrarDarDeBaja() => mostrarModalBaja = false;
+
+    private async Task ConfirmarDarDeBaja()
+    {
+        if (productoApi != null)
+        {
+            await ProductoService.DarDeBajaAsync(productoApi);
+        }
+        producto.Disponible = false;
+        mostrarModalBaja = false;
+    }
+
+    private void SeleccionarEscalas() => tabActual = "escalas";
+    private void SeleccionarResenas() => tabActual = "resenas";
+
+    // --- métricas reseñas ---
+    private decimal PromedioCalificacion =>
+        resenas.Count == 0 ? 0 : (decimal)resenas.Average(r => r.Calificacion);
+
+    private List<ResenaDetalle> ResenasVerificadas =>
+        resenas.Where(r => r.Verificada).ToList();
+
+    private int ConteoPorEstrella(int star) =>
+        resenas.Count(r => r.Calificacion == star);
+
+    private int PorcentajePorEstrella(int star)
+    {
+        if (resenas.Count == 0) return 0;
+        return (int)Math.Round(ConteoPorEstrella(star) * 100.0 / resenas.Count);
+    }
+
+    private List<ResenaDetalle> ResenasFiltradas
+    {
+        get
+        {
+            IEnumerable<ResenaDetalle> query = resenas;
+
+            if (filtroCalificacion is >= 1 and <= 5)
+                query = query.Where(r => r.Calificacion == filtroCalificacion);
+
+            if (filtroVerificadas == "verificadas")
+                query = query.Where(r => r.Verificada);
+            else if (filtroVerificadas == "noverificadas")
+                query = query.Where(r => !r.Verificada);
+
+            query = filtroOrden switch
+            {
+                "antiguas" => query.OrderBy(r => r.Fecha),
+                "mejor" => query.OrderByDescending(r => r.Calificacion).ThenByDescending(r => r.Fecha),
+                "peor" => query.OrderBy(r => r.Calificacion).ThenByDescending(r => r.Fecha),
+                _ => query.OrderByDescending(r => r.Fecha)
+            };
+
+            return query.ToList();
+        }
+    }
+
+    private static string Iniciales(string descripcion)
+    {
+        if (string.IsNullOrWhiteSpace(descripcion)) return "?";
+        var parts = descripcion.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length == 1) return parts[0].Substring(0, 1).ToUpper();
+        return (parts[0].Substring(0, 1) + parts[^1].Substring(0, 1)).ToUpper();
+    }
+
+    private class ProductoDetalle
+    {
+        public int Id { get; set; }
+        public string Codigo { get; set; } = "";
+        public string Nombre { get; set; } = "";
+        public string Categoria { get; set; } = "";
+        public string Subcategoria { get; set; } = "";
+        public string Marca { get; set; } = "";
+        public int MarcaId { get; set; }
+        public int SubcategoriaId { get; set; }
+        public int SubcategoriaCategoriaId { get; set; }
+        public decimal PrecioBase { get; set; }
+        public int Stock { get; set; }
+        public bool Disponible { get; set; }
+        public bool EnPromocion { get; set; }
+        public string ImagenUrl { get; set; } = "";
+    }
+
+    private record EscalaDetalle(string Nombre, int CantidadMinima, decimal PrecioUnitario, string Ahorro);
+
+    private static string NombreEscala(int cantidadMinima)
+    {
+        return cantidadMinima <= 1
+            ? "Precio unitario"
+            : $"Desde {cantidadMinima} unidades";
+    }
+
+    private static string CalcularAhorroTexto(decimal precioUnitario, decimal precioBase)
+    {
+        if (precioBase <= 0 || precioUnitario >= precioBase)
+        {
+            return "-";
+        }
+
+        var porcentaje = (1 - precioUnitario / precioBase) * 100;
+        return $"-{decimal.Round(porcentaje, 0)}%";
+    }
+
+    private record ResenaDetalle(
+        string Cliente,
+        string Titulo,
+        string Comentario,
+        int Calificacion,
+        bool Verificada,
+        DateTime Fecha,
+        string CodigoPedido
+    );
+
+    // Modal editar
+    private bool mostrarModalEditar = false;
+    private string? mensajeErrorEditar;
+    private ProductoEditForm formEditar = new();
+
+    private List<Categoria> categorias = new();
+    private List<Subcategoria> subcategorias = new();
+    private List<Marca> marcas = new();
+
+    private List<Subcategoria> SubcategoriasFiltradas =>
+        formEditar.CategoriaId <= 0
+            ? new List<Subcategoria>()
+            : subcategorias
+                .Where(s => s.Categoria != null && s.Categoria.Id == formEditar.CategoriaId)
+                .OrderBy(s => s.Descripcion)
+                .ToList();
+
+    private async Task CargarOpcionesFormulario()
+    {
+        categorias = (await ProductoService.ObtenerCategoriasAsync())
+            .Where(c => c.Activo)
+            .OrderBy(c => c.Descripcion)
+            .ToList();
+
+        subcategorias = (await ProductoService.ObtenerSubcategoriasAsync())
+            .Where(s => s.Activo)
+            .OrderBy(s => s.Descripcion)
+            .ToList();
+
+        marcas = (await ProductoService.ObtenerMarcasAsync())
+            .Where(m => m.Activo)
+            .OrderBy(m => m.Descripcion)
+            .ToList();
+    }
+
+    private void AbrirEditarProducto()
+    {
+        mensajeErrorEditar = null;
+        urlsImagenesEditar = new();
+
+        // Precargar el form con el detalle actual
+        formEditar = new ProductoEditForm
+        {
+            Nombre = producto.Nombre,
+            CategoriaId = producto.SubcategoriaCategoriaId,
+            SubcategoriaId = producto.SubcategoriaId,
+            MarcaId = producto.MarcaId,
+            PrecioBase = producto.PrecioBase,
+            Stock = producto.Stock,
+            Disponible = producto.Disponible,
+            EnPromocion = producto.EnPromocion
+        };
+
+        mostrarModalEditar = true;
+    }
+
+    private void CerrarEditarProducto()
+    {
+        mostrarModalEditar = false;
+    }
+
+    private List<string> urlsImagenesEditar = new();
+
+    private async Task GuardarEdicionProducto()
+    {
+        // Validaciones front
+        if (string.IsNullOrWhiteSpace(formEditar.Nombre))
+        {
+            mensajeErrorEditar = "El descripcion es obligatorio.";
+            return;
+        }
+
+        if (formEditar.CategoriaId <= 0)
+        {
+            mensajeErrorEditar = "Selecciona una categoría.";
+            return;
+        }
+
+        if (formEditar.SubcategoriaId <= 0)
+        {
+            mensajeErrorEditar = "Selecciona una subcategoria.";
+            return;
+        }
+
+        if (!SubcategoriasFiltradas.Any(s => s.Id == formEditar.SubcategoriaId))
+        {
+            mensajeErrorEditar = "Selecciona una subcategoria valida para la categoria.";
+            return;
+        }
+
+        if (formEditar.MarcaId <= 0)
+        {
+            mensajeErrorEditar = "Selecciona una marca.";
+            return;
+        }
+
+        if (formEditar.PrecioBase <= 0)
+        {
+            mensajeErrorEditar = "El precio base debe ser mayor a 0.";
+            return;
+        }
+
+        if (formEditar.Stock < 0)
+        {
+            mensajeErrorEditar = "El stock no puede ser negativo.";
+            return;
+        }
+
+        try
+        {
+            var productoActualizar = new ProductoApi
+            {
+                Id = producto.Id,
+                Nombre = formEditar.Nombre.Trim(),
+                PrecioBase = formEditar.PrecioBase,
+                Stock = formEditar.Stock,
+                Disponible = formEditar.Disponible,
+                Activo = formEditar.Disponible,
+                Promocion = formEditar.EnPromocion,
+                Marca = new Marca { Id = formEditar.MarcaId },
+                Subcategoria = new Subcategoria { Id = formEditar.SubcategoriaId }
+            };
+
+            productoApi = urlsImagenesEditar.Any()
+    ? await ProductoService.ActualizarConImagenesAsync(productoActualizar, urlsImagenesEditar)
+    : await ProductoService.ActualizarAsync(productoActualizar);
+
+            producto = MapearDetalle(productoApi);
+            mensajeErrorEditar = null;
+            mostrarModalEditar = false;
+        }
+        catch (Exception ex)
+        {
+            mensajeErrorEditar = $"No se pudo actualizar el producto: {ex.Message}";
+        }
+    }
+
+    private class ProductoEditForm
+    {
+        public string Nombre { get; set; } = "";
+        public int CategoriaId { get; set; }
+        public int SubcategoriaId { get; set; }
+        public int MarcaId { get; set; }
+        public decimal PrecioBase { get; set; }
+        public int Stock { get; set; }
+        public bool Disponible { get; set; }
+        public bool EnPromocion { get; set; }
+    }
+
+    //imagenes:
+
+    private async Task AbrirWidgetCloudinary()
+    {
+        try
+        {
+            var urls = await JS.InvokeAsync<List<string>>(
+                "subirImagenesCloudinary", "dlkbckbdm", "killa_unsigned", 4);
+
+            foreach (var url in urls)
+            {
+                if (!string.IsNullOrWhiteSpace(url))
+                    urlsImagenesEditar.Add(url);
+            }
+
+            // No pasar de 4 en total
+            if (urlsImagenesEditar.Count > 4)
+                urlsImagenesEditar = urlsImagenesEditar.Take(4).ToList();
+
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            mensajeErrorEditar = $"Error al subir imagen: {ex.Message}";
+        }
+    }
+}

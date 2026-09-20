@@ -1,0 +1,786 @@
+/* RESPONSIVE GENERAL */
+
+html,
+body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+main,
+.admin-page {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: clip;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+img,
+svg,
+video {
+    max-width: 100%;
+}
+
+button,
+input,
+select,
+textarea {
+    max-width: 100%;
+}
+
+.table,
+table {
+    max-width: 100%;
+}
+
+.admin-table-card,
+.admin-table-wrapper,
+.table-responsive-fallback {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.category-grid,
+.product-grid,
+.catalog-products {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+}
+
+.product-grid {
+    justify-content: stretch;
+}
+
+.product-card,
+.catalog-product-card {
+    width: 100%;
+    max-width: 100%;
+}
+
+.account-layout-grid,
+.account-content-card,
+.account-sidebar-card {
+    min-width: 0;
+}
+
+.admin-content,
+.admin-table-card,
+.admin-orders-table-card,
+.admin-products-table-card,
+.admin-products-content,
+.admin-orders-content,
+.admin-employees-content,
+.admin-providers-content,
+.admin-reports-content,
+.admin-product-form-content,
+.admin-product-detail-content,
+.admin-order-detail-content,
+.admin-scales-content,
+.cupones-card,
+.marcas-main {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+}
+
+.admin-table-card,
+.admin-orders-table-card,
+.admin-products-table-card,
+.cupones-card {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+}
+
+.admin-table,
+.admin-orders-table,
+.cupones-table {
+    min-width: 720px;
+}
+
+/* TABLET / LAPTOP PEQUENA */
+@media (max-width: 1200px) {
+    .product-grid,
+    .category-grid {
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr));
+    }
+
+    .checkout-page,
+    .cart-container {
+        grid-template-columns: 1fr;
+    }
+
+    .checkout-summary,
+    .cart-summary {
+        position: static;
+        width: 100%;
+        max-width: none;
+    }
+}
+
+/* NAVBAR TABLET / CELULAR */
+@media (max-width: 900px) {
+    .navbar-killa {
+        flex-wrap: wrap;
+        padding: 10px 20px;
+        gap: 12px;
+    }
+
+    .logo {
+        width: 145px;
+    }
+
+    .search-container {
+        order: 3;
+        flex: 0 0 100%;
+        max-width: 100%;
+        margin: 0;
+    }
+
+    .search-box {
+        padding: 12px 18px 12px 48px;
+        font-size: 15px;
+    }
+
+    .search-icon {
+        font-size: 19px;
+        left: 16px;
+    }
+
+    .nav-links {
+        gap: 14px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+
+        .nav-links a {
+            font-size: 14px;
+        }
+
+    .btn-register {
+        padding: 9px 15px;
+        font-size: 14px;
+    }
+
+    .cart-navbar-btn {
+        width: 34px;
+        height: 34px;
+    }
+
+        .cart-navbar-btn i {
+            font-size: 25px;
+        }
+
+    .account-layout-grid {
+        flex-direction: column;
+        gap: 18px;
+    }
+
+    .account-sidebar-card,
+    .account-content-card {
+        flex: none;
+        width: 100%;
+    }
+
+    .profile-avatar-zone {
+        margin-bottom: 18px;
+    }
+
+    .sidebar-menu-links {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    .sidebar-divider {
+        display: none;
+    }
+
+    .menu-link-item {
+        justify-content: center;
+        min-height: 44px;
+        padding: 11px 12px;
+        text-align: center;
+        border-radius: 14px;
+    }
+
+        .menu-link-item.logout-btn {
+            grid-column: 1 / -1;
+        }
+
+    .admin-navbar {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 12px;
+        padding: 14px 16px;
+    }
+
+    .admin-brand {
+        justify-content: center;
+    }
+
+    .admin-nav-links {
+        width: 100%;
+        padding: 6px 0;
+    }
+
+    .admin-nav-button {
+        min-height: 40px;
+        padding: 0 12px;
+        border-radius: 12px;
+    }
+
+    .admin-nav-right {
+        width: 100%;
+        margin-left: 0;
+        padding-right: 0;
+    }
+
+    .btn-logout {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .admin-content {
+        padding: 28px 16px 48px;
+    }
+
+    .admin-header,
+    .admin-header-flex,
+    .admin-orders-header,
+    .admin-cupones-header,
+    .admin-product-form-header,
+    .admin-order-detail-header {
+        align-items: flex-start !important;
+        flex-direction: column !important;
+        gap: 14px;
+    }
+
+        .admin-header > *,
+        .admin-header-flex > *,
+        .admin-orders-header > *,
+        .admin-cupones-header > *,
+        .admin-product-form-header > * {
+            width: 100%;
+        }
+
+    .admin-primary-action,
+    .btn-add-marca,
+    .btn-agregar-marca,
+    .btn-nuevo-cupon,
+    .admin-product-form-header-actions,
+    .admin-product-form-header-actions .btn-form-cancel,
+    .admin-product-form-header-actions .btn-form-save {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .marcas-layout {
+        flex-direction: column;
+    }
+
+    .marcas-sidebar,
+    .marcas-main {
+        width: 100%;
+    }
+
+    .marcas-sidebar {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .admin-products-kpis,
+    .admin-report-kpis,
+    .admin-report-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .admin-products-filter-row,
+    .admin-orders-filter-row,
+    .admin-marcas-filter-row,
+    .marcas-filter-grid,
+    .cat-filter-grid {
+        grid-template-columns: 1fr 1fr !important;
+    }
+
+    .admin-product-form-header-actions,
+    .admin-product-form-footer,
+    .scales-modal-actions,
+    .admin-modal-actions,
+    .modal-actions-kb,
+    .killa-modal-buttons {
+        flex-wrap: wrap;
+    }
+
+    .admin-form-grid-2,
+    .admin-form-grid-3,
+    .detail-grid,
+    .admin-product-detail-grid,
+    .admin-order-detail-grid,
+    .report-main-grid,
+    .admin-report-main-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* CELULAR */
+@media (max-width: 768px) {
+    .categories,
+    .products,
+    .catalog-page,
+    .cart-page {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
+    .hero {
+        min-height: 360px;
+        height: auto;
+        padding: 56px 18px;
+    }
+
+    .hero-buttons,
+    .card-title-row,
+    .coupon-row,
+    .modal-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .benefits {
+        flex-direction: column;
+        align-items: center;
+        gap: 32px;
+        padding: 34px 20px;
+    }
+
+    .btn-primary,
+    .btn-secondary,
+    .btn-distributor,
+    .coupon-button,
+    .btn-new-address,
+    .btn-cancel,
+    .btn-save {
+        width: 100%;
+    }
+
+    .product-grid,
+    .category-grid,
+    .catalog-products,
+    .delivery-options,
+    .voucher-options,
+    .modal-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .checkout-page {
+        padding: 20px 16px;
+    }
+
+    .checkout-card,
+    .checkout-summary,
+    .cart-summary,
+    .address-modal,
+    .filters-card-large,
+    .account-sidebar-card,
+    .account-content-card {
+        padding: 22px;
+        border-radius: 20px;
+    }
+
+    .page-background-wrapper {
+        padding: 22px 0 42px;
+    }
+
+    .account-main-container {
+        padding: 0 16px;
+    }
+
+    .main-page-title {
+        font-size: 28px;
+        margin: 0 0 18px;
+        text-align: center;
+    }
+
+    .card-inside-title,
+    .content-section-title,
+    .section-header h2 {
+        font-size: 22px;
+    }
+
+    .profile-form-grid,
+    .addresses-content .profile-form-grid,
+    .addresses-content .profile-form-grid[style] {
+        grid-template-columns: 1fr !important;
+        gap: 16px;
+    }
+
+    .killa-date-picker-combo {
+        flex-direction: column;
+    }
+
+    .form-actions-area {
+        margin-top: 24px;
+    }
+
+    .section-header,
+    .address-card,
+    .security-banner,
+    .card-actions,
+    .modal-footer,
+    .ticket-footer {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .address-card,
+    .security-banner {
+        text-align: center;
+    }
+
+    .house-icon,
+    .security-icon {
+        align-self: center;
+    }
+
+    .btn-action,
+    .btn-new-address,
+    .btn-modal-cancel,
+    .btn-modal-save {
+        justify-content: center;
+        width: 100%;
+    }
+
+    .distrito-half-width {
+        width: 100%;
+    }
+
+    .coupons-list {
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+
+    .ticket-card {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .modal-box,
+    .modal-content,
+    .modal-content-wrapper {
+        width: calc(100% - 32px);
+        max-width: 100%;
+        padding: 24px;
+    }
+
+    .admin-content {
+        padding-left: 14px;
+        padding-right: 14px;
+    }
+
+    .admin-table,
+    .admin-orders-table,
+    .cupones-table {
+        min-width: 680px;
+    }
+
+    .admin-orders-filters,
+    .admin-marcas-filters,
+    .filtros-body,
+    .admin-product-form-card,
+    .admin-order-panel,
+    .admin-order-tracking-card {
+        padding: 16px;
+        border-radius: 18px;
+    }
+
+    .admin-products-filter-row,
+    .admin-orders-filter-row,
+    .admin-marcas-filter-row,
+    .marcas-filter-grid,
+    .cat-filter-grid,
+    .admin-date-selects,
+    .admin-form-grid-2,
+    .admin-form-grid-3 {
+        grid-template-columns: 1fr !important;
+    }
+
+    .admin-select-group,
+    .admin-sort-group,
+    .marcas-sort-container {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .admin-sort-buttons,
+    .marcas-sort-buttons {
+        width: 100%;
+    }
+
+        .admin-sort-btn,
+        .marcas-sort-buttons button {
+            flex: 1;
+        }
+
+    .admin-pagination,
+    .paginacion-wrap {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .admin-pagination-buttons,
+    .paginacion-btns {
+        flex-wrap: wrap;
+    }
+
+    .admin-cat-alert-success,
+    .admin-products-alert,
+    .cat-sub-panel-header,
+    .cat-sub-card,
+    .cat-toggle-row,
+    .admin-order-tracking-top,
+    .admin-order-detail-actions,
+    .admin-order-totals div,
+    .admin-order-info-list div {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .cat-name-cell,
+    .cat-sub-card-body {
+        min-width: 0;
+    }
+
+    .cat-sub-name {
+        overflow-wrap: anywhere;
+    }
+
+    .cat-sub-add-btn,
+    .admin-clear-filters,
+    .btn-limpiar-filtros,
+    .btn-form-cancel,
+    .btn-form-save,
+    .btn-scale-cancel,
+    .btn-scale-save,
+    .admin-modal-btn-cancel,
+    .admin-modal-btn-confirm,
+    .btn-modal-cancel,
+    .btn-modal-confirm,
+    .btn-modal-cancelar,
+    .btn-modal-submit {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .admin-modal-card,
+    .admin-cat-modal-card,
+    .admin-products-modal-card,
+    .modal-content-kb,
+    .modal-dialog,
+    .killa-modal-box {
+        width: calc(100% - 28px) !important;
+        max-width: 100% !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+    }
+
+    .admin-modal-card,
+    .admin-cat-modal-card,
+    .admin-products-modal-card,
+    .modal-content-kb,
+    .killa-modal-box {
+        padding: 22px !important;
+        border-radius: 18px !important;
+    }
+
+    .admin-products-actions,
+    .cat-sub-card-actions,
+    .admin-order-detail-actions {
+        justify-content: flex-start;
+    }
+
+    .hero-content h1 {
+        font-size: 38px;
+    }
+
+    .hero-content p {
+        font-size: 18px;
+    }
+
+    /* CARRITO */
+    .cart-container {
+        display: grid;
+        grid-template-columns: 1fr;
+        padding: 0 16px;
+        gap: 24px;
+    }
+
+    .cart-list h1 {
+        font-size: 28px;
+        text-align: center;
+        margin-bottom: 24px;
+    }
+
+    .cart-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        width: 100%;
+        padding: 24px 18px;
+        gap: 16px;
+    }
+
+    .cart-item-img {
+        width: 150px;
+        height: 150px;
+    }
+
+    .cart-item-info h3 {
+        font-size: 22px;
+        line-height: 1.2;
+    }
+
+    .cart-actions {
+        justify-content: center;
+    }
+
+    .cart-subtotal {
+        text-align: center;
+    }
+
+    .delete-btn {
+        align-self: center;
+    }
+
+    .summary-row,
+    .summary-total,
+    .summary-product {
+        gap: 10px;
+    }
+}
+
+/* CELULAR PEQUENO */
+@media (max-width: 520px) {
+    .navbar-killa {
+        justify-content: center;
+    }
+
+    .logo {
+        width: 130px;
+    }
+
+    .nav-links {
+        width: 100%;
+        justify-content: center;
+        gap: 12px;
+    }
+
+    .user-name {
+        display: none;
+    }
+
+    .account-sidebar-card,
+    .account-content-card {
+        padding: 18px;
+    }
+
+    .sidebar-menu-links {
+        grid-template-columns: 1fr;
+    }
+
+    .avatar-email {
+        overflow-wrap: anywhere;
+    }
+
+    .menu-link-item {
+        justify-content: flex-start;
+        text-align: left;
+    }
+
+    .admin-navbar {
+        position: static;
+    }
+
+    .admin-brand img {
+        width: 42px;
+        height: 42px;
+    }
+
+    .admin-nav-links {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        overflow-x: visible;
+    }
+
+    .admin-nav-button {
+        width: 100%;
+        white-space: normal;
+        text-align: center;
+    }
+
+    .admin-header h1,
+    .admin-header-flex h1,
+    .admin-product-form-header h1,
+    .admin-order-detail-header h1 {
+        font-size: 1.65rem;
+    }
+
+    .admin-products-kpis,
+    .admin-report-kpis,
+    .admin-report-grid,
+    .marcas-sidebar {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-table,
+    .admin-orders-table,
+    .cupones-table {
+        min-width: 620px;
+    }
+
+        .admin-table th,
+        .admin-table td,
+        .admin-orders-table th,
+        .admin-orders-table td,
+        .cupones-table th,
+        .cupones-table td {
+            padding: 12px;
+            font-size: 0.86rem;
+        }
+
+    .cat-sub-panel {
+        padding: 16px;
+    }
+
+    .killa-modal-buttons,
+    .scales-modal-actions,
+    .admin-modal-actions,
+    .modal-actions-kb {
+        flex-direction: column;
+    }
+
+    .catalog-breadcrumb,
+    .catalog-pagination,
+    .summary-row,
+    .summary-total,
+    .summary-product {
+        flex-wrap: wrap;
+    }
+
+    .section-title {
+        font-size: 28px;
+    }
+
+    .hero-content h1 {
+        font-size: 32px;
+    }
+
+    .hero-content p {
+        font-size: 16px;
+    }
+}

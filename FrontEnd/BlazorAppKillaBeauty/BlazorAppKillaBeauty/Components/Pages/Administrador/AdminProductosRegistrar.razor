@@ -1,0 +1,401 @@
+@page "/admin/productos/nuevo"
+@attribute [Authorize(Roles = "ADMINISTRADOR,TRABAJADOR")]
+@rendermode InteractiveServer
+@using BlazorAppKillaBeauty.Services
+@inject NavigationManager Navigation
+@inject ProductoService ProductoService
+@inject IJSRuntime JS
+@using BlazorAppKillaBeauty.ClienteREST.Models
+@using System.Text.Json
+@using Microsoft.AspNetCore.Components.Forms;
+
+<PageTitle>Registrar nuevo producto - Killa Beauty</PageTitle>
+
+<main class="admin-page">
+    <AdminNavbar />
+
+    <section class="admin-content admin-product-form-content">
+
+        <div class="admin-breadcrumb">
+            <span>Inicio</span>
+            <i class="bi bi-chevron-right"></i>
+            <span>Productos</span>
+            <i class="bi bi-chevron-right"></i>
+            <span>Nuevo producto</span>
+        </div>
+
+        <header class="admin-product-form-header">
+            <div>
+                <h1>Registrar nuevo producto</h1>
+            </div>
+
+            <div class="admin-product-form-header-actions">
+                <button type="button" class="btn-form-cancel" @onclick="Cancelar">
+                    Cancelar
+                </button>
+                <button type="button" class="btn-form-save" @onclick="Guardar">
+                    Guardar producto
+                </button>
+            </div>
+        </header>
+
+        @if (!string.IsNullOrWhiteSpace(mensajeError))
+        {
+            <div class="admin-products-alert">
+                <span><i class="bi bi-exclamation-circle-fill"></i> @mensajeError</span>
+                <button type="button" @onclick="() => mensajeError = null">X</button>
+            </div>
+        }
+
+        <section class="admin-product-form-card">
+            <div class="admin-form-section-title">
+                <i class="bi bi-tag"></i>
+                <h2>Identificacion</h2>
+            </div>
+
+            <div class="admin-form-grid-2">
+                <div class="admin-form-field">
+                    <label>Codigo del producto</label>
+                    <div class="admin-form-field-readonly">
+                        <input disabled value="@codigoGenerado" />
+                        <small>El sistema genera el codigo unico al guardar.</small>
+                    </div>
+                </div>
+
+                <div class="admin-form-field">
+                    <label>Nombre del producto <span class="required">*</span></label>
+                    <input type="text"
+                           placeholder="Ej: Serum vitamina C 30ml"
+                           @bind="descripcion" />
+                </div>
+            </div>
+        </section>
+
+        <section class="admin-product-form-card">
+            <div class="admin-form-section-title">
+                <i class="bi bi-bookmark"></i>
+                <h2>Clasificacion</h2>
+            </div>
+
+            <div class="admin-form-grid-3">
+                <div class="admin-form-field">
+                    <label>Categoria <span class="required">*</span></label>
+                    <select @bind="categoriaId">
+                        <option value="0">Seleccionar categoria</option>
+                        @foreach (var c in categorias)
+                        {
+                            <option value="@c.Id">@c.Descripcion</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="admin-form-field">
+                    <label>Subcategoria <span class="required">*</span></label>
+                    <select @bind="subcategoriaId" disabled="@(categoriaId == 0)">
+                        <option value="0">Seleccionar subcategoria</option>
+                        @foreach (var s in SubcategoriasFiltradas)
+                        {
+                            <option value="@s.Id">@s.Descripcion</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="admin-form-field">
+                    <label>Marca <span class="required">*</span></label>
+                    <select @bind="marcaId">
+                        <option value="0">Seleccionar marca</option>
+                        @foreach (var m in marcas)
+                        {
+                            <option value="@m.Id">@m.Descripcion</option>
+                        }
+                    </select>
+                </div>
+            </div>
+        </section>
+
+        <section class="admin-product-form-card">
+            <div class="admin-form-section-title">
+                <i class="bi bi-cash-coin"></i>
+                <h2>Precio y stock</h2>
+            </div>
+
+            <div class="admin-form-grid-2">
+                <div class="admin-form-field">
+                    <label>Precio base (S/.) <span class="required">*</span></label>
+                    <input type="number" step="0.01" placeholder="0.00" @bind="precioBase" />
+                </div>
+
+                <div class="admin-form-field">
+                    <label>Stock inicial <span class="required">*</span></label>
+                    <input type="number" placeholder="0" @bind="stockInicial" />
+                </div>
+            </div>
+        </section>
+
+        <section class="admin-product-form-card">
+            <div class="admin-form-section-title">
+                <i class="bi bi-eye"></i>
+                <h2>Opciones de visibilidad</h2>
+            </div>
+
+            <div class="admin-form-toggles">
+                <div class="toggle-row">
+                    <span>Disponible en catalogo</span>
+                    <label class="switch">
+                        <input type="checkbox" @bind="disponible" />
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="toggle-row">
+                    <span>En promocion</span>
+                    <label class="switch">
+                        <input type="checkbox" @bind="enPromocion" />
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+        </section>
+
+        <section class="admin-product-form-card">
+            <div class="admin-form-section-title">
+                <i class="bi bi-image"></i>
+                <h2>Imágenes</h2>
+            </div>
+
+            <div class="admin-form-field">
+                <label>Imágenes del producto</label>
+
+                <button type="button" class="admin-upload-box" @onclick="AbrirWidgetCloudinary">
+                    <i class="bi bi-image"></i>
+                    <span>Seleccionar imágenes</span>
+                    <small>PNG, JPG o JPEG</small>
+                </button>
+
+                @if (urlsImagenesNuevo.Any())
+                {
+                    <small class="admin-file-help">
+                        @urlsImagenesNuevo.Count imagen(es) seleccionada(s)
+                    </small>
+                }
+            </div>
+        </section>
+
+        <div class="admin-product-form-hint">
+            Las escalas de precio (precio por unidad, media docena, cajon) se configuran despues de guardar el producto, desde la pantalla de escalas.
+        </div>
+
+        <footer class="admin-product-form-footer">
+            <button type="button" class="btn-form-cancel" @onclick="Cancelar">
+                Cancelar
+            </button>
+            <button type="button" class="btn-form-save" @onclick="Guardar">
+                Guardar producto
+            </button>
+        </footer>
+
+        @if (mostrarExito)
+        {
+            <div class="admin-modal-overlay">
+                <div class="admin-modal-card">
+                    <div class="admin-modal-icon" style="color:#1f7a3d;">
+                        <i class="bi bi-check-circle-fill"></i>
+                    </div>
+                    <h2>Producto registrado</h2>
+                    <p class="admin-modal-text">
+                        Se guardo el producto <strong>@descripcion</strong> EXITOSAMENTE.
+                    </p>
+
+                    <div class="admin-modal-actions">
+                        <button class="admin-modal-btn-confirm" style="background:#1f7a3d;" @onclick="VolverAProductos">
+                            Volver a productos
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
+
+    </section>
+</main>
+
+@code {
+    private string? mensajeError;
+    private bool mostrarExito = false;
+
+    // codigo generado
+    private string codigoGenerado = "KB-149 (generado automaticamente)";
+
+    private string descripcion = "";
+    private int categoriaId;
+    private int subcategoriaId;
+    private int marcaId;
+    private decimal precioBase = 0;
+    private int stockInicial = 0;
+    private bool disponible = true;
+    private bool enPromocion = false;
+
+    private List<Categoria> categorias = new();
+    private List<Subcategoria> subcategorias = new();
+    private List<Marca> marcas = new();
+
+    private List<Subcategoria> SubcategoriasFiltradas =>
+        categoriaId == 0
+            ? new List<Subcategoria>()
+            : subcategorias
+                .Where(s => s.Categoria?.Id == categoriaId)
+                .OrderBy(s => s.Descripcion)
+                .ToList();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            categorias = (await ProductoService.ObtenerCategoriasAsync())
+                .Where(c => c.Activo)
+                .OrderBy(c => c.Descripcion)
+                .ToList();
+
+            subcategorias = (await ProductoService.ObtenerSubcategoriasAsync())
+                .Where(s => s.Activo)
+                .OrderBy(s => s.Descripcion)
+                .ToList();
+
+            marcas = (await ProductoService.ObtenerMarcasAsync())
+                .Where(m => m.Activo)
+                .OrderBy(m => m.Descripcion)
+                .ToList();
+        }
+        catch (Exception ex)
+        {
+            mensajeError = $"No se pudieron cargar los datos del formulario: {ex.Message}";
+        }
+    }
+
+    private void Cancelar()
+    {
+        Navigation.NavigateTo("/admin/productos");
+    }
+
+    private async Task Guardar()
+    {
+        // Validaciones front (solo interaccion)
+        if (string.IsNullOrWhiteSpace(descripcion))
+        {
+            mensajeError = "El descripcion del producto es obligatorio.";
+            return;
+        }
+
+        if (categoriaId == 0)
+        {
+            mensajeError = "Selecciona una categoria.";
+            return;
+        }
+
+        if (subcategoriaId == 0)
+        {
+            mensajeError = "Selecciona una subcategoria.";
+            return;
+        }
+
+        if (marcaId == 0)
+        {
+            mensajeError = "Selecciona una marca.";
+            return;
+        }
+
+        if (!marcas.Any(m => m.Id == marcaId))
+        {
+            mensajeError = "La marca seleccionada no existe o no esta activa.";
+            return;
+        }
+
+        if (!SubcategoriasFiltradas.Any(s => s.Id == subcategoriaId))
+        {
+            mensajeError = "La subcategoria seleccionada no pertenece a la categoria elegida.";
+            return;
+        }
+
+        if (precioBase <= 0)
+        {
+            mensajeError = "El precio base debe ser mayor a 0.";
+            return;
+        }
+
+        if (stockInicial < 0)
+        {
+            mensajeError = "El stock inicial no puede ser negativo.";
+            return;
+        }
+
+        try
+        {
+            var producto = new ProductoApi
+            {
+                Nombre = descripcion.Trim(),
+                PrecioBase = precioBase,
+                Stock = stockInicial,
+                Disponible = disponible,
+                Promocion = enPromocion,
+                Activo = disponible,
+                Marca = new Marca { Id = marcaId },
+                Subcategoria = new Subcategoria { Id = subcategoriaId }
+            };
+
+            if (urlsImagenesNuevo.Any())
+            {
+                await ProductoService.CrearConImagenesAsync(producto, urlsImagenesNuevo);
+            }
+            else
+            {
+                await ProductoService.CrearAsync(producto);
+            }
+
+            mensajeError = null;
+            mostrarExito = true;
+        }
+        catch (Exception ex)
+        {
+            mensajeError = $"No se pudo registrar el producto: {LimpiarMensajeError(ex.Message)}";
+        }
+    }
+
+    private void VolverAProductos()
+    {
+        mostrarExito = false;
+        Navigation.NavigateTo("/admin/productos");
+    }
+
+    //imagenes
+    // A esto:
+    private List<string> urlsImagenesNuevo = new();
+
+    private async Task AbrirWidgetCloudinary()
+    {
+        var urls = await JS.InvokeAsync<List<string>>(
+            "subirImagenesCloudinary", "dlkbckbdm", "killa_unsigned", 4);
+
+        foreach (var url in urls)
+            if (!string.IsNullOrWhiteSpace(url))
+                urlsImagenesNuevo.Add(url);
+
+        if (urlsImagenesNuevo.Count > 4)
+            urlsImagenesNuevo = urlsImagenesNuevo.Take(4).ToList();
+
+        StateHasChanged();
+    }
+
+    private string LimpiarMensajeError(string mensaje)
+    {
+        try
+        {
+            var json = JsonSerializer.Deserialize<JsonElement>(mensaje);
+            if (json.TryGetProperty("error", out var error) &&
+                error.TryGetProperty("message", out var msg))
+                return msg.GetString() ?? mensaje;
+        }
+        catch { }
+        return mensaje;
+    }
+
+}
+

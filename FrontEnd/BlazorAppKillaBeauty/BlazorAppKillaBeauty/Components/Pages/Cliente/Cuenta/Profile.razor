@@ -1,0 +1,271 @@
+@page "/account/profile"
+@layout AccountLayout
+@attribute [Authorize(Roles = "CLIENTE,TRABAJADOR,ADMINISTRADOR")]
+@rendermode InteractiveServer
+
+@using BlazorAppKillaBeauty.ClienteREST.Models
+@using BlazorAppKillaBeauty.ClienteREST.ServicesAct
+
+@inject AuthService AuthService
+@inject UsuarioPerfilService UsuarioPerfilService
+
+<h2 class="card-inside-title">Mi Perfil</h2>
+
+@if (isLoading)
+{
+    <p>Cargando perfil...</p>
+}
+else if (!string.IsNullOrWhiteSpace(loadError))
+{
+    <p class="validation-message">@loadError</p>
+}
+else
+{
+    <div class="profile-form-grid">
+        <div class="form-input-group">
+            <label>Nombres</label>
+            <input type="text" @bind="profile.Nombre" @bind:event="oninput" @bind:after="ValidateForm" />
+        </div>
+
+        <div class="form-input-group">
+            <label>Apellido Paterno</label>
+            <input type="text" @bind="profile.ApellidoPaterno" @bind:event="oninput" @bind:after="ValidateForm" />
+        </div>
+
+        <div class="form-input-group">
+            <label>Apellido Materno</label>
+            <input type="text" @bind="profile.ApellidoMaterno" @bind:event="oninput" @bind:after="ValidateForm" />
+        </div>
+
+        <div class="form-input-group">
+            <label>Correo electrónico</label>
+            <input type="email" value="@profile.CorreoElectronico" disabled />
+        </div>
+
+        <div class="form-input-group">
+            <label>Número de documento (DNI)</label>
+            <input type="text" value="@profile.Dni" disabled />
+        </div>
+
+        <div class="form-input-group @(hasFechaError ? "has-error" : "")">
+            <label>Fecha de nacimiento</label>
+
+            <input type="date"
+                   class="custom-select-field"
+                   value="@profile.FechaNacimiento?.ToString("yyyy-MM-dd")"
+                   @onchange="OnDateChange" />
+
+            @if (hasFechaError)
+            {
+                <span class="error-hint-text">Debes ser mayor de 18 años</span>
+            }
+        </div>
+
+        <div class="form-input-group">
+            <label>Género</label>
+            <div class="select-wrapper">
+                <select class="custom-select-field" @bind="profile.Genero" @bind:after="ValidateForm">
+                    <option value="Selecciona">Selecciona</option>
+                    <option value="Masculino">Masculino</option>
+                    <option value="Femenino">Femenino</option>
+                    <option value="Otro">Otro</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-input-group @(hasCelularError ? "has-error" : "")">
+            <label>Número de celular</label>
+            <input type="text"
+                   value="@profile.Telefono"
+                   @oninput="OnCelularInput"
+                   maxlength="9"
+                   inputmode="numeric"
+                   placeholder="9XXXXXXXX" />
+            @if (hasCelularError)
+            {
+                <span class="error-hint-text">Introduce un celular válido de 9 dígitos</span>
+            }
+        </div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(saveError))
+    {
+        <p class="validation-message">@saveError</p>
+    }
+
+    <div class="form-actions-area">
+        <button class="killa-save-button @(canSave ? "state-active" : "state-disabled")"
+                disabled="@(!canSave || isSaving)"
+                @onclick="ProcessFormSave">
+            @(isSaving ? "Guardando..." : "Guardar cambios")
+        </button>
+    </div>
+}
+
+@if (showSuccessModal)
+{
+    <div class="modal-overlay">
+        <div class="modal-content">
+            <h3 class="modal-title-text">¡Éxito!</h3>
+            <p class="modal-body-text">Tus cambios se han guardado correctamente.</p>
+            <button @onclick="() => showSuccessModal = false" class="killa-save-button state-active modal-accept-btn">Aceptar</button>
+        </div>
+    </div>
+}
+
+@code {
+    private UsuarioPerfil profile = new();
+    private UsuarioPerfil originalSnapshot = new();
+    private bool hasFechaError;
+    private bool hasCelularError;
+    private bool canSave;
+    private bool showSuccessModal;
+    private bool isSaving;
+    private bool isLoading = true;
+    private string? loadError;
+    private string? saveError;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (AuthService.UsuarioId is null)
+        {
+            loadError = "Inicia sesión para ver tu perfil.";
+            isLoading = false;
+            return;
+        }
+
+        try
+        {
+            var usuario = await UsuarioPerfilService.ObtenerPorIdAsync(AuthService.UsuarioId.Value);
+
+            if (usuario is null)
+            {
+                loadError = "No se encontró el perfil del usuario.";
+                return;
+            }
+
+            profile = usuario;
+            TakeDataSnapshot();
+            ValidateForm();
+        }
+        catch (Exception ex)
+        {
+            loadError = $"No se pudo cargar el perfil: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void TakeDataSnapshot()
+    {
+        originalSnapshot = new UsuarioPerfil
+        {
+            Id = profile.Id,
+            Nombre = profile.Nombre,
+            ApellidoPaterno = profile.ApellidoPaterno,
+            ApellidoMaterno = profile.ApellidoMaterno,
+            CorreoElectronico = profile.CorreoElectronico,
+            Dni = profile.Dni,
+            FechaNacimiento = profile.FechaNacimiento,
+            Genero = string.IsNullOrWhiteSpace(profile.Genero) ? "Selecciona" : profile.Genero,
+            Telefono = profile.Telefono
+        };
+    }
+
+    private void ValidateForm()
+    {
+        hasCelularError = string.IsNullOrWhiteSpace(profile.Telefono) ||
+                          profile.Telefono.Length != 9 ||
+                          !profile.Telefono.StartsWith("9") ||
+                          !profile.Telefono.All(char.IsDigit);
+
+        hasFechaError = !EsMayorDeEdad(profile.FechaNacimiento);
+
+        var hasRequiredData = !string.IsNullOrWhiteSpace(profile.Nombre) &&
+                              !string.IsNullOrWhiteSpace(profile.ApellidoPaterno) &&
+                              profile.FechaNacimiento.HasValue;
+
+        var isDirty = profile.Nombre != originalSnapshot.Nombre ||
+                      profile.ApellidoPaterno != originalSnapshot.ApellidoPaterno ||
+                      profile.ApellidoMaterno != originalSnapshot.ApellidoMaterno ||
+                      profile.FechaNacimiento != originalSnapshot.FechaNacimiento ||
+                      profile.Genero != originalSnapshot.Genero ||
+                      profile.Telefono != originalSnapshot.Telefono;
+
+        canSave = hasRequiredData && isDirty && !hasFechaError && !hasCelularError;
+    }
+
+    private static bool EsMayorDeEdad(DateOnly? fechaNacimiento)
+    {
+        if (!fechaNacimiento.HasValue)
+        {
+            return false;
+        }
+
+        var hoy = DateOnly.FromDateTime(DateTime.Today);
+        var edad = hoy.Year - fechaNacimiento.Value.Year;
+
+        if (fechaNacimiento.Value > hoy.AddYears(-edad))
+        {
+            edad--;
+        }
+
+        return edad >= 18;
+    }
+
+    private void OnDateChange(ChangeEventArgs e)
+    {
+        if (DateOnly.TryParse(e.Value?.ToString(), out var nuevaFecha))
+        {
+            profile.FechaNacimiento = nuevaFecha;
+        }
+        else
+        {
+            profile.FechaNacimiento = null;
+        }
+
+        ValidateForm();
+    }
+
+    private void OnCelularInput(ChangeEventArgs e)
+    {
+        var rawValue = e.Value?.ToString() ?? "";
+        profile.Telefono = new string(rawValue.Where(char.IsDigit).Take(9).ToArray());
+        ValidateForm();
+    }
+
+    private async Task ProcessFormSave()
+    {
+        if (!canSave || AuthService.UsuarioId is null)
+        {
+            return;
+        }
+
+        isSaving = true;
+        saveError = null;
+
+        try
+        {
+            var actualizado = await UsuarioPerfilService.ActualizarPerfilAsync(AuthService.UsuarioId.Value, profile);
+
+            if (actualizado is not null)
+            {
+                profile = actualizado;
+            }
+
+            TakeDataSnapshot();
+            ValidateForm();
+            showSuccessModal = true;
+        }
+        catch (Exception ex)
+        {
+            saveError = $"No se pudo guardar el perfil: {ex.Message}";
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+}

@@ -1,0 +1,358 @@
+﻿.admin-categories-content {
+    max-width: 1240px;
+}
+
+/* ── Alerta de éxito ──────────────────────────────────────── */
+.admin-cat-alert-success {
+    min-height: auto;
+    padding: 12px 16px;
+    background: #dff7e7;
+    color: #1f7a3d;
+    border: 1px solid #bdeccc;
+    border-radius: 12px;
+    margin-bottom: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 700;
+}
+
+    .admin-cat-alert-success button {
+        background: transparent;
+        border: none;
+        color: #1f7a3d;
+        cursor: pointer;
+        font-weight: 900;
+        font-size: 1rem;
+    }
+
+/* ── Filtros (reutiliza admin-pedidos, agrega grid específico) */
+.cat-filter-grid {
+    grid-template-columns: 1fr auto !important;
+}
+
+/* ── Tabla principal ──────────────────────────────────────── */
+.cat-main-table th,
+.cat-main-table td {
+    vertical-align: middle;
+}
+
+/* Filas inactivas: ligeramente apagadas */
+.cat-row-inactive {
+    opacity: 0.72;
+}
+
+/* Celda nombre con ícono */
+.cat-name-cell {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.cat-icon-badge {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background: var(--rose-pale);
+    color: var(--rose);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+}
+
+/* Pill "N subcategorías" que es también un toggle */
+.cat-sub-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    border: 1px solid var(--gray-border);
+    background: var(--white);
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-size: 0.84rem;
+    font-weight: 800;
+    color: #4f4148;
+    cursor: pointer;
+    transition: all 0.18s;
+}
+
+    .cat-sub-pill:hover {
+        background: var(--rose-pale);
+        border-color: var(--rose-soft);
+        color: var(--rose);
+    }
+
+/* ── Fila expandible de subcategorías ───────────────────────── */
+.cat-sub-expanded-row > td {
+    padding: 0 !important;
+    border-bottom: 2px solid var(--rose-light) !important;
+}
+
+.cat-sub-panel {
+    background: #fffafb;
+    border-top: 1px solid var(--rose-light);
+    padding: 18px 24px 20px;
+}
+
+.cat-sub-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+    .cat-sub-panel-header span {
+        color: #7a6b72;
+        font-weight: 800;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .cat-sub-panel-header span i {
+            color: var(--rose-soft);
+        }
+
+    .cat-sub-panel-header strong {
+        color: #2f252a;
+    }
+
+/* Botón "Agregar subcategoría" del panel */
+.cat-sub-add-btn {
+    min-height: 34px;
+    border: none;
+    background: var(--rose-soft);
+    color: var(--white);
+    border-radius: 10px;
+    padding: 0 14px;
+    font-weight: 800;
+    font-size: 0.84rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+    .cat-sub-add-btn:hover {
+        background: var(--rose);
+    }
+
+/* Estado vacío del panel */
+.cat-sub-empty {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--gray);
+    font-weight: 700;
+    padding: 10px 0;
+}
+
+    .cat-sub-empty i {
+        font-size: 1.3rem;
+        color: var(--rose-soft);
+    }
+
+/* Grid de tarjetas de subcategoría */
+.cat-sub-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 10px;
+}
+
+/* Tarjeta individual de subcategoría */
+.cat-sub-card {
+    background: var(--white);
+    border: 1px solid #f0e7eb;
+    border-radius: 14px;
+    padding: 10px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    transition: box-shadow 0.15s;
+}
+
+    .cat-sub-card:hover {
+        box-shadow: 0 3px 10px rgba(47, 37, 42, 0.08);
+    }
+
+.cat-sub-card-inactive {
+    opacity: 0.6;
+}
+
+.cat-sub-card-body {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Dot de estado */
+.cat-sub-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.dot-active {
+    background: #1f7a3d;
+}
+
+.dot-inactive {
+    background: #b0b0b0;
+}
+
+.cat-sub-name {
+    font-weight: 800;
+    color: #2f252a;
+    font-size: 0.88rem;
+}
+
+.cat-sub-card-actions {
+    display: inline-flex;
+    gap: 5px;
+    flex-shrink: 0;
+}
+
+/* Botones icon pequeños para subcategorías */
+.cat-sub-icon-btn {
+    width: 28px;
+    height: 28px;
+    border: 1px solid var(--gray-border);
+    background: var(--white);
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.78rem;
+    color: #4f4148;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+    .cat-sub-icon-btn:hover {
+        background: var(--gray-light);
+    }
+
+.cat-sub-icon-danger {
+    border-color: #ffcdd2;
+    color: #c62828;
+}
+
+    .cat-sub-icon-danger:hover {
+        background: #ffe0e0;
+    }
+
+/* ── Modal de categoría / subcategoría ───────────────────── */
+.admin-cat-modal-card {
+    text-align: left;
+    max-width: 540px;
+    width: min(540px, 92vw);
+    border-radius: 22px;
+}
+
+.admin-cat-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 6px;
+}
+
+    .admin-cat-modal-header h2 {
+        margin: 0;
+        font-size: 1.6rem;
+        font-weight: 900;
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+.admin-cat-modal-close {
+    background: transparent;
+    border: none;
+    color: var(--gray);
+    cursor: pointer;
+    font-size: 1.1rem;
+}
+
+.admin-cat-modal-error {
+    background: #ffe0e0;
+    color: #a12828;
+    border: 1px solid #f3bcbc;
+    border-radius: 12px;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 800;
+    margin: 8px 0 12px;
+}
+
+.admin-cat-modal-body {
+    padding: 6px 0 10px;
+    display: grid;
+    gap: 14px;
+}
+
+/* Input deshabilitado para "categoría padre" */
+.cat-input-disabled {
+    min-height: 52px;
+    border: 1px solid #e5e5e5 !important;
+    background: #f1f1f1 !important;
+    border-radius: 999px;
+    padding: 0 18px;
+    color: #777;
+    font-size: 1rem;
+    width: 100%;
+    outline: none;
+    cursor: not-allowed;
+}
+
+/* Toggle de estado dentro del modal */
+.cat-toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    border: 1px solid #f0e7eb;
+    background: #fffafb;
+    border-radius: 16px;
+    padding: 12px 16px;
+    font-weight: 800;
+    color: #2f252a;
+}
+
+/* Botón confirm verde (activar) */
+.btn-confirm-success {
+    background: #1f7a3d !important;
+}
+
+    .btn-confirm-success:hover {
+        background: #165a2c !important;
+    }
+
+/* ── Responsive ──────────────────────────────────────────── */
+@media (max-width: 720px) {
+    .cat-filter-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .cat-sub-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .cat-sub-panel-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .cat-sub-add-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}

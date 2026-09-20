@@ -1,0 +1,408 @@
+﻿@page "/admin/proveedores"
+@attribute [Authorize(Roles = "ADMINISTRADOR,TRABAJADOR")]
+@rendermode InteractiveServer
+@using BlazorAppKillaBeauty.Services
+@inject CourierService CourierService
+
+<PageTitle>Proveedores Admin - Killa Beauty</PageTitle>
+
+<main class="admin-page">
+    <AdminNavbar />
+
+    <section class="admin-content admin-providers-content">
+        
+        <div class="admin-breadcrumb">
+            <span>Administrador</span>
+            <i class="bi bi-chevron-right"></i>
+            <span>Proveedores</span>
+        </div>
+
+        <header class="admin-header">
+            <div>
+                <h1>Proveedores Logísticos</h1>
+                <p>Gestiona los servicios de transporte y asigna el courier exclusivo para los envíos.</p>
+            </div>
+            <button class="admin-primary-action" @onclick="AbrirCrear">
+                <i class="bi bi-plus-circle"></i>
+                Nuevo proveedor
+            </button>
+        </header>
+
+        @if (!string.IsNullOrEmpty(mensajeError))
+        {
+            <div class="admin-empty-orders" style="min-height: auto; padding: 12px; background: #ffe0e0; color: #a12828; border-radius: 12px; margin-bottom: 16px; justify-content: space-between;">
+                <span><i class="bi bi-exclamation-circle-fill"></i> @mensajeError</span>
+                <button @onclick="() => mensajeError = null" style="background: transparent; border: none; color: #a12828; cursor: pointer; font-weight: bold;">X</button>
+            </div>
+        }
+
+        <section class="admin-orders-filters">
+            <div class="admin-orders-search" style="margin-bottom: 0;">
+                <i class="bi bi-search"></i>
+                <input type="text"
+                       placeholder="Buscar por proveedor, RUC o correo..."
+                       @bind="busqueda"
+                       @bind:event="oninput" />
+            </div>
+        </section>
+
+        <section class="admin-table-card">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>RUC</th>
+                        <th>Correo de Contacto</th>
+                        <th>Teléfono</th>
+                        <th>Estado</th>
+                        <th style="text-align: right;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (CouriersFiltrados.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="6">
+                                <div class="admin-empty-orders">
+                                    <i class="bi bi-inbox"></i>
+                                    <span>No se encontraron proveedores.</span>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var courier in CouriersFiltrados)
+                        {
+                            <tr style="@(courier.Activo ? "" : "opacity: 0.85;")">
+                                <td style="font-weight: 800;">@courier.Nombre</td>
+                                <td>@courier.Ruc</td>
+                                <td>@courier.Correo</td>
+                                <td>@courier.Telefono</td>
+                                <td>
+                                    @if (courier.EsAsignado)
+                                    {
+                                        <span class="admin-status active">Asignado</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="admin-status neutral">No Asignado</span>
+                                    }
+                                </td>
+                                <td style="text-align: right;">
+                                    <div style="display: inline-flex; gap: 8px; align-items: center;">
+                                        @if (courier.EsAsignado)
+                                        {
+                                            <span class="admin-providers-txt-active">
+                                                <i class="bi bi-check-circle-fill"></i> Actual
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <button class="admin-providers-btn-assign" @onclick="() => AbrirConfirmacion(courier)">
+                                                Asignar
+                                            </button>
+                                        }
+
+                                        <button class="admin-providers-btn-edit" @onclick="() => AbrirEditar(courier)">
+                                            <i class="bi bi-pencil-square"></i> Editar
+                                        </button>
+
+                                        <button class="admin-providers-btn-delete" @onclick="() => AbrirConfirmacionEliminar(courier)">
+                                            <i class="bi bi-trash"></i> Eliminar
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </section>
+    </section>
+</main>
+
+@if (mostrarFormulario)
+{
+    <div class="admin-modal-overlay">
+        <div class="admin-modal-card" style="text-align: left; max-width: 500px;">
+            <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="margin: 0; font-size: 1.4rem;">
+                    @(esEdicion ? "Editar Proveedor" : "Nuevo Proveedor")
+                </h2>
+                <button type="button" @onclick="CerrarFormulario" style="background: transparent; border: none; font-size: 1.3rem; color: var(--gray); cursor: pointer;">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </header>
+
+            <EditForm Model="modeloFormulario" OnValidSubmit="GuardarProveedor">
+                <div class="admin-form-group">
+                    <label>Nombre del Proveedor</label>
+                    <input type="text" @bind-value="modeloFormulario.Nombre" required placeholder="Ej. Olva Courier" />
+                </div>
+
+                <div class="admin-form-group">
+                    <label>RUC (11 dígitos)</label>
+                    <input type="text" @bind-value="modeloFormulario.Ruc" required maxlength="11" placeholder="Ej. 20512345678" />
+                </div>
+
+                <div class="admin-form-group">
+                    <label>Correo Electrónico de Contacto</label>
+                    <input type="email" @bind-value="modeloFormulario.Correo" required placeholder="Ej. contacto@olva.com.pe" />
+                </div>
+
+                <div class="admin-form-group">
+                    <label>Teléfono de Contacto</label>
+                    <input type="text" @bind-value="modeloFormulario.Telefono" required placeholder="Ej. 01-234-5678" />
+                </div>
+
+                @if (!string.IsNullOrEmpty(mensajeErrorModal))
+                {
+                    <div style="background: #ffe0e0; color: #a12828; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 0.9rem;">
+                        <i class="bi bi-exclamation-triangle-fill"></i> @mensajeErrorModal
+                    </div>
+                }
+
+                <div class="admin-modal-actions" style="margin-top: 28px; justify-content: flex-end;">
+                    <button type="button" class="admin-modal-btn-cancel" @onclick="CerrarFormulario">Cancelar</button>
+                    <button type="submit" class="admin-primary-action" style="box-shadow: none; min-height: 42px;">
+                        <i class="bi bi-download"></i> Guardar
+                    </button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+}
+
+@if (mostrarModalAsignar && courierSeleccionado != null)
+{
+    <div class="admin-modal-overlay">
+        <div class="admin-modal-card">
+            <div class="admin-modal-icon">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+            </div>
+            <h2>¿Cambiar proveedor logístico?</h2>
+            
+            <p class="admin-modal-text">
+                El proveedor <strong style="color: #2f252a;">@courierAsignadoAnterior</strong> dejará de estar asignado.
+                A partir de ahora, <strong style="color: var(--rose);">@courierSeleccionado.Nombre</strong> se encargará de manera exclusiva de los envíos.
+            </p>
+            
+            <div class="admin-modal-actions">
+                <button class="admin-modal-btn-cancel" @onclick="CerrarModalAsignar">Cancelar</button>
+                <button class="admin-modal-btn-confirm" @onclick="ConfirmarCambio">Confirmar Cambio</button>
+            </div>
+        </div>
+    </div>
+}
+
+@if (mostrarModalEliminar && courierAEliminar != null)
+{
+    <div class="admin-modal-overlay">
+        <div class="admin-modal-card">
+            <h2>¿Eliminar proveedor?</h2>
+            <p>¿Estás seguro de que deseas eliminar a <strong>@courierAEliminar.Nombre</strong>? Esta acción no se puede deshacer.</p>
+            
+            @if (!string.IsNullOrEmpty(mensajeErrorModal))
+            {
+                <div style="color: red; margin-bottom: 10px;">@mensajeErrorModal</div>
+            }
+
+            <div class="admin-modal-actions">
+                <button class="admin-modal-btn-cancel" @onclick="CerrarModalEliminar">Cancelar</button>
+                <button class="admin-modal-btn-confirm" @onclick="ConfirmarEliminacion">Eliminar</button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private string busqueda = "";
+    private string? mensajeError;
+    private string? mensajeErrorModal;
+    private bool mostrarModalAsignar = false;
+    private bool mostrarFormulario = false;
+    private bool esEdicion = false;
+    private bool cargandoCouriers = true;
+
+    private Courier? courierSeleccionado;
+    private Courier? courierADesasignar;
+    private string? courierAsignadoAnterior;
+    private Courier modeloFormulario = new();
+    private List<Courier> couriers = new();
+
+    private bool mostrarModalEliminar = false;
+    private Courier? courierAEliminar;
+
+    private Courier? courierActual => couriers.FirstOrDefault(c => c.EsAsignado);
+
+    private List<Courier> CouriersFiltrados => couriers
+        .Where(c => string.IsNullOrWhiteSpace(busqueda) ||
+                    c.Nombre.Contains(busqueda, StringComparison.OrdinalIgnoreCase) ||
+                    c.Ruc.Contains(busqueda, StringComparison.OrdinalIgnoreCase) ||
+                    c.Correo.Contains(busqueda, StringComparison.OrdinalIgnoreCase))
+        .ToList();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarCouriersAsync();
+    }
+
+    private async Task CargarCouriersAsync()
+    {
+        cargandoCouriers = true;
+        mensajeError = null;
+
+        try
+        {
+            couriers = await CourierService.ObtenerTodosAsync();
+        }
+        catch (Exception ex)
+        {
+            mensajeError = $"No se pudieron cargar los proveedores logisticos: {ex.Message}";
+            couriers = new List<Courier>();
+        }
+        finally
+        {
+            cargandoCouriers = false;
+        }
+    }
+
+    private void AbrirCrear()
+    {
+        esEdicion = false;
+        mensajeError = null;
+        modeloFormulario = new Courier { Activo = false };
+        mostrarFormulario = true;
+    }
+
+    private void AbrirEditar(Courier courier)
+    {
+        mensajeErrorModal = null;
+        esEdicion = true;
+        mensajeError = null;
+        modeloFormulario = new Courier
+        {
+            Id = courier.Id,
+            Nombre = courier.Nombre,
+            Ruc = courier.Ruc,
+            Correo = courier.Correo,
+            Telefono = courier.Telefono,
+            Activo = courier.Activo
+        };
+        mostrarFormulario = true;
+    }
+
+    private void CerrarFormulario()
+    {
+        mostrarFormulario = false;
+    }
+
+    private async Task GuardarProveedor()
+    {
+        try
+        {
+            if (esEdicion)
+            {
+                var actualizado = await CourierService.ActualizarAsync(modeloFormulario);
+                var index = couriers.FindIndex(c => c.Id == actualizado.Id);
+                if (index >= 0)
+                {
+                    couriers[index] = actualizado;
+                }
+            }
+            else
+            {
+                modeloFormulario.Activo = false;
+                var creado = await CourierService.CrearAsync(modeloFormulario);
+                couriers.Add(creado);
+            }
+
+            mensajeErrorModal = null;
+            CerrarFormulario();
+        }
+        catch (Exception ex)
+        {
+            mensajeErrorModal = ex.Message;
+        }
+    }
+
+    private void AbrirConfirmacion(Courier courier)
+    {
+        mensajeErrorModal = null;
+        courierSeleccionado = courier;
+        courierADesasignar = couriers.FirstOrDefault(c => c.EsAsignado);
+        courierAsignadoAnterior = courierADesasignar?.Nombre;
+        mostrarModalAsignar = true;
+    }
+
+    private void CerrarModalAsignar()
+    {
+        mostrarModalAsignar = false;
+        courierSeleccionado = null;
+    }
+
+    private async Task ConfirmarCambio()
+    {
+        if (courierSeleccionado == null)
+        {
+            return;
+        }
+
+        try
+        {
+            // Desasignamos al anterior usando la variable que guardamos
+            if (courierADesasignar != null && courierADesasignar.Id != courierSeleccionado.Id)
+            {
+                courierADesasignar.EsAsignado = false;
+                await CourierService.ActualizarAsync(courierADesasignar);
+            }
+
+            // Asignamos al nuevo
+            courierSeleccionado.EsAsignado = true;
+            await CourierService.ActualizarAsync(courierSeleccionado);
+
+            // Recargamos todo y limpiamos
+            await CargarCouriersAsync();
+            CerrarModalAsignar();
+            courierADesasignar = null;
+        }
+        catch (Exception ex)
+        {
+            mensajeError = ex.Message;
+        }
+        finally
+        {
+            courierSeleccionado = null;
+        }
+    }
+
+    private void AbrirConfirmacionEliminar(Courier courier)
+    {
+        courierAEliminar = courier;
+        mensajeErrorModal = null; // Limpiamos errores previos
+        mostrarModalEliminar = true;
+    }
+
+    private void CerrarModalEliminar()
+    {
+        mostrarModalEliminar = false;
+        courierAEliminar = null;
+    }
+
+    private async Task ConfirmarEliminacion()
+    {
+        if (courierAEliminar == null) return;
+
+        try
+        {
+            await CourierService.EliminarAsync(courierAEliminar.Id);
+            await CargarCouriersAsync();
+            CerrarModalEliminar();
+        }
+        catch (Exception ex)
+        {
+            mensajeErrorModal = ex.Message; // Mostrará el error dentro del modal
+        }
+    }
+}

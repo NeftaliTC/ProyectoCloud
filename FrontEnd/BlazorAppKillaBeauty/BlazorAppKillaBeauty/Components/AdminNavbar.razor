@@ -1,0 +1,97 @@
+@inject NavigationManager NavManager
+@inject AuthService AuthService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<nav class="admin-navbar">
+    <NavLink href="/admin/productos"
+             class="admin-brand"
+             Match="NavLinkMatch.Prefix">
+        <img src="Images/Logo.png" alt="Killa Beauty" />
+        <span>Admin</span>
+    </NavLink>
+
+    <div class="admin-nav-links">
+        @foreach (var item in menu)
+        {
+            <NavLink href="@item.Url"
+                     class="admin-nav-button"
+                     Match="NavLinkMatch.All">
+                <i class="@item.Icono"></i>
+                <span>@item.Texto</span>
+            </NavLink>
+        }
+    </div>
+    <div class="admin-nav-right">
+        <ModeSwitch ModoActual="admin" />
+
+        <button class="btn-logout" @onclick="AbrirAviso">
+            <i class="bi bi-box-arrow-right"></i>
+            <span>Salir</span>
+        </button>
+    </div>
+</nav>
+
+@if (mostrarAviso)
+{
+    <div class="killa-modal-overlay">
+        <div class="killa-modal-box">
+            <div class="killa-modal-icon">
+                <i class="bi bi-exclamation-circle-fill"></i>
+            </div>
+
+            <h3>Cerrar Sesion?</h3>
+            <p>Estas seguro de que deseas salir del panel de administracion de Killa Beauty?</p>
+
+            <div class="killa-modal-buttons">
+                <button class="btn-killa-cancel" @onclick="CerrarAviso">Cancelar</button>
+                <button class="btn-killa-confirm" @onclick="ConfirmarCierre">Si, salir</button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private bool mostrarAviso = false;
+
+    private List<MenuAdmin> menu = new()
+    {
+        new MenuAdmin("Productos", "/admin/productos", "bi bi-box-seam"),
+        new MenuAdmin("Categorias", "/admin/categorias", "bi bi-grid"),
+        new MenuAdmin("Marcas", "/admin/marcas", "bi bi-award"),
+        new MenuAdmin("Cupones", "/admin/cupones", "bi bi-ticket-perforated"),
+        new MenuAdmin("Pedidos", "/admin/pedidos", "bi bi-receipt"),
+        new MenuAdmin("Proveedores", "/admin/proveedores", "bi bi-truck"),
+        new MenuAdmin("Reportes", "/admin/reportes", "bi bi-bar-chart")
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        AuthService.LoadFromPrincipal(authState.User);
+
+        if ((authState.User.IsInRole("ADMINISTRADOR") || AuthService.Rol == "ADMINISTRADOR")
+            && !menu.Any(item => item.Url == "/admin/empleados"))
+        {
+            menu.Add(new MenuAdmin("Empleados", "/admin/empleados", "bi bi-people-fill"));
+        }
+    }
+
+    private record MenuAdmin(string Texto, string Url, string Icono);
+
+    private void AbrirAviso()
+    {
+        mostrarAviso = true;
+    }
+
+    private void CerrarAviso()
+    {
+        mostrarAviso = false;
+    }
+
+    private void ConfirmarCierre()
+    {
+        mostrarAviso = false;
+        AuthService.Logout();
+        NavManager.NavigateTo("/auth/logout", true);
+    }
+}

@@ -1,0 +1,161 @@
+/* NAVBAR: barra superior con logo, buscador y enlaces */
+.navbar-killa {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 40px;
+    background: var(--white);
+    border-bottom: 1px solid #f2dce3;
+}
+
+.logo {
+    width: 180px;
+}
+
+/* CONTENEDOR BUSCADOR */
+
+.search-container {
+    position: relative;
+    flex: 1;
+    max-width: 520px;
+    margin: 0 30px;
+}
+
+.search-icon {
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--gray-text);
+    font-size: 22px;
+    z-index: 1;
+}
+
+/* INPUT BUSCADOR */
+
+.search-box {
+    width: 100%;
+    background: var(--gray-light);
+    border: 1px solid var(--rose-light);
+    border-radius: 35px;
+    padding: 16px 22px 16px 55px;
+    color: var(--gray-text);
+    font-size: 17px;
+    outline: none;
+}
+
+    .search-box::placeholder {
+        color: var(--gray-text);
+    }
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+}
+
+.cart-counter {
+    background: var(--rose-pale);
+    color: var(--rose);
+    padding: 8px 14px;
+    border-radius: 20px;
+    font-weight: bold;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: black;
+    font-size: 15px;
+}
+
+.btn-register {
+    border: none;
+    background: var(--rose-soft);
+    color: var(--white);
+    padding: 10px 18px;
+    border-radius: 30px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* CARRITO NAVBAR */
+
+.cart-navbar-btn {
+    position: relative;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--dark);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+}
+
+    .cart-navbar-btn i {
+        font-size: 28px;
+    }
+
+    .cart-navbar-btn:hover {
+        color: var(--rose);
+    }
+
+/* BURBUJITA */
+
+.cart-badge {
+    position: absolute;
+    top: 2px;
+    right: 1px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 4px;
+    border-radius: 50%;
+    background: var(--rose);
+    color: var(--white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: bold;
+    border: 2px solid var(--white);
+}
+
+/* USUARIO */
+
+.user-profile {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.user-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: var(--rose-soft);
+    color: white;
+    font-weight: 700;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.user-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+}
+
+.user-profile-menu-link {
+    text-decoration: none !important;
+    color: inherit !important;
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+}

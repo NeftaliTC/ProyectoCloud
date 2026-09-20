@@ -1,0 +1,13 @@
+﻿<div class="access-denied-container">
+    <div class="access-denied-icon">
+        <i class="bi bi-shield-slash-fill"></i>
+    </div>
+    <h2>Acceso Restringido</h2>
+    <p>
+        @* Lo sentimos, tu usuario actual cuenta con el rol de <strong>@(AuthService.EstaLogueado ? AuthService.Rol : "Invitado")</strong>. *@
+        Se requieren permisos exclusivos de <strong>SuperAdmin</strong> para gestionar el personal.
+    </p>
+    <a href="/admin/productos" class="admin-primary-action text-decoration-none">
+        Volver al Panel
+    </a>
+</div>

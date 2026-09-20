@@ -1,0 +1,91 @@
+@inject AuthService AuthService
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@rendermode InteractiveServer
+@using BlazorAppKillaBeauty.ClienteREST.Models
+@using BlazorAppKillaBeauty.Services
+@inject ProductoService ProductoService
+
+<link rel="stylesheet" href="@Assets["app.css"]" />
+
+<nav class="navbar-killa">
+    <a href="/">
+        <img src="Images/Logo.png"
+             class="logo"
+             alt="Logo" />
+    </a>
+
+    <SearchBox TodosLosProductos="@TodosLosProductos" />
+
+    <div class="nav-links">
+
+        <NavLink href="/catalogo">
+            Cat&aacute;logo
+        </NavLink>
+
+        <NavLink href="/cart" class="cart-navbar-btn">
+
+            <i class="bi bi-cart3"></i>
+
+            @if (CantidadCarrito > 0)
+            {
+                <span class="cart-badge">
+                    @CantidadCarrito
+                </span>
+            }
+
+        </NavLink>
+
+        <AuthorizeView>
+            <Authorized>
+                <ModeSwitch ModoActual="cliente" />
+
+                <a href="/orders" class="nav-user-link">
+                    <i class="bi bi-box-seam"></i>
+                    Pedidos
+                </a>
+
+                <NavLink href="/account/profile" class="user-profile-menu-link">
+                    <div class="user-profile">
+
+                        <div class="user-avatar">
+                            @InicialUsuario
+                        </div>
+
+                        <span class="user-name">
+                            @NombreUsuarioActual
+                        </span>
+
+                    </div>
+                </NavLink>
+            </Authorized>
+            <NotAuthorized>
+                <NavLink href="/login">
+                    Iniciar Sesion
+                </NavLink>
+
+                <NavLink href="/register" class="btn-register">
+                    Registrarse
+                </NavLink>
+            </NotAuthorized>
+        </AuthorizeView>
+    </div>
+</nav>
+
+@code {
+    [Parameter] public int CantidadCarrito { get; set; }
+    [Parameter] public List<Producto> TodosLosProductos { get; set; } = new();
+
+    private string NombreUsuarioActual =>
+        string.IsNullOrWhiteSpace(AuthService.NombreUsuario)
+            ? "Usuario"
+            : AuthService.NombreUsuario;
+
+    private string InicialUsuario => NombreUsuarioActual[..1].ToUpperInvariant();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        AuthService.LoadFromPrincipal(authState.User);
+    }
+}

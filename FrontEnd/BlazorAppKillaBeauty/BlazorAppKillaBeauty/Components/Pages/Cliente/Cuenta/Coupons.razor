@@ -1,0 +1,117 @@
+@page "/account/coupons"
+@layout AccountLayout
+@attribute [Authorize(Roles = "CLIENTE,TRABAJADOR,ADMINISTRADOR")]
+@rendermode InteractiveServer
+@using BlazorAppKillaBeauty.Services
+@inject CuponService CuponService
+@inject AuthService AuthService
+
+<div class="account-content-inner">
+    <h2 class="content-section-title">Cupones Disponibles</h2>
+
+    @if (!string.IsNullOrWhiteSpace(errorCupones))
+    {
+        <div class="alert alert-danger">@errorCupones</div>
+    }
+    else if (cargandoCupones)
+    {
+        <p>Cargando cupones disponibles...</p>
+    }
+    else if (!listaCupones.Any())
+    {
+        <p>No hay cupones disponibles por el momento.</p>
+    }
+    else
+    {
+        <div class="coupons-list">
+            @foreach (var cupon in listaCupones)
+            {
+                <div class="ticket-card">
+                    <div class="cutout-container left">
+                        <div class="ticket-side-pink"></div>
+                        <div class="cutout-shape"></div>
+                    </div>
+
+                    <div class="ticket-main-content">
+                        <h3 class="ticket-title">@cupon.Titulo</h3>
+                        <p class="ticket-subtitle grey-text">
+                            @((MarkupString)cupon.Subtitulo)<br />
+                            Cupón: @cupon.Codigo
+                        </p>
+                        <div class="ticket-separator"></div>
+                        <div class="ticket-footer grey-text">
+                            <span><i class="bi bi-clock"></i> Vence @(cupon.FechaFin?.ToString("d 'de' MMMM", new System.Globalization.CultureInfo("es-ES")) ?? "-")</span>
+                            <button class="ver-btn" @onclick='() => MostrarModal(cupon)'>Ver</button>
+                        </div>
+                    </div>
+
+                    <div class="cutout-container right">
+                        <div class="ticket-side-pink"></div>
+                        <div class="cutout-shape"></div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@if (mostrarModal && cuponSeleccionado != null)
+{
+    <div class="modal-backdrop-transparent fade-in" @onclick="CerrarModal">
+        <div class="modal-content-wrapper scale-up" @onclick:stopPropagation="true">
+            <button class="modal-close-x" @onclick="CerrarModal">×</button>
+            <h3 class="modal-title">@cuponSeleccionado.Titulo</h3>
+            <div class="modal-body-text">
+                @cuponSeleccionado.DescripcionLegal
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<Cupon> listaCupones = new();
+    private Cupon? cuponSeleccionado;
+    private bool mostrarModal = false;
+    private bool cargandoCupones = true;
+    private string? errorCupones;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            if (AuthService.UsuarioId.HasValue)
+            {
+                listaCupones = (await CuponService.ObtenerDisponiblesParaUsuarioAsync(AuthService.UsuarioId.Value))
+                    .Where(c => !c.FechaFin.HasValue || c.FechaFin.Value.Date >= DateTime.Today)
+                    .OrderBy(c => c.FechaFin ?? DateTime.MaxValue)
+                    .ToList();
+            }
+            else
+            {
+                listaCupones = (await CuponService.ObtenerTodosAsync())
+                    .Where(c => c.Activo && (!c.FechaFin.HasValue || c.FechaFin.Value.Date >= DateTime.Today))
+                    .OrderBy(c => c.FechaFin ?? DateTime.MaxValue)
+                    .ToList();
+            }
+        }
+        catch (Exception ex)
+        {
+            errorCupones = $"No se pudieron cargar los cupones: {ex.Message}";
+        }
+        finally
+        {
+            cargandoCupones = false;
+        }
+    }
+
+    private void MostrarModal(Cupon cupon)
+    {
+        cuponSeleccionado = cupon;
+        mostrarModal = true;
+    }
+
+    private void CerrarModal()
+    {
+        mostrarModal = false;
+    }
+}

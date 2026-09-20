@@ -1,0 +1,166 @@
+﻿/* --- ESTILOS GENERALES --- */
+.account-content-container {
+    padding: 20px;
+}
+
+.content-section-title {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 25px;
+}
+
+.coupons-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    width: 100%;
+}
+
+/* --- TICKET (TARJETA) --- */
+.ticket-card {
+    background-color: white;
+    border-radius: 12px;
+    display: flex;
+    width: 48%;
+    min-width: 300px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    overflow: hidden;
+    position: relative;
+    box-sizing: border-box;
+}
+
+.ticket-main-content {
+    flex-grow: 1;
+    padding: 20px;
+    border-left: 2px dashed #eee;
+    border-right: 2px dashed #eee;
+}
+
+.ticket-title {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.ticket-subtitle {
+    font-size: 12px;
+    color: #888;
+    margin-bottom: 15px;
+}
+
+.ticket-separator {
+    border-bottom: 1px solid #e0e0e0;
+    margin: 10px 0;
+    width: 100%;
+}
+
+.ticket-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    color: #888;
+    margin-top: 10px;
+}
+
+.ver-btn {
+    background-color: #F7A8BE;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 6px 20px;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+/* --- FRANJAS LATERALES Y RECORTES --- */
+.cutout-container {
+    display: flex;
+    position: relative;
+    width: 30px;
+    height: 100%;
+}
+
+.ticket-side-pink {
+    background-color: #FDC6D6;
+    width: 100%;
+    height: 100%;
+}
+
+.cutout-shape {
+    position: absolute;
+    width: 25px;
+    height: 25px;
+    background-color: white;
+    border-radius: 50%;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.cutout-container.left {
+    justify-content: flex-start;
+}
+
+.cutout-container.right {
+    justify-content: flex-end;
+}
+
+.cutout-container.left .cutout-shape {
+    left: -12.5px;
+}
+
+.cutout-container.right .cutout-shape {
+    right: -12.5px;
+}
+
+/* --- MODAL --- */
+.modal-backdrop-transparent {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content-wrapper {
+    background-color: white;
+    width: 90%;
+    max-width: 550px;
+    border-radius: 20px;
+    padding: 40px;
+    position: relative;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+
+.modal-close-x {
+    position: absolute;
+    top: 20px;
+    right: 25px;
+    background: none;
+    border: none;
+    font-size: 28px;
+    color: #EC7B9E;
+    cursor: pointer;
+    font-weight: bold;
+    line-height: 1;
+}
+
+.modal-title {
+    font-size: 22px;
+    font-weight: bold;
+    color: #000;
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.modal-body-text {
+    font-size: 14px;
+    color: #444;
+    line-height: 1.6;
+    text-align: justify;
+}

@@ -1,0 +1,52 @@
+.confirmed-page {
+    min-height: calc(97vh - 80px);
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.confirmed-content {
+    text-align: center;
+    margin-top: -40px;
+}
+
+.confirmed-check {
+    width: 150px;
+    height: 150px;
+    object-fit: contain;
+    margin-bottom: 24px;
+}
+
+.confirmed-content h1 {
+    font-size: 40px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.confirmed-content p {
+    font-size: 18px;
+    color: var(--gray-soft);
+    margin-bottom: 34px;
+}
+
+.confirmed-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 330px;
+    height: 56px;
+    background: var(--rose-soft);
+    color: white;
+    border-radius: 999px;
+    text-decoration: none;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.confirmed-redirect {
+    color: var(--gray-soft);
+    font-size: 15px;
+    margin-top: 8px;
+}
+

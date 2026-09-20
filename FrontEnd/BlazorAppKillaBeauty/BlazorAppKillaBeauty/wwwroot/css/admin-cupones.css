@@ -1,0 +1,533 @@
+﻿upones · CSS
+/* ═══════════════════════════════════════════════════════
+   admin-cupones.css  —  mismo sistema visual que Pedidos
+   ═══════════════════════════════════════════════════════ */
+/* ── Contenedor ─────────────────────────────────────── */
+.admin-cupones-content {
+    max-width: 1240px;
+}
+
+/* ── Breadcrumb (igual que pedidos) ─────────────────── */
+.admin-breadcrumb {
+    color: var(--gray-text);
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+}
+
+    .admin-breadcrumb i {
+        font-size: 0.72rem;
+    }
+
+/* ── Header ─────────────────────────────────────────── */
+.admin-cupones-header {
+    margin-bottom: 20px;
+}
+
+.cupones-subtitle {
+    color: var(--gray-text);
+    font-size: 0.9rem;
+    margin-top: 4px;
+    margin-bottom: 0;
+}
+
+/* ── Botón nuevo cupón ───────────────────────────────── */
+.btn-nuevo-cupon {
+    min-height: 42px;
+    background: var(--rose);
+    color: var(--white);
+    border: none;
+    border-radius: 12px;
+    padding: 0 20px;
+    font-weight: 800;
+    font-size: 0.95rem;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+    .btn-nuevo-cupon:hover {
+        background: #d94865;
+    }
+
+/* ── Card contenedora (filtros y tabla) ─────────────── */
+.cupones-card {
+    background: var(--white);
+    border: 1px solid var(--gray-border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+}
+
+/* ── Filtros ─────────────────────────────────────────── */
+.filtros-body {
+    padding: 18px;
+}
+
+/* Buscador — copiado de .admin-orders-search */
+.admin-orders-search {
+    min-height: 48px;
+    background: var(--gray-light);
+    border: 1px solid transparent;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 14px;
+}
+
+    .admin-orders-search:focus-within {
+        background: var(--white);
+        border-color: var(--rose-soft);
+    }
+
+    .admin-orders-search i {
+        color: var(--rose-soft);
+    }
+
+    .admin-orders-search input {
+        width: 100%;
+        border: none;
+        background: transparent;
+        outline: none;
+        color: #2f252a;
+        font-size: 0.98rem;
+    }
+
+/* Label de filtros */
+.filtro-label {
+    color: var(--gray);
+    font-size: 0.84rem;
+    font-weight: 800;
+    display: block;
+    margin-bottom: 8px;
+}
+
+/* Select/input de filtros — copiado de .admin-status-filter select */
+.filtro-select {
+    min-height: 42px;
+    width: 100%;
+    border: 1px solid var(--gray-border);
+    border-radius: 12px;
+    background: var(--white);
+    color: #2f252a;
+    padding: 0 10px;
+    outline: none;
+    font-size: 0.95rem;
+}
+
+    .filtro-select:focus {
+        border-color: var(--rose-soft);
+    }
+
+/* Botón limpiar — copiado de .admin-clear-filters */
+.btn-limpiar-filtros {
+    min-height: 42px;
+    border: 1px solid var(--rose-soft);
+    border-radius: 12px;
+    background: var(--white);
+    color: var(--rose);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 16px;
+    font-weight: 800;
+    white-space: nowrap;
+    font-size: 0.9rem;
+}
+
+    .btn-limpiar-filtros:hover {
+        background: var(--rose-pale);
+    }
+
+/* ── Tabla ───────────────────────────────────────────── */
+.cupones-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+}
+
+    .cupones-table thead tr {
+        border-bottom: 1px solid var(--gray-border);
+    }
+
+    .cupones-table th {
+        padding: 13px 16px;
+        color: var(--gray);
+        font-size: 0.8rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        white-space: nowrap;
+    }
+
+    .cupones-table tbody tr {
+        border-bottom: 1px solid var(--gray-border);
+        transition: background 0.1s;
+    }
+
+        .cupones-table tbody tr:last-child {
+            border-bottom: none;
+        }
+
+        .cupones-table tbody tr:hover {
+            background: var(--gray-light);
+        }
+
+    .cupones-table td {
+        padding: 13px 16px;
+        color: #2f252a;
+        vertical-align: middle;
+    }
+
+.td-id {
+    color: var(--gray-text);
+    font-size: 0.88rem;
+}
+
+.td-codigo {
+    font-weight: 700;
+}
+
+.td-fecha {
+    color: var(--gray-text);
+    font-size: 0.9rem;
+}
+
+/* ── Badges de estado ────────────────────────────────── */
+.badge-disponible,
+.badge-vencido,
+.badge-inactivo {
+    display: inline-block;
+    padding: 3px 12px;
+    border-radius: 20px;
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.badge-disponible {
+    background: #e6f4ea;
+    color: #1e7e34;
+}
+
+.badge-vencido {
+    background: #ffe0e0;
+    color: #a12828;
+}
+
+.badge-inactivo {
+    background: #f0f0f0;
+    color: #666;
+}
+
+/* ── Botones de acción en tabla ──────────────────────── */
+.btn-accion {
+    min-height: 34px;
+    min-width: 34px;
+    border-radius: 10px;
+    border: 1px solid var(--gray-border);
+    background: var(--white);
+    color: #4f4148;
+    font-size: 0.88rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 8px;
+    transition: background 0.15s;
+    margin: 0 2px;
+}
+
+    .btn-accion:hover {
+        background: var(--gray-light);
+    }
+
+.btn-borrar:hover {
+    background: #ffe0e0;
+    border-color: #ffb3b3;
+    color: #a12828;
+}
+
+/* ── Fila vacía ──────────────────────────────────────── */
+.tabla-vacia {
+    padding: 40px 16px;
+    color: var(--gray);
+    text-align: center;
+    font-weight: 700;
+}
+
+/* ── Paginación — copiado de .admin-pagination ───────── */
+.paginacion-wrap {
+    border-top: 1px solid var(--gray-border);
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.paginacion-info {
+    color: var(--gray);
+    font-weight: 800;
+    font-size: 0.9rem;
+}
+
+.paginacion-btns {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-pag {
+    width: 38px;
+    height: 38px;
+    border: 1px solid var(--gray-border);
+    border-radius: 11px;
+    background: var(--white);
+    color: #4f4148;
+    font-weight: 800;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+    .btn-pag.activo {
+        background: var(--rose);
+        border-color: var(--rose);
+        color: var(--white);
+    }
+
+    .btn-pag:disabled {
+        color: var(--gray-text);
+        opacity: 0.55;
+    }
+
+/*   MODAL BASE*/
+
+
+.modal.fade.show.d-block {
+    background: rgba(0, 0, 0, 0.45);
+}
+
+/* CONTENEDOR DEL MODAL */
+.modal-dialog {
+    max-width: 950px !important;
+    width: 95%;
+    margin: 2rem auto !important;
+}
+
+    /* VERSION GRANDE */
+    .modal-dialog.modal-lg {
+        max-width: 1050px !important;
+    }
+
+/* CAJA DEL MODAL */
+.modal-kb {
+    width: 100%;
+    border-radius: 18px;
+    border: 1px solid var(--gray-border);
+    overflow: hidden;
+    box-shadow: 0 10px 35px rgba(0,0,0,0.12);
+    background: white;
+}
+
+    /* HEADER */
+    .modal-kb .modal-header {
+        border-bottom: 1px solid var(--gray-border);
+        padding: 20px 24px 16px;
+        background: white;
+    }
+
+    /* BODY */
+    .modal-kb .modal-body {
+        padding: 24px;
+        background: white;
+    }
+
+/* TITULO */
+.modal-kb-title {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #2f252a;
+    margin: 0;
+}
+
+/* ── Campos del formulario modal ─────────────────────── */
+.form-label-kb {
+    color: var(--gray);
+    font-size: 0.84rem;
+    font-weight: 800;
+    display: block;
+    margin-bottom: 6px;
+}
+
+.form-control-kb,
+.form-select-kb {
+    min-height: 42px;
+    width: 100%;
+    border: 1px solid var(--gray-border);
+    border-radius: 12px;
+    background: var(--white);
+    color: #2f252a;
+    padding: 0 12px;
+    outline: none;
+    font-size: 0.95rem;
+}
+
+    .form-control-kb:focus,
+    .form-select-kb:focus {
+        border-color: var(--rose-soft);
+    }
+
+    .form-control-kb.disabled-field {
+        background: var(--gray-light);
+        color: var(--gray-text);
+    }
+
+.form-textarea-kb {
+    width: 100%;
+    border: 1px solid var(--gray-border);
+    border-radius: 12px;
+    background: var(--white);
+    color: #2f252a;
+    padding: 10px 12px;
+    outline: none;
+    font-size: 0.95rem;
+    resize: none;
+}
+
+    .form-textarea-kb:focus {
+        border-color: var(--rose-soft);
+    }
+
+/* ── Botones del modal ───────────────────────────────── */
+.btn-modal-cancelar {
+    min-height: 40px;
+    border: 1px solid var(--gray-border);
+    border-radius: 12px;
+    background: var(--white);
+    color: #4f4148;
+    padding: 0 20px;
+    font-weight: 800;
+    font-size: 0.9rem;
+}
+
+    .btn-modal-cancelar:hover {
+        background: var(--gray-light);
+    }
+
+.btn-modal-submit {
+    min-height: 40px;
+    border: none;
+    border-radius: 12px;
+    background: var(--rose);
+    color: var(--white);
+    padding: 0 20px;
+    font-weight: 800;
+    font-size: 0.9rem;
+}
+
+    .btn-modal-submit:hover {
+        background: #d94865;
+    }
+
+/* ── Modal detalle — tarjetas de datos ───────────────── */
+.detalle-codigo-badge {
+    display: inline-block;
+    background: var(--gray-light);
+    border: 1px solid var(--gray-border);
+    border-radius: 10px;
+    padding: 6px 20px;
+    font-size: 1.1rem;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: #2f252a;
+}
+
+.detalle-data-card {
+    background: var(--gray-light);
+    border: 1px solid var(--gray-border);
+    border-radius: 12px;
+    padding: 12px 14px;
+}
+
+.detalle-data-label {
+    color: var(--gray);
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 4px;
+}
+
+.detalle-data-value {
+    font-weight: 700;
+    color: #2f252a;
+    font-size: 1rem;
+}
+
+    .detalle-data-value.accent {
+        color: var(--rose);
+    }
+
+.detalle-data-sub {
+    color: var(--gray-text);
+    font-size: 0.8rem;
+    margin-top: 2px;
+}
+
+.detalle-campana-wrap,
+.detalle-legales-wrap {
+    background: var(--gray-light);
+    border: 1px solid var(--gray-border);
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-size: 0.9rem;
+    color: #2f252a;
+}
+
+/* ── Responsive ──────────────────────────────────────── */
+@media (max-width: 720px) {
+    .paginacion-wrap {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .paginacion-btns {
+        flex-wrap: wrap;
+    }
+}
+
+/* ═══════════════════════════════════════
+   FIX MODALES
+═══════════════════════════════════════ */
+
+.modal-dialog {
+    max-width: 900px;
+    width: 90%;
+    margin: 2rem auto;
+}
+
+    .modal-dialog.modal-lg {
+        max-width: 1000px;
+    }
+
+.modal-content {
+    width: 100%;
+    border-radius: 18px;
+    overflow: hidden;
+}
+
+.modal-body {
+    padding: 24px;
+}
+
+.modal-backdrop-kb {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}

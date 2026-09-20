@@ -1,0 +1,302 @@
+﻿@page "/register"
+@rendermode InteractiveServer
+@using ClienteREST.Models;
+@using ClienteREST.ServicesAct
+
+@inject UsuarioService UsuarioService
+@inject NavigationManager NavigationManager
+
+<PageTitle>Registro - Killa Beauty</PageTitle>
+
+<section class="register-page">
+    <div class="register-card">
+
+        <div class="register-icon">
+            <img src="Images/Registro.png" alt="Crear cuenta" />
+        </div>
+
+        <h1>Crear Cuenta</h1>
+
+        <p class="register-subtitle">
+            Únete a Killa Beauty
+        </p>
+
+     
+        <EditForm Model="user" OnValidSubmit="HandleRegister">
+            <DataAnnotationsValidator />
+
+            <div class="form-group">
+                <label>Nombre</label>
+                <InputText @bind-Value="user.Nombre" placeholder="Nombre" />
+                <ValidationMessage For="@(() => user.Nombre)" class="validation-message text-danger" />
+            </div>
+
+            <div class="form-group">
+                <label>Apellido Paterno</label>
+                <InputText @bind-Value="user.ApellidoPaterno" placeholder="Apellido Paterno" />
+                <ValidationMessage For="@(() => user.ApellidoPaterno)" class="validation-message text-danger" />
+            </div>
+
+            <div class="form-group">
+                <label>Apellido Materno</label>
+                <InputText @bind-Value="user.ApellidoMaterno" placeholder="Apellido Materno" />
+            </div>
+
+            <div class="form-group">
+                <label>DNI</label>
+                <InputText @bind-Value="user.Dni" placeholder="Tu número de DNI" />
+                <ValidationMessage For="@(() => user.Dni)" class="validation-message text-danger" />
+            </div>
+
+            <div class="form-group">
+                <label>Correo Electrónico</label>
+                <InputText @bind-Value="user.CorreoElectronico" type="email" placeholder="ejemplo@correo.com" />
+                <ValidationMessage For="@(() => user.CorreoElectronico)" class="validation-message text-danger" />
+            </div>
+
+            <div class="form-group">
+                <label>Celular</label>
+                <InputText @bind-Value="user.Telefono" placeholder="999888777" />
+            </div>
+
+            <div class="form-group">
+                <label>Fecha de Nacimiento</label>
+                <InputDate @bind-Value="user.FechaNacimiento" />
+                <ValidationMessage For="@(() => user.FechaNacimiento)" class="validation-message text-danger" />
+            </div>
+
+            <div class="form-group">
+                <label>Género</label>
+                <div class="register-select-wrapper">
+                    <InputSelect @bind-Value="user.Genero">
+                        <option value="Selecciona">Selecciona</option>
+                        <option value="Masculino">Masculino</option>
+                        <option value="Femenino">Femenino</option>
+                        <option value="Otro">Otro</option>
+                    </InputSelect>
+                </div>
+            </div>
+
+            @* <div class="form-group">
+                <label>Contraseña</label>
+                <InputText @bind-Value="user.Contrasena" type="password" placeholder="Crea una contraseña" />
+                <ValidationMessage For="@(() => user.Contrasena)" class="validation-message text-danger" />
+            </div> *@
+            @* para ver la contraseña con el ojito  *@
+            <div class="form-group">
+                <label>Contraseña</label>
+                <div style="position: relative; display: flex; align-items: center;">
+                    <InputText @bind-Value="user.Contrasena" type="@(mostrarContrasena ? "text" : "password")" placeholder="Crea una contraseña" style="width: 100%; padding-right: 40px;" />
+                    <button type="button"
+                            @onclick="TogglePassword"
+                            style="position: absolute; right: 10px; background: none; border: none; cursor: pointer; font-size: 1.2rem;">
+                        <i class="@(mostrarContrasena ? "bi bi-eye" : "bi bi-eye-slash")"></i>
+                    </button>
+                </div>
+                <ValidationMessage For="@(() => user.Contrasena)" class="validation-message text-danger" />
+            </div>
+
+            @* Mensaje de error de lógica de negocio (ej. Correo duplicado) *@
+            @if (!string.IsNullOrEmpty(mensajeError))
+            {
+                <p class="validation-message text-danger">@mensajeError</p>
+            }
+
+            <button type="submit" class="register-button" disabled="@loading">
+                @(loading ? "Registrando..." : "Registrarse")
+            </button>
+
+        </EditForm>
+
+        <p class="login-text">
+            ¿Ya tienes cuenta?
+            <a href="/login">Inicia sesión</a>
+        </p>
+
+    </div>
+</section>
+
+
+@if (mostrarMensaje)
+{
+    <div class="popup-overlay">
+        <div class="popup-card">
+            <img src="Images/check.png" class="popup-check" alt="Éxito" />
+            <h3>Cuenta creada con éxito</h3>
+            <p>Redirigiendo al inicio de sesión...</p>
+        </div>
+    </div>
+}
+@code {
+    private Usuario user = new Usuario();
+    private bool loading = false;
+    private string mensajeError;
+    private bool mostrarMensaje = false; // Variable para controlar tu popup
+    private bool mostrarContrasena = false;
+
+    private void TogglePassword()
+    {
+        mostrarContrasena = !mostrarContrasena;
+    }
+
+    private async Task HandleRegister()
+    {
+        loading = true;
+        mensajeError = null;
+        mostrarMensaje = false;
+
+        if (!EsMayorDeEdad(user.FechaNacimiento))
+        {
+            mensajeError = "Debes ser mayor de 18 años para registrarte.";
+            loading = false;
+            return;
+        }
+
+        try
+        {
+            var result = await UsuarioService.RegistrarUsuarioAsync(user);
+
+            if (result != null)
+            {
+                // Tu lógica de popup implementada aquí
+                mostrarMensaje = true;
+                StateHasChanged();
+
+                await Task.Delay(700);
+
+                NavigationManager.NavigateTo("/login");
+            }
+        }
+        catch (Exception ex)
+        {
+            mensajeError = ex.Message;
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private static bool EsMayorDeEdad(DateOnly? fechaNacimiento)
+    {
+        if (!fechaNacimiento.HasValue)
+        {
+            return false;
+        }
+
+        var hoy = DateOnly.FromDateTime(DateTime.Today);
+        var edad = hoy.Year - fechaNacimiento.Value.Year;
+
+        if (fechaNacimiento.Value > hoy.AddYears(-edad))
+        {
+            edad--;
+        }
+
+        return edad >= 18;
+    }
+}
+
+@* @code {
+
+    [Inject]
+    private NavigationManager Navigation { get; set; } = default!;
+
+    private bool mostrarMensaje = false;
+
+    private string descripcion = "";
+    private string apellidoPaterno = "";
+    private string apellidoMaterno = "";
+    private string correo = "";
+    private string usuario = "";
+    private string celular = "";
+    private string password = "";
+
+    private string mensajeError = "";
+
+    private async Task RegistrarUsuario()
+    {
+        mensajeError = "";
+
+        // Lista de campos vacíos
+        List<string> camposFaltantes = new();
+
+        if (string.IsNullOrWhiteSpace(descripcion))
+            camposFaltantes.Add("descripcion");
+
+        if (string.IsNullOrWhiteSpace(apellidoPaterno))
+            camposFaltantes.Add("apellido paterno");
+
+        if (string.IsNullOrWhiteSpace(apellidoMaterno))
+            camposFaltantes.Add("apellido materno");
+
+        if (string.IsNullOrWhiteSpace(correo))
+            camposFaltantes.Add("correo electrónico");
+
+        if (string.IsNullOrWhiteSpace(usuario))
+            camposFaltantes.Add("usuario");
+
+        if (string.IsNullOrWhiteSpace(celular))
+            camposFaltantes.Add("teléfono");
+
+        if (string.IsNullOrWhiteSpace(password))
+            camposFaltantes.Add("contraseña");
+
+        /// Si faltan TODOS los campos
+        if (camposFaltantes.Count == 7)
+        {
+            mensajeError =
+                "Falta completar todos los campos.";
+            return;
+        }
+
+        // Si falta 1 campo
+        if (camposFaltantes.Count == 1)
+        {
+            mensajeError =
+                $"Falta completar el {camposFaltantes[0]}.";
+            return;
+        }
+
+        // Si faltan varios (pero no todos)
+        if (camposFaltantes.Count > 1)
+        {
+            mensajeError =
+                $"Falta completar: {string.Join(", ", camposFaltantes)}.";
+            return;
+        }
+
+        // Validar correo
+        if (!correo.Contains("@") ||
+            !correo.Contains("."))
+        {
+            mensajeError =
+                "Ingrese un correo válido.";
+            return;
+        }
+
+        // Validar teléfono
+        if (celular.Length != 9 ||
+            !celular.All(char.IsDigit))
+        {
+            mensajeError =
+                "Ingrese un teléfono válido.";
+            return;
+        }
+
+        // Validar contraseña
+        if (password.Length < 8)
+        {
+            mensajeError =
+                "La contraseña debe tener mínimo 8 caracteres.";
+            return;
+        }
+
+        // Mostrar popup
+        mostrarMensaje = true;
+
+        await Task.Delay(700);
+
+        Navigation.NavigateTo("/login");
+    }
+}
+ *@

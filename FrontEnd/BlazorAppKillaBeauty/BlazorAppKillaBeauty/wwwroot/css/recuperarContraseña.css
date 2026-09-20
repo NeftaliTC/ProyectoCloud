@@ -1,0 +1,132 @@
+/* FORGOT PASSWORD PAGE */
+
+html,
+body {
+    margin: 0;
+    background: var(--rose-bg);
+}
+
+.forgot-page {
+    min-height: 100vh;
+    background: var(--rose-bg);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+/* CARD */
+
+.forgot-card {
+    width: 100%;
+    max-width: 520px;
+    background: var(--white);
+    border: 1px solid var(--rose-light);
+    border-radius: 28px;
+    padding: 34px 45px 28px;
+    text-align: center;
+    margin: auto;
+}
+
+/* ICONO */
+
+.forgot-icon {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 12px;
+}
+
+    .forgot-icon img {
+        width: 115px;
+        height: 115px;
+        object-fit: contain;
+    }
+
+/* TITULOS */
+
+.forgot-card h1 {
+    font-size: 36px;
+    font-weight: 700;
+    margin-bottom: 14px;
+    color: black;
+}
+
+.forgot-subtitle {
+    font-size: 17px;
+    color: var(--gray-soft);
+    margin-bottom: 36px;
+    line-height: 1.4;
+}
+
+/* FORM */
+
+.form-group {
+    width: 100%;
+    text-align: left;
+    margin-bottom: 20px;
+}
+
+    .form-group label {
+        display: block;
+        font-size: 18px;
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+
+    .form-group input {
+        width: 100%;
+        height: 56px;
+        border: 1px solid var(--rose-light);
+        border-radius: 18px;
+        background: var(--cream);
+        padding: 0 24px;
+        font-size: 17px;
+        outline: none;
+        box-sizing: border-box;
+    }
+
+        .form-group input::placeholder {
+            color: var(--gray-text);
+        }
+
+/* ERROR */
+
+.validation-message {
+    color: #d9534f;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 14px;
+}
+
+/* BOTON */
+
+.forgot-button {
+    width: 100%;
+    height: 56px;
+    border: none;
+    border-radius: 18px;
+    background: var(--rose-soft);
+    color: white;
+    font-size: 19px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: .2s;
+    margin-bottom: 24px;
+}
+
+    .forgot-button:hover {
+        background: var(--rose);
+    }
+
+/* LOGIN LINK */
+
+.login-text {
+    font-size: 16px;
+    color: var(--gray-soft);
+}
+
+    .login-text a {
+        color: var(--rose-soft);
+        text-decoration: underline;
+        font-weight: 600;
+    }

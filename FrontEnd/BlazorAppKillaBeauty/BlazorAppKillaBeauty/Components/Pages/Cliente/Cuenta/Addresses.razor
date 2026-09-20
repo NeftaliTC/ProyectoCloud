@@ -1,0 +1,469 @@
+@page "/account/addresses"
+@layout AccountLayout
+@attribute [Authorize(Roles = "CLIENTE,TRABAJADOR,ADMINISTRADOR")]
+@rendermode InteractiveServer
+@using BlazorAppKillaBeauty.Services
+@using BlazorAppKillaBeauty.ClienteREST.ServicesAct
+@using BlazorAppKillaBeauty.ClienteREST.Models
+@inject UbigeoService UbigeoService
+@inject AddressService AddressService
+@inject AuthService AuthService
+
+<div class="addresses-content">
+    <div class="section-header">
+        <h2>Mis direcciones</h2>
+        <button class="btn-new-address-button" @onclick="() => AbrirModal()">+ Nueva dirección</button>
+    </div>
+    <span class="description-text">Administra tus direcciones de entrega</span>
+
+    @if (isLoading)
+    {
+        <p class="description-text">Cargando direcciones...</p>
+    }
+    else if (!string.IsNullOrEmpty(loadError))
+    {
+        <p class="error-hint-text"><i class="bi bi-exclamation-circle"></i> @loadError</p>
+    }
+    else if (!UserAddresses.Any())
+    {
+        <p class="description-text">Aún no tienes direcciones registradas.</p>
+    }
+    else
+    {
+        @foreach (var addr in UserAddresses)
+        {
+            <div class="address-card">
+                <div class="house-icon"><i class="bi bi-house-door-fill"></i></div>
+                <div style="flex-grow: 1;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px;">
+                        <strong>@addr.Alias</strong>
+                        @if (addr.IsDefault)
+                        {
+                            <span class="badge-default"><i class="bi bi-star-fill"></i> Predeterminada</span>
+                        }
+                    </div>
+                    <p style="margin:0; font-size: 14px; color: #555;">
+                        @addr.DireccionDetalle<br />
+                        @addr.Distrito, @addr.Provincia<br />
+                        @addr.Referencia<br />
+                        <i class="bi bi-telephone"></i> @addr.Telefono<br />
+                    </p>
+                    <div class="card-actions">
+                        @if (!addr.IsDefault)
+                        {
+                            <button class="btn-action btn-purple" @onclick="() => MarcarPredeterminada(addr)"><i class="bi bi-star-fill"></i> Predeterminar</button>
+                        }
+                        <button class="btn-action btn-outline" @onclick="() => AbrirModal(addr)"><i class="bi bi-pencil"></i> Editar</button>
+                        <button class="btn-action btn-delete" @onclick="() => ConfirmarEliminar(addr)"><i class="bi bi-trash"></i> Eliminar</button>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+
+    <div class="security-banner">
+        <i class="bi bi-shield-check security-icon"></i>
+        <div>
+            <strong>Tu información está segura</strong>
+            <span>Tus direcciones solo se usan para envíos.</span>
+        </div>
+    </div>
+</div>
+
+@if (showModal)
+{
+    <div class="modal-overlay">
+        <div class="modal-box">
+            <h4>@(editingAddress.Id == 0 ? "Nueva Dirección" : "Editar Dirección")</h4>
+
+            <div class="profile-form-grid">
+                <div class="form-input-group">
+                    <label>Alias (Casa/Oficina)</label>
+                    <input @bind="editingAddress.Alias" class="form-control" />
+                </div>
+                <div class="form-input-group @(isPhoneError ? "has-error" : "")">
+                    <label>Teléfono</label>
+                    <input @bind="editingAddress.Telefono" class="form-control" maxlength="9" />
+                    @if (isPhoneError)
+                    {
+                        <p class="error-hint-text"><i class="bi bi-exclamation-circle"></i> Ingrese un celular válido (9 dígitos)</p>
+                    }
+                </div>
+            </div>
+
+            <div class="form-input-group">
+                <label>Dirección</label>
+                <input @bind="editingAddress.DireccionDetalle" class="form-control" />
+            </div>
+
+            <div class="profile-form-grid" style="grid-template-columns: 1fr 1fr;">
+                <div class="form-input-group">
+                    <label>Departamento</label>
+                    <div class="select-wrapper disabled-select">
+                        @*Funcional para cuando se busque expansion del negocio*@
+                        @*<select class="form-control" value="@deptoSeleccionado" @onchange="OnDepartamentoChanged">
+                            <option value="">Seleccione...</option>
+                            @foreach (var depto in departamentos)
+                            {
+                                <option value="@depto">@depto</option>
+                            }
+                        </select>*@
+                        <select class="form-control" value="@deptoSeleccionado" disabled>
+                            <option value="Lima">Lima</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-input-group">
+                    <label>Provincia</label>
+                    <div class="select-wrapper disabled-select">
+                        @*Funcional para cuando se busque expansion del negocio*@
+                        @*<select class="form-control" value="@provSeleccionada" @onchange="OnProvinciaChanged" disabled="@string.IsNullOrEmpty(deptoSeleccionado)">
+                            <option value="">Seleccione...</option>
+                            @foreach (var prov in provincias)
+                            {
+                                <option value="@prov">@prov</option>
+                            }
+                        </select>*@
+                    <select class="form-control" value="@provSeleccionada" disabled>
+                        <option value="Lima">Lima</option>
+                    </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="profile-form-grid" style="grid-template-columns: 1fr 1fr;">
+                <div class="form-input-group">
+                    <label>Distrito</label>
+                    <div class="select-wrapper">
+                        <select class="form-control" value="@distritoSeleccionado" @onchange="OnDistritoChanged" disabled="@string.IsNullOrEmpty(provSeleccionada)">
+                            <option value="">Seleccione...</option>
+                            @foreach (var dist in distritos)
+                            {
+                                <option value="@dist">@dist</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-input-group">
+                <label>Referencia</label>
+                <input @bind="editingAddress.Referencia" class="form-control" />
+            </div>
+
+            @if (isError)
+            {
+                <p class="error-hint-text"><i class="bi bi-exclamation-circle"></i> Complete todos los campos obligatorios.</p>
+            }
+
+            @if (!string.IsNullOrEmpty(saveError))
+            {
+                <p class="error-hint-text"><i class="bi bi-exclamation-circle"></i> @saveError</p>
+            }
+
+            <div class="modal-footer">
+                <button class="btn-modal-cancel" @onclick="CerrarModal">Cancelar</button>
+                <button class="btn-modal-save" @onclick="GuardarDireccion">Guardar</button>
+            </div>
+        </div>
+    </div>
+}
+
+@if (showDeleteModal)
+{
+    <div class="modal-overlay">
+        <div class="modal-box" style="text-align: center; padding: 30px;">
+            <h4 style="font-size: 20px; font-weight: 700; margin-bottom: 15px;">¿Eliminar dirección?</h4>
+
+            <p style="color: #6b7280; font-size: 14px; margin-bottom: 25px;">
+                Esta acción no se puede deshacer.
+            </p>
+
+            @if (!string.IsNullOrEmpty(saveError))
+            {
+                <p class="error-hint-text"><i class="bi bi-exclamation-circle"></i> @saveError</p>
+            }
+
+            <div class="modal-footer" style="display: flex; justify-content: center; gap: 15px;">
+                <button class="btn-modal-cancel" @onclick="() => showDeleteModal = false">Cancelar</button>
+                <button class="btn-modal-save" style="background:#f197ab" @onclick="EjecutarEliminar">Confirmar</button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<Address> UserAddresses => AddressService.UserAddresses;
+    private Address editingAddress = new();
+    private Address? addressToDelete;
+    private bool showModal, showDeleteModal, isError, isPhoneError, isLoading;
+    private string loadError = "";
+    private string saveError = "";
+
+    private int? UsuarioId => AuthService.UsuarioId;
+
+    private List<string> departamentos = new();
+    private List<string> provincias = new();
+    private List<string> distritos = new();
+
+    private string deptoSeleccionado = "Lima"; //Por el alcance actual del negocio
+    private string provSeleccionada = "Lima";
+    private string distritoSeleccionado = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await UbigeoService.InitializeAsync();
+        departamentos = UbigeoService.GetDepartamentos();
+
+        //Por el alcance actual, luego no sera necesario
+        deptoSeleccionado = "Lima";
+        provSeleccionada = "Lima";
+        provincias = UbigeoService.GetProvincias(deptoSeleccionado);
+        distritos = UbigeoService.GetDistritos(deptoSeleccionado, provSeleccionada);
+
+        await CargarDirecciones();
+    }
+
+    private async Task CargarDirecciones()
+    {
+        try
+        {
+            isLoading = true;
+            loadError = "";
+            if (!TryObtenerUsuarioId(out var usuarioId))
+            {
+                AddressService.UserAddresses.Clear();
+                loadError = "Inicia sesion para ver tus direcciones.";
+                return;
+            }
+
+            await AddressService.CargarPorUsuarioAsync(usuarioId);
+        }
+        catch (Exception ex)
+        {
+            loadError = $"No se pudieron cargar las direcciones: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task GuardarDireccion()
+    {
+        saveError = "";
+        isError = string.IsNullOrWhiteSpace(editingAddress.Alias) ||
+                  string.IsNullOrWhiteSpace(editingAddress.DireccionDetalle) ||
+                  string.IsNullOrWhiteSpace(editingAddress.Distrito) ||
+                  string.IsNullOrWhiteSpace(editingAddress.Telefono) ||
+                  string.IsNullOrWhiteSpace(editingAddress.Referencia);
+
+        isPhoneError = !string.IsNullOrWhiteSpace(editingAddress.Telefono) &&
+                       (editingAddress.Telefono.Length != 9 ||
+                        !editingAddress.Telefono.All(char.IsDigit) ||
+                        !editingAddress.Telefono.StartsWith("9"));
+
+        if (isError || isPhoneError) return;
+
+        try
+        {
+            if (!TryObtenerUsuarioId(out var usuarioId))
+            {
+                saveError = "Inicia sesion para guardar direcciones.";
+                return;
+            }
+
+            editingAddress.CodigoPostal = string.IsNullOrWhiteSpace(editingAddress.CodigoPostal) ? "15000" : editingAddress.CodigoPostal;
+            editingAddress.Usuario = new UsuarioDireccion { Id = usuarioId };
+
+            if (editingAddress.Id == 0)
+            {
+                await AddressService.CrearAsync(editingAddress, usuarioId);
+            }
+            else
+            {
+                await AddressService.ActualizarAsync(editingAddress, usuarioId);
+            }
+
+            CerrarModal();
+        }
+        catch (Exception ex)
+        {
+            saveError = $"No se pudo guardar la dirección: {ex.Message}";
+        }
+    }
+
+    private void AbrirModal(Address? addr = null)
+    {
+        saveError = "";
+        isError = false;
+        isPhoneError = false;
+
+        //Por el alcance actual, luego no sera necesario
+        deptoSeleccionado = "Lima";
+        provSeleccionada = "Lima";
+        provincias = UbigeoService.GetProvincias(deptoSeleccionado);
+        distritos = UbigeoService.GetDistritos(deptoSeleccionado, provSeleccionada);
+
+        if (addr != null)
+        {
+            editingAddress = new Address
+            {
+                Id = addr.Id,
+                Alias = addr.Alias,
+                DireccionDetalle = addr.DireccionDetalle,
+                Departamento = "Lima", // luego cambia a addr.Departamento
+                Provincia = "Lima",
+                Distrito = addr.Distrito,
+                Telefono = addr.Telefono,
+                Referencia = addr.Referencia,
+                CodigoPostal = addr.CodigoPostal,
+                IsDefault = addr.IsDefault
+            };
+
+            //deptoSeleccionado = editingAddress.Departamento;
+            //provincias = UbigeoService.GetProvincias(deptoSeleccionado);
+
+            //provSeleccionada = editingAddress.Provincia;
+            //distritos = UbigeoService.GetDistritos(deptoSeleccionado, provSeleccionada);
+
+            //distritoSeleccionado = editingAddress.Distrito;
+
+            distritoSeleccionado = distritos.Contains(addr.Distrito) ? addr.Distrito : ""; //luego no es necesario
+        }
+        else
+        {
+            editingAddress = new Address
+            {
+                Departamento = "Lima", //por el momento
+                Provincia = "Lima",
+                CodigoPostal = "15000",
+                Distrito = ""
+            };
+
+            distritoSeleccionado = "";
+        }
+
+        showModal = true;
+    }
+
+    private void CerrarModal() => showModal = false;
+
+    private void ConfirmarEliminar(Address addr)
+    {
+        saveError = "";
+        addressToDelete = addr;
+        showDeleteModal = true;
+    }
+
+    private async Task EjecutarEliminar()
+    {
+        if (addressToDelete is null) return;
+
+        try
+        {
+            if (!TryObtenerUsuarioId(out var usuarioId))
+            {
+                saveError = "Inicia sesion para eliminar direcciones.";
+                return;
+            }
+
+            await AddressService.EliminarAsync(addressToDelete.Id, usuarioId);
+            showDeleteModal = false;
+            addressToDelete = null;
+        }
+        catch (Exception ex)
+        {
+            saveError = $"No se pudo eliminar la dirección: {ex.Message}";
+        }
+    }
+
+    private async Task MarcarPredeterminada(Address addr)
+    {
+        try
+        {
+            saveError = "";
+            if (!TryObtenerUsuarioId(out var usuarioId))
+            {
+                saveError = "Inicia sesion para actualizar direcciones.";
+                return;
+            }
+          
+            foreach (var a in AddressService.UserAddresses)
+            {
+                a.IsDefault = (a.Id == addr.Id);
+            }
+            
+            
+            var listaOrdenada = AddressService.UserAddresses
+                .OrderByDescending(a => a.IsDefault)
+                .ThenBy(a => a.Id)
+                .ToList();
+
+        
+            AddressService.UserAddresses.Clear();
+            AddressService.UserAddresses.AddRange(listaOrdenada);
+
+            StateHasChanged();
+            await AddressService.MarcarPredeterminadaAsync(addr, usuarioId);
+        }
+        catch (Exception ex)
+        {
+            saveError = $"No se pudo predeterminar la dirección: {ex.Message}";
+            
+            if (TryObtenerUsuarioId(out var usuarioId))
+            {
+                await AddressService.CargarPorUsuarioAsync(usuarioId);
+            }
+        }
+    }
+
+    private bool TryObtenerUsuarioId(out int usuarioId)
+    {
+        usuarioId = AuthService.UsuarioId ?? 0;
+        return usuarioId > 0;
+    }
+
+    private void OnDepartamentoChanged(ChangeEventArgs e)
+    {
+        deptoSeleccionado = e.Value?.ToString() ?? "";
+        provSeleccionada = "";
+        distritoSeleccionado = "";
+
+        provincias = UbigeoService.GetProvincias(deptoSeleccionado);
+        distritos = new();
+
+        editingAddress.Departamento = deptoSeleccionado;
+        editingAddress.Provincia = "";
+        editingAddress.Distrito = "";
+    }
+
+    private void OnProvinciaChanged(ChangeEventArgs e)
+    {
+        provSeleccionada = e.Value?.ToString() ?? "";
+        distritoSeleccionado = "";
+
+        distritos = UbigeoService.GetDistritos(deptoSeleccionado, provSeleccionada);
+
+        editingAddress.Provincia = provSeleccionada;
+        editingAddress.Distrito = "";
+    }
+
+    private void OnDistritoChanged(ChangeEventArgs e)
+    {
+        distritoSeleccionado = e.Value?.ToString() ?? "";
+
+        var ubigeoCompleto = UbigeoService.GetUbigeoCompleto(deptoSeleccionado, provSeleccionada, distritoSeleccionado);
+
+        if (ubigeoCompleto != null)
+        {
+            editingAddress.Distrito = ubigeoCompleto.Distrito;
+        }
+        //por el momento
+        else
+        {
+            editingAddress.Distrito = distritoSeleccionado;
+        }
+    }
+}

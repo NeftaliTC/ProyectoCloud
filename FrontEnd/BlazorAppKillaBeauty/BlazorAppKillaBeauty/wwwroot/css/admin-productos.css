@@ -1,0 +1,292 @@
+﻿.admin-products-content {
+    max-width: 1240px;
+}
+
+/* KPI cards (fila superior) */
+.admin-products-kpis {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+    margin-bottom: 14px;
+}
+
+.admin-products-kpi-card {
+    background: var(--white);
+    border: 1px solid var(--gray-border);
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+    padding: 18px 18px 16px;
+}
+
+    .admin-products-kpi-card span {
+        color: var(--gray);
+        font-weight: 800;
+        font-size: 0.92rem;
+        display: block;
+        margin-bottom: 6px;
+    }
+
+    .admin-products-kpi-card strong {
+        font-size: 2.15rem;
+        color: #2f252a;
+        display: block;
+        line-height: 1;
+        margin-bottom: 6px;
+        font-weight: 900;
+    }
+
+    .admin-products-kpi-card p {
+        margin: 0;
+        color: #4f4148;
+        font-weight: 700;
+    }
+
+    .admin-products-kpi-card.kpi-neutral {
+        background: #f4f3ff;
+    }
+
+    .admin-products-kpi-card.kpi-danger {
+        background: #ffe7ea;
+    }
+
+    .admin-products-kpi-card.kpi-success {
+        background: #eaf7e9;
+    }
+
+    .admin-products-kpi-card.kpi-warning {
+        background: #ffece1;
+    }
+
+/* Header spacing */
+.admin-products-header {
+    margin-bottom: 20px;
+}
+
+/* Filtros */
+.admin-products-filter-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr auto;
+    gap: 14px;
+    align-items: end;
+}
+
+/* Tabla */
+.admin-products-table-card {
+    border-radius: 22px;
+}
+
+.admin-products-name {
+    font-weight: 800;
+}
+
+/* Pills (stock/estado/promo) */
+.admin-products-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-weight: 800;
+    font-size: 0.82rem;
+    white-space: nowrap;
+}
+
+.pill-success {
+    background: #dff7e7;
+    color: #1f7a3d;
+    border: 1px solid #bdeccc;
+}
+
+.pill-warning {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #f0dfab;
+}
+
+.pill-danger {
+    background: #ffe0e0;
+    color: #a12828;
+    border: 1px solid #f3bcbc;
+}
+
+.pill-promo {
+    background: #ffe0b2;
+    color: #e65100;
+    border: 1px solid #f4c68a;
+}
+
+.admin-products-dash {
+    color: var(--gray);
+    font-weight: 700;
+}
+
+/* Acciones */
+.admin-products-actions {
+    display: inline-flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.admin-products-btn {
+    min-height: 34px;
+    border: 1px solid var(--gray-border);
+    border-radius: 11px;
+    background: var(--white);
+    padding: 0 12px;
+    font-weight: 800;
+    cursor: pointer;
+    color: #4f4148;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+}
+
+    .admin-products-btn:hover {
+        background: var(--gray-light);
+    }
+
+    .admin-products-btn.btn-reactivar {
+        border-color: #1f7a3d;
+        color: #1f7a3d;
+    }
+
+        .admin-products-btn.btn-reactivar:hover {
+            background: #dff7e7;
+        }
+
+/* Alert simple (reutilizable) */
+.admin-products-alert {
+    min-height: auto;
+    padding: 12px;
+    background: #ffe0e0;
+    color: #a12828;
+    border-radius: 12px;
+    margin-bottom: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 700;
+}
+
+    .admin-products-alert button {
+        background: transparent;
+        border: none;
+        color: #a12828;
+        cursor: pointer;
+        font-weight: 900;
+    }
+
+/* Modal tweaks */
+.admin-products-modal-card {
+    text-align: left;
+    max-width: 620px;
+    max-height: 85vh;
+    overflow-y: auto;
+}
+
+    .admin-products-modal-card::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .admin-products-modal-card::-webkit-scrollbar-thumb {
+        background: #d9b4bf;
+        border-radius: 10px;
+    }
+
+.admin-products-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+}
+
+    .admin-products-modal-header h2 {
+        margin: 0;
+        font-size: 1.35rem;
+        font-weight: 800;
+    }
+
+.admin-products-modal-close {
+    background: transparent;
+    border: none;
+    font-size: 1.2rem;
+    color: var(--gray);
+    cursor: pointer;
+}
+
+.admin-products-modal-body {
+    display: grid;
+    gap: 10px;
+}
+
+/* Confirm button verde (reactivar) */
+.admin-products-btn-confirm-success {
+    background: #1f7a3d !important;
+}
+
+    .admin-products-btn-confirm-success:hover {
+        background: #165a2c !important;
+    }
+
+/* Upload de imágenes */
+.admin-upload-box {
+    width: 100%;
+    min-height: 65px;
+    border: 2px dashed #eaa6b8;
+    border-radius: 18px;
+    background: #fff7fa;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    cursor: pointer;
+    color: #7a5b66;
+    margin-top: 6px;
+}
+
+    .admin-upload-box:hover {
+        background: #ffeaf1;
+        border-color: #e8607a;
+    }
+
+    .admin-upload-box i {
+        font-size: 26px;
+        color: #e8607a;
+    }
+
+    .admin-upload-box span {
+        font-weight: 800;
+    }
+
+    .admin-upload-box small,
+    .admin-file-help {
+        font-size: 13px;
+        color: #8a6b75;
+    }
+
+.admin-upload-input {
+    display: none;
+}
+
+/* Responsive */
+@media (max-width: 1050px) {
+    .admin-products-kpis {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .admin-products-filter-row {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 640px) {
+    .admin-products-kpis {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-products-filter-row {
+        grid-template-columns: 1fr;
+    }
+}

@@ -1,0 +1,571 @@
+﻿@page "/catalogo"
+@page "/catalogo/{CategoriaUrl}"
+@page "/catalogo/{CategoriaUrl}/{SubcategoriaUrl}"
+@rendermode InteractiveServer
+
+@using BlazorAppKillaBeauty.Services
+@using BlazorAppKillaBeauty.ClienteREST.ServicesAct
+@using BlazorAppKillaBeauty.ClienteREST.Models
+@using Microsoft.AspNetCore.Components
+
+@inject ProductoService ProductoService
+@inject CartService CartService
+@inject NavigationManager Navigation
+@inject AuthService AuthService
+
+<Navbar CantidadCarrito="@CartService.CantidadTotal"
+        TodosLosProductos="@productos" />
+
+<section class="catalog-page">
+
+    <div class="catalog-breadcrumb">
+
+        <NavLink href="/" class="breadcrumb-link">
+            Home
+        </NavLink>
+
+        <span class="breadcrumb-separator">&gt;</span>
+
+        <NavLink href="/catalogo" class="breadcrumb-link">
+            Catálogo
+        </NavLink>
+
+        @if (categoriaSeleccionada != "Todas")
+        {
+            <span class="breadcrumb-separator">&gt;</span>
+
+            <NavLink href="@($"/catalogo/{ConvertirParaUrl(categoriaSeleccionada)}")"
+                     class="breadcrumb-link">
+                @categoriaSeleccionada
+            </NavLink>
+        }
+
+        @if (!string.IsNullOrEmpty(subcategoriaSeleccionada))
+        {
+            <span class="breadcrumb-separator">&gt;</span>
+
+            <NavLink href="@($"/catalogo/{ConvertirParaUrl(categoriaSeleccionada)}/{ConvertirParaUrl(subcategoriaSeleccionada)}")"
+                     class="breadcrumb-current">
+                @subcategoriaSeleccionada
+            </NavLink>
+        }
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(Busqueda))
+    {
+        <div class="catalog-search-banner">
+            <span>Resultados para: <strong>"@Busqueda"</strong></span>
+            <button @onclick='() => Navigation.NavigateTo("/catalogo")'>
+                <i class="bi bi-x"></i> Limpiar
+            </button>
+        </div>
+    }
+
+    <div class="catalog-layout">
+        <aside class="filters-card filters-card-large">
+            <h2>Filtros</h2>
+
+            <h4>CATEGORÍAS</h4>
+
+            <button class="filter-option @(categoriaSeleccionada == "Todas" ? "active" : "")"
+                    @onclick='() => SeleccionarCategoria("Todas")'>
+                Todas las categorías
+            </button>
+
+            @foreach (var categoria in categoriasFiltro)
+            {
+                var expandida = categoriasExpandidas.Contains(categoria.Descripcion);
+
+                <button class="filter-option filter-category-row @(categoriaSeleccionada == categoria.Descripcion ? "active-text" : "")"
+                        @onclick="() => ToggleCategoria(categoria.Descripcion)">
+                    <span>@categoria.Descripcion</span>
+
+                    @if (expandida)
+                    {
+                        <i class="bi bi-chevron-up"></i>
+                    }
+                    else
+                    {
+                        <i class="bi bi-chevron-down"></i>
+                    }
+                </button>
+
+                @if (expandida)
+                {
+                    @foreach (var subcategoria in SubcategoriasDeCategoria(categoria.Id))
+                    {
+                        <button class="filter-suboption @(subcategoriaSeleccionada == subcategoria.Descripcion ? "active-subcategory" : "")"
+                                @onclick="() => SeleccionarSubcategoria(categoria.Descripcion, subcategoria.Descripcion)">
+                            @subcategoria.Descripcion
+                        </button>
+                    }
+                }
+            }
+
+            <h4>TOP MARCAS</h4>
+
+            @foreach (var marca in marcasFiltro)
+            {
+                <label class="filter-row">
+                    <input type="checkbox"
+                           checked="@marcasSeleccionadas.Contains(marca.Descripcion)"
+                           @onchange="e => CambiarMarca(marca.Descripcion, e)" />
+                    @marca.Descripcion
+                </label>
+            }
+            <h4>PRECIO</h4>
+
+            <div class="price-inputs">
+                <label class="price-input-group">
+                    <span>Mínimo</span>
+                    <input class="price-input"
+                           type="number"
+                           min="0"
+                           max="@precioMaximoDisponible"
+                           step="1"
+                           value="@precioMinimo"
+                           @onchange="CambiarPrecioMinimo" />
+                </label>
+
+                <label class="price-input-group">
+                    <span>Máximo</span>
+                    <input class="price-input"
+                           type="number"
+                           min="0"
+                           max="@precioMaximoDisponible"
+                           step="1"
+                           value="@precioMaximo"
+                           @onchange="CambiarPrecioMaximo" />
+                </label>
+            </div>
+
+            <div class="price-range">
+                <span>S/ @precioMinimo</span>
+                <span>S/ @precioMaximo</span>
+            </div>
+
+        </aside>
+
+        <div class="catalog-content">
+
+            @if (cargandoProductos)
+            {
+                <div class="catalog-products">
+                    <p>Cargando productos desde KillaREST...</p>
+                </div>
+            }
+            else if (!string.IsNullOrWhiteSpace(errorProductos))
+            {
+                <div class="catalog-products">
+                    <p>@errorProductos</p>
+                </div>
+            }
+            else if (!ProductosFiltrados.Any())
+            {
+                <div class="catalog-no-results-container">
+                    @if (SugerenciaCorreccion != null)
+                    {
+                        <div class="catalog-did-you-mean">
+                            ¿Quisiste decir <button @onclick='() => Navigation.NavigateTo($"/catalogo?q={Uri.EscapeDataString(SugerenciaCorreccion)}")'><strong>@SugerenciaCorreccion</strong></button>?
+                        </div>
+                    }
+                    <div class="catalog-no-results">
+                        <i class="bi bi-search"></i>
+                        <h3>No encontramos resultados para "@Busqueda"</h3>
+                        <p>Intenta con otras palabras o revisa la ortografía.</p>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <PaginatedTable TItem="Producto"
+                                Page="paginaProductos"
+                                OnChanged="OnPageChanged"
+                                InitialPageSize="12"
+                                PageSizeOptions="opcionesPaginaCatalogo"
+                                RecordLabel="productos"
+                                ShowTopControls="false"
+                                ShowPageSizeSelector="false"
+                                EmptyContainerClass="catalog-products">
+                    <ItemsTemplate Context="productosPagina">
+                        <div class="catalog-products">
+                            @foreach (var producto in productosPagina)
+                            {
+                                <div class="catalog-product-card"
+                                     @onclick="@(() => IrADetalleProducto(producto))">
+                                    <div class="catalog-product-image-area">
+                                        <img class="catalog-product-img"
+                                             src="@producto.ImagenPrincipal"
+                                             alt="@producto.Nombre" />
+                                    </div>
+
+                                    <div class="catalog-product-info">
+
+                                        <p class="catalog-brand">
+                                            @producto.Marca
+                                        </p>
+
+                                        <h3 class="catalog-product-title">
+                                            @producto.Nombre
+                                        </h3>
+
+                                        <p class="catalog-price">
+                                            @MostrarPrecio(producto)
+                                        </p>
+
+                                        <button class="catalog-add-btn"
+                                                @onclick:stopPropagation="true"
+                                                @onclick="() => AgregarCarrito(producto)">
+                                            <i class="bi bi-bag"></i>
+                                            Añadir
+                                        </button>
+
+                                    </div>
+
+                                </div>
+                            }
+                        </div>
+                    </ItemsTemplate>
+                </PaginatedTable>
+            }
+
+        </div>
+
+    </div>
+
+</section>
+
+@code {
+    [Parameter]
+    public string? CategoriaUrl { get; set; }
+
+    [Parameter]
+    public string? SubcategoriaUrl { get; set; }
+
+    [SupplyParameterFromQuery(Name = "q")]
+    public string? Busqueda { get; set; }
+
+    private int paginaActual = 1;
+    private int productosPorPagina = 12;
+
+    private List<Producto> productos = new();
+    private TablePage<Producto> paginaProductos = new();
+    private PageQuery queryActual = new(1, 12);
+    private int[] opcionesPaginaCatalogo = { 12, 24, 48 };
+
+    private string categoriaSeleccionada = "Todas";
+    private string subcategoriaSeleccionada = "";
+
+    private decimal precioMinimo = 0;
+    private decimal precioMaximo = 500;
+    private decimal precioMaximoDisponible = 500;
+    private bool cargandoProductos = true;
+    private string? errorProductos;
+
+    private List<Categoria> categoriasFiltro = new();
+    private List<Subcategoria> subcategoriasFiltro = new();
+    private List<Marca> marcasFiltro = new();
+    private HashSet<string> marcasSeleccionadas = new(StringComparer.OrdinalIgnoreCase);
+    private HashSet<string> categoriasExpandidas = new(StringComparer.OrdinalIgnoreCase);
+
+    protected override async Task OnParametersSetAsync()
+    {
+        cargandoProductos = true;
+        errorProductos = null;
+
+        try
+        {
+            productos = await ProductoService.ObtenerCatalogoAsync();
+            ConfigurarRangoPrecioInicial();
+            categoriasFiltro = (await ProductoService.ObtenerCategoriasAsync())
+                .Where(c => c.Activo)
+                .OrderBy(c => c.Descripcion)
+                .ToList();
+            subcategoriasFiltro = (await ProductoService.ObtenerSubcategoriasAsync())
+                .Where(s => s.Activo)
+                .OrderBy(s => s.Descripcion)
+                .ToList();
+            marcasFiltro = (await ProductoService.ObtenerMarcasAsync())
+                .Where(m => m.Activo)
+                .OrderBy(m => m.Descripcion)
+                .ToList();
+        }
+        catch (Exception ex)
+        {
+            productos = new List<Producto>();
+            errorProductos = $"No se pudieron cargar los productos: {ex.Message}";
+        }
+        finally
+        {
+            cargandoProductos = false;
+        }
+
+        if (!string.IsNullOrEmpty(CategoriaUrl))
+        {
+            categoriaSeleccionada = ConvertirDesdeUrl(CategoriaUrl);
+        }
+        else
+        {
+            categoriaSeleccionada = "Todas";
+        }
+
+        if (!string.IsNullOrEmpty(SubcategoriaUrl))
+        {
+            subcategoriaSeleccionada = ConvertirDesdeUrl(SubcategoriaUrl);
+        }
+        else
+        {
+            subcategoriaSeleccionada = "";
+        }
+
+        AbrirCategoriaActual();
+        ResetearPagina();
+    }
+
+    private IEnumerable<Producto> ProductosFiltrados =>
+        productos.Where(p =>
+            FiltroBusqueda(p)
+            &&FiltroCategoria(p)
+            && FiltroSubcategoria(p)
+            && FiltroPrecio(p)
+            && FiltroMarca(p)
+        );
+
+    private void OnPageChanged(PageQuery query)
+    {
+        queryActual = query;
+        ActualizarPaginaProductos();
+    }
+
+    private void ActualizarPaginaProductos()
+    {
+        var filtrados = ProductosFiltrados.ToList();
+
+        paginaProductos = new TablePage<Producto>
+        {
+            Items = filtrados
+                .Skip((queryActual.Page - 1) * queryActual.PageSize)
+                .Take(queryActual.PageSize)
+                .ToList(),
+            TotalRecords = filtrados.Count
+        };
+    }
+
+    private bool FiltroBusqueda(Producto p)
+    {
+        if (string.IsNullOrWhiteSpace(Busqueda)) return true;
+
+        var texto = $"{p.Nombre} {p.Marca} {p.Categoria} {p.Subcategoria}".ToLower();
+
+        var terminos = Busqueda.Trim().ToLower().Split(' ',
+            StringSplitOptions.RemoveEmptyEntries);
+
+        return terminos.All(t => texto.Contains(t));
+    }
+
+    private bool FiltroCategoria(Producto producto) 
+    { 
+        return categoriaSeleccionada == "Todas" || producto.Categoria == categoriaSeleccionada; 
+    }
+
+    private bool FiltroSubcategoria(Producto producto) 
+    { 
+        return string.IsNullOrEmpty(subcategoriaSeleccionada) || producto.Subcategoria == subcategoriaSeleccionada; 
+    }
+
+    private bool FiltroPrecio(Producto producto)
+    {
+        return producto.PrecioBase >= precioMinimo && producto.PrecioBase <= precioMaximo;
+    }
+
+    private bool FiltroMarca(Producto producto)
+    {
+        return marcasSeleccionadas.Count == 0 || marcasSeleccionadas.Contains(producto.Marca);
+    }
+
+    private string? SugerenciaCorreccion
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(Busqueda)) return null;
+            var termino = Busqueda.Trim().ToLower();
+            return productos
+                .SelectMany(p => new[] { p.Nombre, p.Marca })
+                .Where(t => !string.IsNullOrWhiteSpace(t))
+                .OrderBy(t => LevenshteinSimple(t.ToLower(), termino))
+                .FirstOrDefault(t => LevenshteinSimple(t.ToLower(), termino) <= 3);
+        }
+    }
+
+    private int LevenshteinSimple(string a, string b)
+    {
+        if (a.Length == 0) return b.Length;
+        if (b.Length == 0) return a.Length;
+        var d = new int[a.Length + 1, b.Length + 1];
+        for (int i = 0; i <= a.Length; i++) d[i, 0] = i;
+        for (int j = 0; j <= b.Length; j++) d[0, j] = j;
+        for (int i = 1; i <= a.Length; i++)
+            for (int j = 1; j <= b.Length; j++)
+                d[i, j] = Math.Min(Math.Min(d[i - 1, j] + 1, d[i, j - 1] + 1),
+                    d[i - 1, j - 1] + (a[i - 1] == b[j - 1] ? 0 : 1));
+        return d[a.Length, b.Length];
+    }
+
+    private void SeleccionarCategoria(string categoria)
+    {
+        if (categoria == "Todas")
+        {
+            Navigation.NavigateTo("/catalogo");
+            return;
+        }
+
+        Navigation.NavigateTo($"/catalogo/{ConvertirParaUrl(categoria)}");
+    }
+
+    private void SeleccionarSubcategoria(string categoria, string subcategoria)
+    {
+        Navigation.NavigateTo($"/catalogo/{ConvertirParaUrl(categoria)}/{ConvertirParaUrl(subcategoria)}");
+    }
+
+    private IEnumerable<Subcategoria> SubcategoriasDeCategoria(int categoriaId)
+    {
+        return subcategoriasFiltro.Where(s => s.Categoria?.Id == categoriaId);
+    }
+
+    private void ToggleCategoria(string categoria)
+    {
+        if (categoriasExpandidas.Contains(categoria))
+        {
+            categoriasExpandidas.Remove(categoria);
+        }
+        else
+        {
+            categoriasExpandidas.Add(categoria);
+        }
+
+        SeleccionarCategoria(categoria);
+    }
+
+    private void CambiarMarca(string marca, ChangeEventArgs e)
+    {
+        var seleccionado = e.Value is bool valor && valor;
+
+        if (seleccionado)
+        {
+            marcasSeleccionadas.Add(marca);
+        }
+        else
+        {
+            marcasSeleccionadas.Remove(marca);
+        }
+
+        ResetearPagina();
+    }
+
+    private void AbrirCategoriaActual()
+    {
+        if (categoriaSeleccionada != "Todas")
+        {
+            categoriasExpandidas.Add(categoriaSeleccionada);
+        }
+        else if (categoriasFiltro.Any() && categoriasExpandidas.Count == 0)
+        {
+            categoriasExpandidas.Add(categoriasFiltro.First().Descripcion);
+        }
+    }
+    private string MostrarPrecio(Producto producto)
+    {
+        return $"S/ {producto.PrecioBase:0.00}";
+    }
+
+    private async Task AgregarCarrito(Producto producto)
+    {
+        if (!AuthService.UsuarioId.HasValue)
+            return;
+
+        await CartService.AgregarProductoAsync(producto, AuthService.UsuarioId.Value, 1);
+    }
+
+    private void IrADetalleProducto(Producto producto)
+    {
+        Navigation.NavigateTo($"/usuario-producto/{producto.Id}");
+    }
+
+    private void ResetearPagina()
+    {
+        queryActual = new PageQuery(1, queryActual.PageSize);
+        ActualizarPaginaProductos();
+    }
+
+    private void ConfigurarRangoPrecioInicial()
+    {
+        var precioMasAlto = productos.Any()
+            ? Math.Ceiling(productos.Max(p => p.PrecioBase))
+            : 500;
+
+        if (precioMasAlto < 1)
+        {
+            precioMasAlto = 500;
+        }
+
+        precioMaximoDisponible = RedondearPrecioMaximo(precioMasAlto);
+        precioMinimo = 0;
+        precioMaximo = precioMaximoDisponible;
+    }
+
+    private decimal RedondearPrecioMaximo(decimal precio)
+    {
+        var incremento = precio switch
+        {
+            <= 100 => 10,
+            <= 500 => 50,
+            <= 1000 => 100,
+            _ => 500
+        };
+
+        return Math.Ceiling(precio / incremento) * incremento;
+    }
+
+    private void CambiarPrecioMinimo(ChangeEventArgs e)
+    {
+        precioMinimo = LeerPrecio(e.Value, precioMinimo);
+        precioMinimo = Math.Clamp(precioMinimo, 0, precioMaximoDisponible);
+
+        if (precioMinimo > precioMaximo)
+        {
+            precioMaximo = precioMinimo;
+        }
+
+        ResetearPagina();
+    }
+
+    private void CambiarPrecioMaximo(ChangeEventArgs e)
+    {
+        precioMaximo = LeerPrecio(e.Value, precioMaximo);
+        precioMaximo = Math.Clamp(precioMaximo, 0, precioMaximoDisponible);
+
+        if (precioMaximo < precioMinimo)
+        {
+            precioMinimo = precioMaximo;
+        }
+
+        ResetearPagina();
+    }
+
+    private decimal LeerPrecio(object? valor, decimal precioActual)
+    {
+        return decimal.TryParse(valor?.ToString(), out var precio)
+            ? precio
+            : precioActual;
+    }
+
+    private string ConvertirParaUrl(string texto)
+    {
+        return texto.Replace(" ", "-");
+    }
+
+    private string ConvertirDesdeUrl(string texto)
+    {
+        return texto.Replace("-", " ");
+    }
+}
