@@ -1,0 +1,37 @@
+
+
+### IntelliJ IDEA ###
+.idea/modules.xml
+.idea/jarRepositories.xml
+.idea/compiler.xml
+.idea/libraries/
+*.iws
+*.iml
+*.ipr
+
+bin/
+obj/
+
+
+*.csproj.user
+*.user
+*.userosscache
+*.sln.docstates
+
+
+.vs/
+.idea/
+*.suo
+*.userpreferences
+
+# Publicación y empaquetado
+🎨 publish/
+out/
+
+
+appsettings.Development.json
+.env
+
+
+Thumbs.db
+.DS_Store
